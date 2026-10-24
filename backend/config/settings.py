@@ -19,7 +19,7 @@ TEMPLATES = []
 WSGI_APPLICATION = 'config.wsgi.application'
 database_url = os.getenv('DATABASE_URL', '')
 if not database_url or any(placeholder in database_url for placeholder in ('PROJECT_REF', 'YOUR_ENCODED_PASSWORD', 'YOUR_POOLER_HOST')):
-    raise RuntimeError('Set DATABASE_URL to a real PostgreSQL connection string in .env')
+    raise RuntimeError('Set DATABASE_URL to a PostgreSQL connection string in .env')
 parsed_database = urlsplit(database_url)
 if parsed_database.scheme not in ('postgres', 'postgresql'):
     raise RuntimeError('DATABASE_URL must be a PostgreSQL connection string')

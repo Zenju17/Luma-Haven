@@ -1,6 +1,0 @@
-services:
-  backend:
-    # This file is applied after compose.yaml. Later env files override earlier ones.
-    env_file:
-      - .env
-      - .env.test

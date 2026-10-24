@@ -4,17 +4,12 @@
 
 ## Run the current checkpoint
 
-Prerequisites: Docker Engine with Compose and a **dedicated, disposable Supabase project for development**. Supabase hosts PostgreSQL; Compose runs only the app, Redis and workers. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`.
-
-In the Supabase dashboard, open **Connect** and copy the **Session pooler** PostgreSQL URI (port `5432`), which works on IPv4-only networks. Replace its password with your database password, percent-encoding reserved characters, and append `?sslmode=require` (or `&sslmode=require` if the URI already has a query). A direct connection at `db.<project-ref>.supabase.co:5432` also works if your host supports IPv6. Do **not** use the transaction pooler on port `6543`: this app depends on PostgreSQL session features and its driver can prepare statements. Do not use the Supabase anon key, service-role key or project API URL as `DATABASE_URL`.
-
-**Before migrating, disable Supabase's Data API** in your project's **Integrations → Data API → Overview → Enable Data API (off)**. Django creates tables in `public`, and some Supabase projects grant Data API roles access to new tables by default. This app uses Django sessions and its own API, not Supabase Auth or Data API; enabling Supabase's generated REST endpoints without database RLS policies could expose guest records. Keep the Data API disabled for this project unless you separately implement and verify database grants and RLS.
-
-The first migration enables `btree_gist` for the exclusion constraint preventing overlapping room allocations. If extension creation is denied for your database role, enable **btree_gist** through Supabase **Database → Extensions** (or the SQL editor) before migrating. Use a fresh project containing no real guest data for `seed_demo`.
+Prerequisite: Docker Engine with Compose. **No Supabase project or paid database is needed**: Compose starts PostgreSQL 17, Redis, the Django app, workers and the frontend. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`. The first migration enables `btree_gist` to prevent overlapping room allocations.
 
 ```bash
 cp .env.example .env
-# Edit .env: set DATABASE_URL from Supabase Connect, DJANGO_SECRET_KEY and PAYMENT_SIGNING_KEY.
+# Edit .env: choose unique DJANGO_SECRET_KEY and PAYMENT_SIGNING_KEY values.
+# If changing POSTGRES_PASSWORD, update the password in DATABASE_URL too.
 docker compose up --build -d
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py seed_demo
@@ -25,27 +20,21 @@ docker compose logs backend  # read local console verification messages
 
 **Demo:** Open the guest UI, search dates starting today or later, select a vacant room, review the server quote, enter a fictional guest name and email, and hold the room. Use **Pay balance (simulation)**, choose **Simulate success**, then verify with the booking reference and email. Read the six-digit code in `docker compose logs backend` (never in an API response). For self check-in choose today's arrival date and room 101 or 201; room 102 is dirty, 103 is occupied and 202 is out of service. Check in, submit a request, inspect your folio and check out. Sign in to `/staff` as reception to complete requests and inspect a housekeeping task (housekeeping can mark cleaning and awaiting inspection but cannot approve readiness). The generic QR on the verification page opens the same link; physical keys are collected from reception.
 
-**Verification:** run integration tests against a separate disposable PostgreSQL database or a separate Supabase test project with permission to create a test database. `pytest-django` creates and drops its `test_*` database; do not point tests at a project holding data you need. Checks against the development project:
+**Verification:** `pytest-django` creates and drops a separate `test_hims` database on the local PostgreSQL server. Do not point these commands at a database server holding data you need outside this local development stack.
 
 ```bash
 docker compose exec backend python manage.py check
 docker compose exec backend python manage.py makemigrations --check --dry-run
-docker compose exec backend python -m pytest -c pytest.ini tests/test_database_settings.py -q
+docker compose exec backend python -m pytest -c pytest.ini tests -q
 docker compose exec frontend npm run build
 docker compose down
 ```
 
-For integration tests, create an ignored `.env.test` from `.env.example`, put the **separate test project's** URI in `DATABASE_URL`, then run:
+`docker compose down` stops the services and **keeps** the `pgdata` volume. Never use `docker compose down -v` on data you want to keep. If a local database volume already exists, changing `POSTGRES_PASSWORD` in `.env` will not change its existing database password; retain the original password or change the role password intentionally in PostgreSQL.
 
-```bash
-cp .env.example .env.test
-# Edit .env.test with the dedicated test project's connection string and secrets.
-docker compose -f compose.yaml -f compose.test.yaml run --rm backend python -m pytest -c pytest.ini tests -q
-```
+`.env.example` lists configuration keys. Never commit `.env` or expose the database URI to the frontend. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. Back up local data with `docker compose exec -T db pg_dump -U hims -Fc hims > backup.dump`; restore a backup into a **separate disposable database** with `pg_restore` and test the restoration before relying on it. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
 
-The test override applies `.env.test` after `.env` to this one-off backend container only. PostgreSQL server access and database-creation permission are required for the integration tests; `makemigrations --check` may inspect migration history but does not replace applying migrations.
-
-`.env.example` lists configuration keys. Never commit `.env` or expose the database URI to the frontend. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. Supabase manages database storage, backups and recovery according to your project's plan; verify your project's actual backup and retention settings. For an additional manual backup use `pg_dump --dbname="$DATABASE_URL" --format=custom --file=backup.dump` from a host with PostgreSQL client tools and direct database connectivity (Supabase recommends a direct connection for `pg_dump`). Restore **only into a separate disposable database** with `pg_restore` after confirming the destination, and test that restore before depending on it. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
+**Optional external PostgreSQL:** `DATABASE_URL` can point at another PostgreSQL server, including a Supabase session pooler with `sslmode=require`. In that case the local `db` container still starts but is unused. Do not put credentials in frontend variables. For a Supabase project, disable its Data API before Django migrations unless you separately configure database grants and RLS; Django creates tables in `public`. Transaction pooling on port `6543` is unsupported. Local PostgreSQL is the documented default.
 
 A full-stack Management Information System for managing hotel reservations, room availability, guest information, QR self check-in, online payments, self check-out, housekeeping, and management reporting.
 
@@ -1040,7 +1029,8 @@ DJANGO_DEBUG=true
 DJANGO_SECRET_KEY=replace-with-generated-secret
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-DATABASE_URL=postgresql://postgres.PROJECT_REF:ENCODED_PASSWORD@POOLER_HOST:5432/postgres?sslmode=require
+POSTGRES_PASSWORD=local-development-only
+DATABASE_URL=postgresql://hims:local-development-only@db:5432/hims
 REDIS_URL=redis://redis:6379/0
 
 HOTEL_TIMEZONE=Asia/Phnom_Penh

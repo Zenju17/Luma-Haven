@@ -7,7 +7,7 @@
 - Session login, role gates on staff operations, guest booking isolation, OTP email verification, transactional stay transitions, service requests, dirty-room checkout and inspection workflow.
 - Basic staff summary, reservations, room board and task/requests screens; guest search, reserve, pay, verify, stay and checkout screens. Backend cancellation of unpaid bookings, maintenance blocks with explicit conflict errors, and summary KPI/CSV endpoints.
 - OpenAPI schema endpoint, Django checks and frontend build.
-- Supabase PostgreSQL connection configuration and a Compose stack without a local database container; requires developer-supplied Supabase credentials.
+- Local PostgreSQL 17 Compose service and persistent volume are the default again; Supabase is optional and no project slot is needed.
 
 ## Current work
 
@@ -22,19 +22,20 @@ Additional business rules, dedicated payment adapter boundaries, reporting, secu
 - `npm run dev` started the Vite development server at `http://127.0.0.1:5173/`. A direct Django `runserver` attempt stopped during the migration check because PostgreSQL is not running; the full guest workflow has **not** been run.
 - PostgreSQL pytest integration tests authored but **not executed**: no PostgreSQL server or Docker executable is installed here.
 - Supabase configuration change: `manage.py check` passed with a dummy session-pooler URI; `makemigrations --check --dry-run` reported no changes (database history lookup warned because the dummy hostname cannot resolve); four database-configuration tests passed and eight DB-backed tests collected. Both Compose YAML files parsed. No remote Supabase connection or Compose execution was tested.
+- Local PostgreSQL return: `manage.py check` passed with the local `db` URI; `makemigrations --check --dry-run` reported no changes (the Docker-only hostname `db` cannot resolve on this host); five database-settings tests passed. The local PostgreSQL Compose YAML and persistent volume configuration parsed, but Docker execution is unavailable here.
 
 ## Known limitations
 
 - This is an **incomplete working checkpoint**, not the complete README specification or a production-ready system.
 - Compose services, database migration, seed command and browser journeys have not been exercised in this environment. Verify with the commands in README on a host with Docker.
-- No Supabase credentials are configured here; remote connection, migrations and seeding against Supabase have not been executed.
+- No Docker executable is installed here; local Compose startup, migrations and seeding have not been executed.
 - Missing: amendments, paid cancellation/refunds, no-show, complete maintenance conflict resolution, historical reporting accuracy, PDF, detailed audit and monitoring, robust idempotency keys, identity review, provider-signed webhooks, secure guest token exchange, operational overrides, real provider integrations, login/OTP abuse protection, and Playwright scenarios.
 - No real payment, SMS, identity-verification or door-lock integration. Backend outbox is stored but notifications and retry processing are not connected.
 - The development checkout is an emulator and is not a real authenticated payment provider webhook.
 
 ## Next concrete steps
 
-1. Configure a disposable Supabase project's session-pooler URI, run `docker compose up --build -d`, migrate and seed on a machine with Docker; use a separate isolated PostgreSQL database for integration tests and fix any runtime issues.
+1. Run `docker compose up --build -d`, migrate and seed on a machine with Docker; run the PostgreSQL integration tests against the disposable `test_hims` database and fix any runtime issues.
 2. Add strict payment provider signatures, durable retry handling, refund locking and idempotency across browser commands.
 3. Add guest token scope and identity review, maintenance block resolution, reservation amendments and cancellation.
 4. Build server-calculated KPI reports, exports, access matrix tests and Playwright end-to-end tests.
