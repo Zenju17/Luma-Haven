@@ -4,12 +4,15 @@
 
 ## Run the current checkpoint
 
-Prerequisite: Docker Engine with Compose. **No Supabase project or paid database is needed**: Compose starts PostgreSQL 17, Redis, the Django app, workers and the frontend. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`. The first migration enables `btree_gist` to prevent overlapping room allocations.
+Prerequisites: a Supabase PostgreSQL project and Docker Compose, or Fedora's rootless Podman plus `uv` for Compose. Compose starts Redis, the Django app, workers and the frontend; **it does not start a local database**. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`.
+
+From the Supabase dashboard, open **Connect → Session pooler** and copy its connection URI (port `5432`). Replace the password with your database password, percent-encoding reserved characters, then add `?sslmode=require` (or `&sslmode=require` if the URI already has query parameters). Use the exact pooler host given by Supabase; its username has the form `postgres.<project-ref>`. A direct connection also works when your machine has IPv6. Port `6543` (transaction pooler) is unsupported. A GitHub connection to Supabase does **not** populate the backend's database credentials: configure `DATABASE_URL` yourself in the ignored `.env` file. Never put the database password in `VITE_*` variables or commit it.
+
+Keep the Supabase Data API disabled, as you have done: Django tables in `public` are not protected by Supabase RLS policies. The first migration enables `btree_gist` for safe room allocations; if extension creation fails, enable **btree_gist** under Supabase **Database → Extensions** and retry migration. Use synthetic seed data only.
 
 ```bash
-cp .env.example .env
-# Edit .env: choose unique DJANGO_SECRET_KEY and PAYMENT_SIGNING_KEY values.
-# If changing POSTGRES_PASSWORD, update the password in DATABASE_URL too.
+# If .env already exists, keep it; otherwise copy .env.example to .env.
+# Edit .env: set DATABASE_URL to the Supabase URI and set unique Django secrets.
 docker compose up --build -d
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py seed_demo
@@ -20,21 +23,23 @@ docker compose logs backend  # read local console verification messages
 
 **Demo:** Open the guest UI, search dates starting today or later, select a vacant room, review the server quote, enter a fictional guest name and email, and hold the room. Use **Pay balance (simulation)**, choose **Simulate success**, then verify with the booking reference and email. Read the six-digit code in `docker compose logs backend` (never in an API response). For self check-in choose today's arrival date and room 101 or 201; room 102 is dirty, 103 is occupied and 202 is out of service. Check in, submit a request, inspect your folio and check out. Sign in to `/staff` as reception to complete requests and inspect a housekeeping task (housekeeping can mark cleaning and awaiting inspection but cannot approve readiness). The generic QR on the verification page opens the same link; physical keys are collected from reception.
 
-**Verification:** `pytest-django` creates and drops a separate `test_hims` database on the local PostgreSQL server. Do not point these commands at a database server holding data you need outside this local development stack.
+**Fedora without Docker:** Podman is available, but requires a Compose provider. With `uv` installed, run `uvx --from podman-compose podman-compose up --build -d`, then use `uvx --from podman-compose podman-compose exec backend python manage.py migrate` and `uvx --from podman-compose podman-compose exec backend python manage.py seed_demo`. For logs, use `uvx --from podman-compose podman-compose logs backend`; stop with `uvx --from podman-compose podman-compose down` (without `-v`). Alternatively install Docker Engine with Compose. Do not run both stacks simultaneously on the same ports.
+
+**Verification:** Django's PostgreSQL integration tests create a `test_*` database. **Do not run them against the project's main Supabase connection**; use a separate disposable PostgreSQL test server with database-creation permission. These checks do not create a test database:
 
 ```bash
 docker compose exec backend python manage.py check
 docker compose exec backend python manage.py makemigrations --check --dry-run
-docker compose exec backend python -m pytest -c pytest.ini tests -q
+docker compose exec backend python -m pytest -c pytest.ini tests/test_database_settings.py -q
 docker compose exec frontend npm run build
 docker compose down
 ```
 
-`docker compose down` stops the services and **keeps** the `pgdata` volume. Never use `docker compose down -v` on data you want to keep. If a local database volume already exists, changing `POSTGRES_PASSWORD` in `.env` will not change its existing database password; retain the original password or change the role password intentionally in PostgreSQL.
+With a separate PostgreSQL test server configured as `DATABASE_URL` in the test container, run `python -m pytest -c pytest.ini tests -q` there. `docker compose down` stops the app containers; it does not delete your Supabase database.
 
-`.env.example` lists configuration keys. Never commit `.env` or expose the database URI to the frontend. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. Back up local data with `docker compose exec -T db pg_dump -U hims -Fc hims > backup.dump`; restore a backup into a **separate disposable database** with `pg_restore` and test the restoration before relying on it. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
+`.env.example` lists configuration keys. Never commit `.env` or expose the database URI to the frontend. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. Review your Supabase project's backup and retention settings. For a separate manual backup use `pg_dump` with the project's **direct** database connection from a host that supports IPv6 (or the IPv4 add-on), and verify restoration into a disposable database. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
 
-**Optional external PostgreSQL:** `DATABASE_URL` can point at another PostgreSQL server, including a Supabase session pooler with `sslmode=require`. In that case the local `db` container still starts but is unused. Do not put credentials in frontend variables. For a Supabase project, disable its Data API before Django migrations unless you separately configure database grants and RLS; Django creates tables in `public`. Transaction pooling on port `6543` is unsupported. Local PostgreSQL is the documented default.
+**Database choice:** Supabase PostgreSQL is the development default. The backend uses ordinary PostgreSQL through Django, not the Supabase JavaScript client or Supabase Auth. Connecting your Supabase project to GitHub does not automatically apply Django migrations or seed data.
 
 A full-stack Management Information System for managing hotel reservations, room availability, guest information, QR self check-in, online payments, self check-out, housekeeping, and management reporting.
 
@@ -1029,8 +1034,7 @@ DJANGO_DEBUG=true
 DJANGO_SECRET_KEY=replace-with-generated-secret
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-POSTGRES_PASSWORD=local-development-only
-DATABASE_URL=postgresql://hims:local-development-only@db:5432/hims
+DATABASE_URL=postgresql://postgres.PROJECT_REF:ENCODED_PASSWORD@POOLER_HOST:5432/postgres?sslmode=require
 REDIS_URL=redis://redis:6379/0
 
 HOTEL_TIMEZONE=Asia/Phnom_Penh

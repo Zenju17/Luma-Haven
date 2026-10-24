@@ -1,60 +1,33 @@
 services:
-  db:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_DB: hims
-      POSTGRES_USER: hims
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hims -d hims"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
   redis:
-    image: redis:7-alpine
+    image: docker.io/library/redis:7-alpine
   backend:
     build: ./backend
     env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+    depends_on: [redis]
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
+      - ./backend:/app:z
   worker:
     build: ./backend
     command: celery -A config worker -l info
     env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+    depends_on: [redis]
     volumes:
-      - ./backend:/app
+      - ./backend:/app:z
   beat:
     build: ./backend
     command: celery -A config beat -l info
     env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_started
+    depends_on: [redis]
     volumes:
-      - ./backend:/app
+      - ./backend:/app:z
   frontend:
     build: ./frontend
     ports:
       - "5173:5173"
     depends_on: [backend]
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:z
       - /app/node_modules
-volumes:
-  pgdata:
