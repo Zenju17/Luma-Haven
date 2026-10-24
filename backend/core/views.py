@@ -39,6 +39,7 @@ def detail(obj):
     return {'id': obj.pk, 'reference': obj.reference, 'status': obj.status, 'arrival': obj.arrival,
             'departure': obj.departure, 'room': obj.room.number, 'room_type': obj.room.type.name,
             'guest_name': obj.guest.full_name, 'verified': obj.verified, 'currency': folio.currency,
+            'hotel_today': services.hotel_today(obj.room.hotel), 'hotel_timezone': obj.room.hotel.timezone,
             'balance_minor': services.balance(folio), 'folio_version': folio.version,
             'entries': list(folio.entries.values('category', 'description', 'amount_minor', 'service_date')),
             'stay_id': stay.pk if stay else None, 'checked_in_at': stay.checked_in_at if stay else None,

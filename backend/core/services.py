@@ -118,11 +118,21 @@ def check_in(reservation, actor=None):
     if existing:
         return existing
     room = Room.objects.select_for_update().get(pk=reservation.room_id)
-    if (reservation.status != 'CONFIRMED' or not reservation.verified or
-        hotel_today(room.hotel) < reservation.arrival or hotel_today(room.hotel) >= reservation.departure or
-        room.cleaning != 'READY' or not room.in_service or balance(reservation.folio) > 0 or
-        Stay.objects.filter(reservation__room=room, checked_out_at__isnull=True).exists()):
-        raise ValueError('Check-in requirements not met')
+    if reservation.status != 'CONFIRMED':
+        raise ValueError('Only confirmed reservations can check in.')
+    if not reservation.verified:
+        raise ValueError('Verify your booking before check-in.')
+    today = hotel_today(room.hotel)
+    if today < reservation.arrival:
+        raise ValueError(f'Check-in opens on {reservation.arrival} ({room.hotel.timezone}).')
+    if today >= reservation.departure:
+        raise ValueError('The booking departure date has passed. Contact reception.')
+    if room.cleaning != 'READY' or not room.in_service:
+        raise ValueError('The room is not ready or is out of service. Contact reception.')
+    if balance(reservation.folio) > 0:
+        raise ValueError('Settle the outstanding balance before check-in.')
+    if Stay.objects.filter(reservation__room=room, checked_out_at__isnull=True).exists():
+        raise ValueError('The room is occupied. Contact reception.')
     stay = Stay.objects.create(reservation=reservation, actor=actor)
     reservation.status = 'CHECKED_IN'
     reservation.save(update_fields=['status'])

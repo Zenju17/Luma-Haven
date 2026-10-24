@@ -6,6 +6,16 @@ import { QRCodeSVG } from 'qrcode.react'
 import './style.css'
 
 const apiBase = '/api/v1'
+function apiError(value: unknown): string | null {
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(apiError).filter(Boolean).join(' ') || null
+  if (value && typeof value === 'object') {
+    const fields = value as Record<string, unknown>
+    if ('detail' in fields) return apiError(fields.detail)
+    return Object.entries(fields).map(([key, item]) => `${key}: ${apiError(item) ?? 'Invalid value'}`).join('; ') || null
+  }
+  return null
+}
 async function api<T>(path: string, data?: unknown): Promise<T> {
   const isWrite = data !== undefined
   let headers: Record<string, string> = {}
@@ -23,14 +33,13 @@ async function api<T>(path: string, data?: unknown): Promise<T> {
   })
   const json: unknown = response.headers.get('content-type')?.includes('json') ? await response.json() : null
   if (!response.ok) {
-    const detail = json && typeof json === 'object' && 'detail' in json ? (json as { detail: unknown }).detail : null
-    throw new Error(typeof detail === 'string' ? detail : `Request failed (${response.status}). Refresh and retry.`)
+    throw new Error(apiError(json) ?? `Request failed (${response.status}). Refresh and retry.`)
   }
   if (json === null) throw new Error('The server returned an unexpected response. Refresh and retry.')
   return json as T
 }
 type Room = {id:number;number:string;type:string;capacity:number;rate_minor:number;currency:string;cleaning:string;in_service:boolean;occupied:boolean}
-type Booking = {id:number;reference:string;status:string;arrival:string;departure:string;room:string;room_type:string;guest_name:string;verified:boolean;currency:string;balance_minor:number;folio_version:number;entries:{category:string;description:string;amount_minor:number;service_date:string}[];requests:{id:number;type:string;description:string;status:string}[];checked_in_at:string|null;checked_out_at:string|null}
+type Booking = {id:number;reference:string;status:string;arrival:string;departure:string;hotel_today:string;hotel_timezone:string;room:string;room_type:string;guest_name:string;verified:boolean;currency:string;balance_minor:number;folio_version:number;entries:{category:string;description:string;amount_minor:number;service_date:string}[];requests:{id:number;type:string;description:string;status:string}[];checked_in_at:string|null;checked_out_at:string|null}
 const money = (v:number) => `$${(v / 100).toFixed(2)}`
 function Banner(){return <header className="border-b border-[#dfe7df] bg-white"><div className="max-w-6xl mx-auto px-5 h-20 flex items-center justify-between"><Link to="/" className="serif text-2xl font-semibold tracking-tight text-[#175d4b]">Luma Haven<span className="text-[#c99a5a]">.</span></Link><nav className="flex items-center gap-6 text-sm font-semibold"><Link to="/" className="hover:text-[#317e6a]">Find a room</Link><Link to="/verify" className="hover:text-[#317e6a]">My stay</Link><Link to="/staff" className="hover:text-[#317e6a]">Staff portal</Link></nav></div></header>}
 function Layout({children}:{children:React.ReactNode}){return <><Banner/><main className="max-w-6xl mx-auto px-5 py-10">{children}</main><footer className="border-t border-[#e0e8dd] p-8 text-center text-sm text-[#738279]">Luma Haven · Your place to pause · Physical keys available at reception</footer></>}

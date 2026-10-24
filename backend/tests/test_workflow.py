@@ -117,3 +117,16 @@ def test_otp_attempt_limit_and_expiry(inventory, client):
     otp.refresh_from_db()
     assert otp.attempts == 5
     assert client.post('/api/v1/guest-access/verify-otp', {'reference': obj.reference, 'email': 'one@localhost', 'code': '123456'}, content_type='application/json').status_code == 400
+
+
+@pytest.mark.django_db
+def test_check_in_before_arrival_explains_hotel_date(inventory):
+    arrival = services.hotel_today(inventory.hotel) + timedelta(days=2)
+    obj = services.reserve(services.create_quote(inventory, arrival, arrival + timedelta(days=1), 1), 'Guest', 'guest@localhost')
+    obj.status = 'CONFIRMED'
+    obj.verified = True
+    obj.save(update_fields=['status', 'verified'])
+    attempt = PaymentAttempt.objects.create(reservation=obj, amount_minor=10000, currency='USD', status='SUCCESS')
+    Payment.objects.create(attempt=attempt, amount_minor=10000)
+    with pytest.raises(ValueError, match=f'Check-in opens on {arrival} \\(Asia/Phnom_Penh\\)'):
+        services.check_in(obj)
