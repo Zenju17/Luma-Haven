@@ -1,5 +1,12 @@
 import uuid
+from django.http import JsonResponse
 from django.middleware.csrf import CsrfViewMiddleware
+from django.views.csrf import csrf_failure as django_csrf_failure
+
+def csrf_failure(request, reason=''):
+    if request.path.startswith('/api/v1/'):
+        return JsonResponse({'detail': 'CSRF verification failed. Refresh and retry.'}, status=403)
+    return django_csrf_failure(request, reason=reason)
 
 class StrictCSRFMiddleware(CsrfViewMiddleware):
     """Enforce CSRF for anonymous API writes as well as authenticated sessions."""

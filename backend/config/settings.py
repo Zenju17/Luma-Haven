@@ -40,6 +40,7 @@ SPECTACULAR_SETTINGS = {'TITLE': 'Luma Haven API', 'VERSION': '1.0.0'}
 CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
+CSRF_FAILURE_VIEW = 'core.middleware.csrf_failure'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = ENV == 'production'

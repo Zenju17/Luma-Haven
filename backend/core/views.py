@@ -268,11 +268,13 @@ def staff_requests(request):
 @api_view(['POST'])
 def finish_request(request, pk):
     staff(request, 'ADMIN', 'MANAGER', 'RECEPTION')
-    item = ServiceRequest.objects.get(pk=pk)
-    item.status = 'COMPLETED'
-    item.completed_at = timezone.now()
-    item.assignee = request.user
-    item.save(update_fields=['status', 'completed_at', 'assignee'])
+    with transaction.atomic():
+        item = ServiceRequest.objects.select_for_update().get(pk=pk)
+        if item.status != 'COMPLETED':
+            item.status = 'COMPLETED'
+            item.completed_at = timezone.now()
+            item.assignee = request.user
+            item.save(update_fields=['status', 'completed_at', 'assignee'])
     return Response({'status': item.status})
 
 @api_view(['POST'])

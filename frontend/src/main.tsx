@@ -6,12 +6,27 @@ import { QRCodeSVG } from 'qrcode.react'
 import './style.css'
 
 const apiBase = '/api/v1'
-let csrfToken = ''
 async function api<T>(path: string, data?: unknown): Promise<T> {
-  if (data && !csrfToken) csrfToken = (await (await fetch(`${apiBase}/auth/csrf`, { credentials: 'include' })).json()).csrfToken
-  const response = await fetch(`${apiBase}${path}`, { credentials: 'include', method: data ? 'POST' : 'GET', headers: data ? {'Content-Type':'application/json','X-CSRFToken':csrfToken} : {}, body: data ? JSON.stringify(data) : undefined })
-  const json = await response.json()
-  if (!response.ok) throw new Error(typeof json.detail === 'string' ? json.detail : JSON.stringify(json))
+  const isWrite = data !== undefined
+  let headers: Record<string, string> = {}
+  if (isWrite) {
+    // Django rotates the CSRF token on staff login. Obtain a fresh token for
+    // each write rather than reusing one from the previous session.
+    const csrfResponse = await fetch(`${apiBase}/auth/csrf`, { credentials: 'include' })
+    if (!csrfResponse.ok) throw new Error('Unable to initialize your session. Refresh and retry.')
+    const { csrfToken } = await csrfResponse.json() as { csrfToken: string }
+    headers = { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken }
+  }
+  const response = await fetch(`${apiBase}${path}`, {
+    credentials: 'include', method: isWrite ? 'POST' : 'GET', headers,
+    body: isWrite ? JSON.stringify(data) : undefined,
+  })
+  const json: unknown = response.headers.get('content-type')?.includes('json') ? await response.json() : null
+  if (!response.ok) {
+    const detail = json && typeof json === 'object' && 'detail' in json ? (json as { detail: unknown }).detail : null
+    throw new Error(typeof detail === 'string' ? detail : `Request failed (${response.status}). Refresh and retry.`)
+  }
+  if (json === null) throw new Error('The server returned an unexpected response. Refresh and retry.')
   return json as T
 }
 type Room = {id:number;number:string;type:string;capacity:number;rate_minor:number;currency:string;cleaning:string;in_service:boolean;occupied:boolean}
