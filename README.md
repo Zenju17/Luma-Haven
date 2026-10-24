@@ -1,8 +1,39 @@
 # Hotel Information Management System (HIMS)
 
+> **Implementation checkpoint (October 2026):** This repository now includes an initial full-stack vertical slice, but the remainder of this document is the **target specification**, not a list of implemented features. See [implementation status](docs/IMPLEMENTATION_STATUS.md), [permissions](docs/PERMISSIONS.md), and [decisions](docs/DECISIONS.md). Do not use this checkpoint for real payments or production guest data.
+
+## Run the current checkpoint
+
+Prerequisite: Docker Engine with Compose. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`.
+
+```bash
+cp .env.example .env
+# Edit .env: set DJANGO_SECRET_KEY and PAYMENT_SIGNING_KEY to unique random strings.
+docker compose up --build -d
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py seed_demo
+docker compose logs backend  # read local console verification messages
+```
+
+`seed_demo` prints a random password for **newly created** staff users (admin, manager, reception, housekeeping, accountant). Set `SEED_PASSWORD` in your private `.env` to choose a local password before the first seed. Re-running the command does not change existing passwords. Seed data is synthetic. No reusable credentials are committed.
+
+**Demo:** Open the guest UI, search dates starting today or later, select a vacant room, review the server quote, enter a fictional guest name and email, and hold the room. Use **Pay balance (simulation)**, choose **Simulate success**, then verify with the booking reference and email. Read the six-digit code in `docker compose logs backend` (never in an API response). For self check-in choose today's arrival date and room 101 or 201; room 102 is dirty, 103 is occupied and 202 is out of service. Check in, submit a request, inspect your folio and check out. Sign in to `/staff` as reception to complete requests and inspect a housekeeping task (housekeeping can mark cleaning and awaiting inspection but cannot approve readiness). The generic QR on the verification page opens the same link; physical keys are collected from reception.
+
+**Verification** (PostgreSQL required for the backend tests):
+
+```bash
+docker compose exec backend python manage.py check
+docker compose exec backend python manage.py makemigrations --check --dry-run
+docker compose exec backend python -m pytest -c pytest.ini tests -q
+docker compose exec frontend npm run build
+docker compose down
+```
+
+`.env.example` lists configuration keys. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. PostgreSQL data is stored in the `pgdata` volume. For local backup and restore use `docker compose exec -T db pg_dump -U hims -Fc hims > backup.dump` and `docker compose exec -T db pg_restore -U hims -d hims --clean --if-exists < backup.dump` **only into a disposable restoration database** after confirming the target; test restoration regularly. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
+
 A full-stack Management Information System for managing hotel reservations, room availability, guest information, QR self check-in, online payments, self check-out, housekeeping, and management reporting.
 
-> **Project status:** Planning and development specification. Features described in this README are requirements for the proposed system and should not be considered implemented until completed and tested.
+> **Specification status:** The sections below describe the intended complete system. Compare each requirement with [the tracked implementation status](docs/IMPLEMENTATION_STATUS.md) before relying on it.
 
 ---
 
