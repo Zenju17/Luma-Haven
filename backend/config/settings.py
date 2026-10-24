@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, urlsplit
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,7 +17,18 @@ MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'corsheaders.midd
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = []
 WSGI_APPLICATION = 'config.wsgi.application'
-DATABASES = {'default': dj_database_url.config(default='postgresql://hims:hims@localhost:5432/hims', conn_max_age=60)}
+database_url = os.getenv('DATABASE_URL', '')
+if not database_url or any(placeholder in database_url for placeholder in ('PROJECT_REF', 'YOUR_ENCODED_PASSWORD', 'YOUR_POOLER_HOST')):
+    raise RuntimeError('Set DATABASE_URL to a real PostgreSQL connection string in .env')
+parsed_database = urlsplit(database_url)
+if parsed_database.scheme not in ('postgres', 'postgresql'):
+    raise RuntimeError('DATABASE_URL must be a PostgreSQL connection string')
+if parsed_database.hostname and (parsed_database.hostname.endswith('.supabase.co') or parsed_database.hostname.endswith('.pooler.supabase.com')):
+    if parse_qs(parsed_database.query).get('sslmode', [''])[0] not in ('require', 'verify-ca', 'verify-full'):
+        raise RuntimeError('Supabase DATABASE_URL must include sslmode=require (or stricter)')
+    if parsed_database.port == 6543:
+        raise RuntimeError('Use the direct or session-mode port 5432; transaction pooling is not supported here')
+DATABASES = {'default': dj_database_url.parse(database_url, conn_max_age=60)}
 AUTH_USER_MODEL = 'core.User'
 USE_TZ = True
 TIME_ZONE = 'Asia/Phnom_Penh'
