@@ -10,6 +10,8 @@ From the Supabase dashboard, open **Connect → Session pooler** and copy its co
 
 Keep the Supabase Data API disabled, as you have done: Django tables in `public` are not protected by Supabase RLS policies. The first migration enables `btree_gist` for safe room allocations; if extension creation fails, enable **btree_gist** under Supabase **Database → Extensions** and retry migration. Use synthetic seed data only.
 
+Keep `DJANGO_DEBUG=false` in `.env` when using a remote database: Django's detailed error page can expose a `DATABASE_URL` from request metadata. If a database URI appears in an error report, rotate that database password and recreate the backend and worker containers after updating `.env`.
+
 ```bash
 # If .env already exists, keep it; otherwise copy .env.example to .env.
 # Edit .env: set DATABASE_URL to the Supabase URI and set unique Django secrets.

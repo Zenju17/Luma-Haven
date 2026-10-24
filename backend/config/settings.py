@@ -10,12 +10,14 @@ if ENV == 'production' and os.getenv('PAYMENT_PROVIDER', 'development') == 'deve
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'local-only-insecure-secret')
 if ENV == 'production' and (len(SECRET_KEY) < 32 or SECRET_KEY == 'local-only-insecure-secret'):
     raise RuntimeError('Set a strong DJANGO_SECRET_KEY')
-DEBUG = os.getenv('DJANGO_DEBUG', 'true').lower() == 'true' and ENV != 'production'
+DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true' and ENV != 'production'
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 INSTALLED_APPS = ['django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.postgres', 'rest_framework', 'drf_spectacular', 'corsheaders', 'core']
 MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'corsheaders.middleware.CorsMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'core.middleware.StrictCSRFMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'core.middleware.RequestIDMiddleware']
 ROOT_URLCONF = 'config.urls'
-TEMPLATES = []
+TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates',
+              'DIRS': [], 'APP_DIRS': True,
+              'OPTIONS': {'context_processors': ['django.template.context_processors.request']}}]
 WSGI_APPLICATION = 'config.wsgi.application'
 database_url = os.getenv('DATABASE_URL', '')
 if not database_url or any(placeholder in database_url for placeholder in ('PROJECT_REF', 'YOUR_ENCODED_PASSWORD', 'YOUR_POOLER_HOST')):
