@@ -1,8 +1,51 @@
 # Hotel Information Management System (HIMS)
 
+> **Implementation checkpoint (October 2026):** This repository now includes an initial full-stack vertical slice, but the remainder of this document is the **target specification**, not a list of implemented features. See [implementation status](docs/IMPLEMENTATION_STATUS.md), [permissions](docs/PERMISSIONS.md), and [decisions](docs/DECISIONS.md). Do not use this checkpoint for real payments or production guest data.
+
+## Run the current checkpoint
+
+Prerequisites: a Supabase PostgreSQL project and Docker Compose, or Fedora's rootless Podman plus `uv` for Compose. Compose starts Redis, the Django app, workers and the frontend; **it does not start a local database**. Local addresses: guest UI at `http://localhost:5173/`, staff/admin login at `http://localhost:5173/staff`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`. Visiting the backend root `http://localhost:8000/` redirects to the staff login; the staff interface itself is served by Vite on port 5173, not by Django.
+
+From the Supabase dashboard, open **Connect → Session pooler** and copy its connection URI (port `5432`). Replace the password with your database password, percent-encoding reserved characters, then add `?sslmode=require` (or `&sslmode=require` if the URI already has query parameters). Use the exact pooler host given by Supabase; its username has the form `postgres.<project-ref>`. A direct connection also works when your machine has IPv6. Port `6543` (transaction pooler) is unsupported. A GitHub connection to Supabase does **not** populate the backend's database credentials: configure `DATABASE_URL` yourself in the ignored `.env` file. Never put the database password in `VITE_*` variables or commit it.
+
+Keep the Supabase Data API disabled, as you have done: Django tables in `public` are not protected by Supabase RLS policies. The first migration enables `btree_gist` for safe room allocations; if extension creation fails, enable **btree_gist** under Supabase **Database → Extensions** and retry migration. Use synthetic seed data only.
+
+Keep `DJANGO_DEBUG=false` in `.env` when using a remote database: Django's detailed error page can expose a `DATABASE_URL` from request metadata. If a database URI appears in an error report, rotate that database password and recreate the backend and worker containers after updating `.env`.
+
+```bash
+# If .env already exists, keep it; otherwise copy .env.example to .env.
+# Edit .env: set DATABASE_URL to the Supabase URI and set unique Django secrets.
+docker compose up --build -d
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py seed_demo
+docker compose logs backend  # read local console verification messages
+```
+
+`seed_demo` prints a random password for **newly created** staff users (admin, manager, reception, housekeeping, accountant). Set `SEED_PASSWORD` in your private `.env` to choose a local password before the first seed. Re-running the command does not change existing passwords. Seed data is synthetic. No reusable credentials are committed.
+
+**Demo:** Open the guest UI, search dates starting today or later, select a vacant room, review the server quote, enter a fictional guest name and email, and hold the room. Use **Pay balance (simulation)**, choose **Simulate success**, then verify with the booking reference and email. Read the six-digit code in `docker compose logs backend` (never in an API response). For self check-in choose today's arrival date and room 101 or 201; room 102 is dirty, 103 is occupied and 202 is out of service. Check in, submit a request, inspect your folio and check out. Sign in to `/staff` as reception to complete requests and inspect a housekeeping task (housekeeping can mark cleaning and awaiting inspection but cannot approve readiness). The generic QR on the verification page opens the same link; physical keys are collected from reception.
+
+**Fedora without Docker:** Podman is available, but requires a Compose provider. With `uv` installed, run `uvx --from podman-compose podman-compose up --build -d`, then use `uvx --from podman-compose podman-compose exec backend python manage.py migrate` and `uvx --from podman-compose podman-compose exec backend python manage.py seed_demo`. For logs, use `uvx --from podman-compose podman-compose logs backend`; stop with `uvx --from podman-compose podman-compose down` (without `-v`). Alternatively install Docker Engine with Compose. Do not run both stacks simultaneously on the same ports.
+
+**Verification:** Django's PostgreSQL integration tests create a `test_*` database. **Do not run them against the project's main Supabase connection**; use a separate disposable PostgreSQL test server with database-creation permission. These checks do not create a test database:
+
+```bash
+docker compose exec backend python manage.py check
+docker compose exec backend python manage.py makemigrations --check --dry-run
+docker compose exec backend python -m pytest -c pytest.ini tests/test_database_settings.py -q
+docker compose exec frontend npm run build
+docker compose down
+```
+
+With a separate PostgreSQL test server configured as `DATABASE_URL` in the test container, run `python -m pytest -c pytest.ini tests -q` there. `docker compose down` stops the app containers; it does not delete your Supabase database.
+
+`.env.example` lists configuration keys. Never commit `.env` or expose the database URI to the frontend. `APP_ENV=production` rejects `PAYMENT_PROVIDER=development`; a real provider is not yet implemented. Review your Supabase project's backup and retention settings. For a separate manual backup use `pg_dump` with the project's **direct** database connection from a host that supports IPv6 (or the IPv4 add-on), and verify restoration into a disposable database. Production requires HTTPS, private infrastructure, secret management, backups and restore drills, monitoring, and a configured real provider. See the status document for known missing features and the specification below for intended behavior.
+
+**Database choice:** Supabase PostgreSQL is the development default. The backend uses ordinary PostgreSQL through Django, not the Supabase JavaScript client or Supabase Auth. Connecting your Supabase project to GitHub does not automatically apply Django migrations or seed data.
+
 A full-stack Management Information System for managing hotel reservations, room availability, guest information, QR self check-in, online payments, self check-out, housekeeping, and management reporting.
 
-> **Project status:** Planning and development specification. Features described in this README are requirements for the proposed system and should not be considered implemented until completed and tested.
+> **Specification status:** The sections below describe the intended complete system. Compare each requirement with [the tracked implementation status](docs/IMPLEMENTATION_STATUS.md) before relying on it.
 
 ---
 
@@ -993,7 +1036,7 @@ DJANGO_DEBUG=true
 DJANGO_SECRET_KEY=replace-with-generated-secret
 DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1
 
-DATABASE_URL=postgresql://hims:replace-password@db:5432/hims
+DATABASE_URL=postgresql://postgres.PROJECT_REF:ENCODED_PASSWORD@POOLER_HOST:5432/postgres?sslmode=require
 REDIS_URL=redis://redis:6379/0
 
 HOTEL_TIMEZONE=Asia/Phnom_Penh

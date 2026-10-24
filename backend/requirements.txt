@@ -1,0 +1,9 @@
+Django==5.2.8
+djangorestframework==3.16.1
+django-cors-headers==4.9.0
+dj-database-url==3.0.1
+psycopg[binary]==3.2.12
+celery[redis]==5.5.3
+drf-spectacular==0.29.0
+pytest==8.4.2
+pytest-django==4.11.1

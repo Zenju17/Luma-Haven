@@ -1,0 +1,11 @@
+# Implementation decisions
+
+- The initial property is a single hotel in `Asia/Phnom_Penh`, billing in USD minor units. The hotel row stores configurable contact details, tax, deposit percentage and arrival/departure times. Policy enforcement beyond full settlement is still pending.
+- One room is selected per booking. PostgreSQL `daterange` allocations are half-open and an exclusion constraint is the final arbiter of inventory collisions. A `btree_gist` extension is installed in the initial migration.
+- Booking immediately creates a short-lived guest browser session to access its hold and simulated checkout. Subsequent access from another browser requires email OTP; the OTP is hashed and sent to the console email backend. A confirmed booking must be verified before check-in.
+- The simulated checkout creates backend payment events and can produce pending, failed, and successful results. It is deliberately unavailable outside development. A real payment provider interface, authenticated webhooks, refunds and reconciliation are **not implemented**.
+- Key handover is at reception. The QR is a generic link to the verification page and never grants physical room access.
+- PostgreSQL is required for migrations and tests; SQLite does not support the exclusion constraint. The user now has a Supabase project; its PostgreSQL session pooler is the development database, while Compose starts Redis and application services. The backend and Celery containers use the same server-side `DATABASE_URL` with TLS. Transaction pooling is rejected. The frontend never connects to the database directly.
+- The Supabase Data API remains disabled before Django migrations: Django owns access checks, and its `public` tables do not have Supabase RLS policies. Supabase's GitHub connection does not configure Django's database credentials.
+- On Fedora, rootless Podman is installed but Docker and a Compose provider are absent. `uvx --from podman-compose podman-compose` provides a no-sudo Compose path. Fully qualified container image names prevent Podman's interactive short-name prompt; `:z` bind mount labels allow sharing backend source among the server and workers under SELinux.
+- The backend currently uses one `core` Django module as an early vertical slice. Domain splitting can follow stable API boundaries; empty apps have not been generated.
