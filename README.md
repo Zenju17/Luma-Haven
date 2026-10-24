@@ -4,7 +4,7 @@
 
 ## Run the current checkpoint
 
-Prerequisites: a Supabase PostgreSQL project and Docker Compose, or Fedora's rootless Podman plus `uv` for Compose. Compose starts Redis, the Django app, workers and the frontend; **it does not start a local database**. Local addresses: guest/staff UI at `http://localhost:5173`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`.
+Prerequisites: a Supabase PostgreSQL project and Docker Compose, or Fedora's rootless Podman plus `uv` for Compose. Compose starts Redis, the Django app, workers and the frontend; **it does not start a local database**. Local addresses: guest UI at `http://localhost:5173/`, staff/admin login at `http://localhost:5173/staff`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`. Visiting the backend root `http://localhost:8000/` redirects to the staff login; the staff interface itself is served by Vite on port 5173, not by Django.
 
 From the Supabase dashboard, open **Connect → Session pooler** and copy its connection URI (port `5432`). Replace the password with your database password, percent-encoding reserved characters, then add `?sslmode=require` (or `&sslmode=require` if the URI already has query parameters). Use the exact pooler host given by Supabase; its username has the form `postgres.<project-ref>`. A direct connection also works when your machine has IPv6. Port `6543` (transaction pooler) is unsupported. A GitHub connection to Supabase does **not** populate the backend's database credentials: configure `DATABASE_URL` yourself in the ignored `.env` file. Never put the database password in `VITE_*` variables or commit it.
 
