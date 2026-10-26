@@ -37,14 +37,19 @@ TIME_ZONE = 'Asia/Phnom_Penh'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REST_FRAMEWORK = {'DEFAULT_AUTHENTICATION_CLASSES': ['rest_framework.authentication.SessionAuthentication'], 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'}
 SPECTACULAR_SETTINGS = {'TITLE': 'Luma Haven API', 'VERSION': '1.0.0'}
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+FRONTEND_ORIGIN = os.getenv('FRONTEND_ORIGIN', 'http://localhost:5173')
+CORS_ALLOWED_ORIGINS = [FRONTEND_ORIGIN]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
+CSRF_TRUSTED_ORIGINS = [FRONTEND_ORIGIN]
 CSRF_FAILURE_VIEW = 'core.middleware.csrf_failure'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = ENV == 'production'
 CSRF_COOKIE_SECURE = ENV == 'production'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
+    EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+    EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 CELERY_BEAT_SCHEDULE = {'expire-holds': {'task': 'core.tasks.expire_holds', 'schedule': 60.0}}

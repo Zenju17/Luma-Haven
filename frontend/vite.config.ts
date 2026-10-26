@@ -1,4 +1,4 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import vue from '@vitejs/plugin-vue'
 import tailwindcss from '@tailwindcss/vite'
-export default defineConfig({ plugins: [react(), tailwindcss()], server: { proxy: { '/api': 'http://backend:8000' } } })
+export default defineConfig({ plugins: [vue(), tailwindcss()], server: { proxy: { '/api': process.env.API_PROXY_TARGET || 'http://backend:8000' } } })

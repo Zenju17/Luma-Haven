@@ -2,7 +2,7 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import DateRangeField, RangeOperators
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Q, F
 from django.utils import timezone
 
@@ -94,6 +94,19 @@ class FolioEntry(models.Model):
     amount_minor = models.IntegerField()
     service_date = models.DateField()
     created_at = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        if self.pk is not None:
+            raise ValueError('Folio entries are immutable; create an adjustment instead.')
+        with transaction.atomic():
+            folio = Folio.objects.select_for_update().get(pk=self.folio_id)
+            if folio.closed:
+                raise ValueError('Cannot charge a closed folio.')
+            super().save(*args, **kwargs)
+            Folio.objects.filter(pk=folio.pk).update(version=F('version') + 1)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError('Folio entries are immutable; create an adjustment instead.')
 
 class PaymentAttempt(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

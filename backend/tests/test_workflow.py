@@ -1,6 +1,8 @@
 from datetime import timedelta
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 import pytest
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError, close_old_connections, transaction
 from django.utils import timezone
 from psycopg.types.range import Range
 from core import services
@@ -26,6 +28,29 @@ def test_overlaps_rejected_but_adjacent_dates_allowed(inventory):
     assert Allocation.objects.filter(active=True).count() == 2
 
 @pytest.mark.django_db(transaction=True)
+def test_competing_room_allocations_only_one_commits(inventory):
+    tomorrow = services.hotel_today(inventory.hotel) + timedelta(days=1)
+    gate = Barrier(2)
+
+    def allocate():
+        close_old_connections()
+        try:
+            gate.wait(timeout=10)
+            with transaction.atomic():
+                Allocation.objects.create(room_id=inventory.pk,
+                    period=Range(tomorrow, tomorrow + timedelta(days=1), '[)'), kind='MAINTENANCE')
+            return 'allocated'
+        except IntegrityError:
+            return 'conflict'
+        finally:
+            close_old_connections()
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _: allocate(), range(2)))
+    assert sorted(results) == ['allocated', 'conflict']
+    assert Allocation.objects.filter(room=inventory, active=True).count() == 1
+
+@pytest.mark.django_db(transaction=True)
 def test_payment_replay_failure_after_success_and_checkout(inventory):
     arrival = services.hotel_today(inventory.hotel)
     quote = services.create_quote(inventory, arrival, arrival + timedelta(days=1), 1)
@@ -43,8 +68,10 @@ def test_payment_replay_failure_after_success_and_checkout(inventory):
     reservation.save(update_fields=['verified'])
     stay = services.check_in(reservation)
     assert services.check_in(reservation).pk == stay.pk
-    assert services.check_out(reservation, 1).pk == stay.pk
-    services.check_out(reservation, 1)
+    reservation.folio.refresh_from_db()
+    version = reservation.folio.version
+    assert services.check_out(reservation, version).pk == stay.pk
+    services.check_out(reservation, version)
     assert HousekeepingTask.objects.filter(stay=stay).count() == 1
     inventory.refresh_from_db()
     assert inventory.cleaning == 'DIRTY'
@@ -75,9 +102,49 @@ def test_checkout_rejects_updated_folio(inventory):
     attempt = PaymentAttempt.objects.create(reservation=obj, amount_minor=10000, currency='USD', status='SUCCESS')
     Payment.objects.create(attempt=attempt, amount_minor=10000)
     services.check_in(obj)
+    obj.folio.refresh_from_db()
+    old_version = obj.folio.version
     FolioEntry.objects.create(folio=obj.folio, category='SERVICE', description='Late charge', amount_minor=500, service_date=arrival)
-    with pytest.raises(ValueError):
-        services.check_out(obj, 1)
+    with pytest.raises(ValueError, match='balance outstanding'):
+        services.check_out(obj, old_version)
+    second = PaymentAttempt.objects.create(reservation=obj, amount_minor=500, currency='USD', status='SUCCESS')
+    Payment.objects.create(attempt=second, amount_minor=500)
+    with pytest.raises(ValueError, match='Folio changed'):
+        services.check_out(obj, old_version)
+    obj.folio.refresh_from_db()
+    assert services.check_out(obj, obj.folio.version).checked_out_at is not None
+    with pytest.raises(ValueError, match='immutable'):
+        FolioEntry.objects.get(folio=obj.folio, category='SERVICE').save()
+
+
+@pytest.mark.django_db
+def test_housekeeping_needs_inspection_after_checkout(inventory, client):
+    arrival = services.hotel_today(inventory.hotel)
+    reservation = services.reserve(services.create_quote(inventory, arrival, arrival + timedelta(days=1), 1), 'Guest', 'guest@localhost')
+    attempt = PaymentAttempt.objects.create(reservation=reservation, amount_minor=10000, currency='USD')
+    services.process_event(attempt.pk, 'SUCCESS', 'housekeeping-payment')
+    reservation.refresh_from_db()
+    reservation.verified = True
+    reservation.save(update_fields=['verified'])
+    services.check_in(reservation)
+    reservation.folio.refresh_from_db()
+    stay = services.check_out(reservation, reservation.folio.version)
+    task = HousekeepingTask.objects.get(stay=stay)
+    cleaner = User.objects.create_user(username='cleaner', password='test', role='HOUSEKEEPING')
+    client.force_login(cleaner)
+    for state in ['CLEANING', 'INSPECTION']:
+        response = client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
+            {'status': state}, content_type='application/json')
+        assert response.status_code == 200
+    assert client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
+        {'status': 'READY'}, content_type='application/json').status_code == 403
+    receptionist = User.objects.create_user(username='reception', password='test', role='RECEPTION')
+    client.force_login(receptionist)
+    assert client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
+        {'status': 'READY'}, content_type='application/json').status_code == 200
+    inventory.refresh_from_db()
+    assert inventory.cleaning == 'READY'
+    assert HousekeepingTask.objects.filter(stay=stay).count() == 1
 
 @pytest.mark.django_db
 def test_guest_cannot_read_other_booking(inventory, client):

@@ -2,6 +2,12 @@
 
 > **Implementation checkpoint (October 2026):** This repository now includes an initial full-stack vertical slice, but the remainder of this document is the **target specification**, not a list of implemented features. See [implementation status](docs/IMPLEMENTATION_STATUS.md), [permissions](docs/PERMISSIONS.md), and [decisions](docs/DECISIONS.md). Do not use this checkpoint for real payments or production guest data.
 
+**Current implementation:** Vue 3, TypeScript, Vue Router, TanStack Vue Query, Vite and Tailwind CSS on the frontend; Django/DRF, PostgreSQL, Celery and Redis on the backend. The Vue migration retains the same `/api/v1/` contracts and server-enforced hotel rules.
+
+**Presenting the application?** Follow the step-by-step [live demo guide](docs/DEMO.md) for starting/stopping Podman, staff usernames, OTP retrieval, and the complete booking-to-housekeeping walkthrough.
+
+**Verifying changes?** Use [isolated test setup](docs/TESTING.md) for PostgreSQL integration tests and the automated Playwright guest-to-housekeeping journey. Never run tests against the main Supabase demo database.
+
 ## Run the current checkpoint
 
 Prerequisites: a Supabase PostgreSQL project and Docker Compose, or Fedora's rootless Podman plus `uv` for Compose. Compose starts Redis, the Django app, workers and the frontend; **it does not start a local database**. Local addresses: guest UI at `http://localhost:5173/`, staff/admin login at `http://localhost:5173/staff`, API at `http://localhost:8000/api/v1/`, interactive OpenAPI at `http://localhost:8000/api/docs/`. Visiting the backend root `http://localhost:8000/` redirects to the staff login; the staff interface itself is served by Vite on port 5173, not by Django.
@@ -26,6 +32,8 @@ docker compose logs backend  # read local console verification messages
 **Demo:** Open the guest UI, search dates starting today or later, select a vacant room, review the server quote, enter a fictional guest name and email, and hold the room. Use **Pay balance (simulation)**, choose **Simulate success**, then verify with the booking reference and email. Read the six-digit code in `docker compose logs backend` (never in an API response). For self check-in choose today's arrival date and room 101 or 201; room 102 is dirty, 103 is occupied and 202 is out of service. Check in, submit a request, inspect your folio and check out. Sign in to `/staff` as reception to complete requests and inspect a housekeeping task (housekeeping can mark cleaning and awaiting inspection but cannot approve readiness). The generic QR on the verification page opens the same link; physical keys are collected from reception.
 
 **Fedora without Docker:** Podman is available, but requires a Compose provider. With `uv` installed, run `uvx --from podman-compose podman-compose up --build -d`, then use `uvx --from podman-compose podman-compose exec backend python manage.py migrate` and `uvx --from podman-compose podman-compose exec backend python manage.py seed_demo`. For logs, use `uvx --from podman-compose podman-compose logs backend`; stop with `uvx --from podman-compose podman-compose down` (without `-v`). Alternatively install Docker Engine with Compose. Do not run both stacks simultaneously on the same ports.
+
+**After updating an existing React checkout to Vue:** rebuild the frontend image with `uvx --from podman-compose podman-compose up --build -d --force-recreate frontend`, refresh its anonymous Node dependency volume with `uvx --from podman-compose podman-compose exec frontend npm ci`, then run `uvx --from podman-compose podman-compose restart frontend`. This updates frontend dependencies without changing the Supabase database. Reload the browser afterward. Staff and guest URLs stay the same.
 
 **Verification:** Django's PostgreSQL integration tests create a `test_*` database. **Do not run them against the project's main Supabase connection**; use a separate disposable PostgreSQL test server with database-creation permission. These checks do not create a test database:
 
@@ -145,7 +153,7 @@ The following technologies are proposed project choices. Dependency versions sho
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| Frontend | React + TypeScript | Guest portal and staff dashboard |
+| Frontend | Vue 3 + TypeScript | Guest portal and staff dashboard |
 | Frontend tooling | Vite | Development server and frontend builds |
 | Styling | Tailwind CSS | Responsive interface styling |
 | Backend | Python + Django | Business logic and administration |
