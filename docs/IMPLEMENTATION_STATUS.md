@@ -2,7 +2,7 @@
 
 ## Completed
 
-- Feature branch, Django/DRF/Vite/React/Tailwind foundation and Compose configuration.
+- Feature branch, Django/DRF/Vite/Vue/Tailwind foundation and Compose configuration.
 - Hotel, rooms, server quotes, short-lived holds, half-open PostgreSQL inventory exclusion, payment attempts and locally simulated settlement events, expired-hold release and late-payment conflict exceptions.
 - Session login, role gates on staff operations, guest booking isolation, OTP email verification, transactional stay transitions, service requests, dirty-room checkout and inspection workflow.
 - Basic staff summary, reservations, room board and task/requests screens; guest search, reserve, pay, verify, stay and checkout screens. Backend cancellation of unpaid bookings, maintenance blocks with explicit conflict errors, and summary KPI/CSV endpoints.

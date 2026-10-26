@@ -145,7 +145,7 @@ The following technologies are proposed project choices. Dependency versions sho
 
 | Layer | Technology | Purpose |
 |---|---|---|
-| Frontend | React + TypeScript | Guest portal and staff dashboard |
+| Frontend | Vue 3 + TypeScript | Guest portal and staff dashboard |
 | Frontend tooling | Vite | Development server and frontend builds |
 | Styling | Tailwind CSS | Responsive interface styling |
 | Backend | Python + Django | Business logic and administration |
