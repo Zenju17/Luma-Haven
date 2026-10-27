@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import SiteLayout from '../../layouts/SiteLayout.vue'
+import { useRouter } from 'vue-router'
+import PortalLayout from '../../layouts/PortalLayout.vue'
 import Notice from '../../components/Notice.vue'
 import { api, queryClient } from '../../services/api'
 import { money, type Booking, type GuestRequest, type Room, type StaffUser, type Task } from '../../types'
 
 const user = ref<StaffUser | null>(null)
+const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
@@ -14,14 +16,17 @@ const busy = ref(false)
 
 const identity = useQuery({ queryKey: ['auth', 'me'], queryFn: () => api<StaffUser | { guest_reservation?: number }>('/auth/me') })
 watch(identity.data, current => {
-  if (current && 'username' in current) user.value = current
+  if (current && 'username' in current) {
+    user.value = current
+    if (current.role === 'ADMIN') void router.replace('/admin')
+  }
 }, { immediate: true })
 
 const role = computed(() => user.value?.role)
-const hasStaff = computed(() => Boolean(user.value))
-const canClean = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING'].includes(role.value || ''))
-const canServe = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION'].includes(role.value || ''))
-const canSeeReservations = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'ACCOUNTANT'].includes(role.value || ''))
+const hasStaff = computed(() => Boolean(user.value && user.value.role !== 'ADMIN'))
+const canClean = computed(() => ['MANAGER', 'RECEPTION', 'HOUSEKEEPING'].includes(role.value || ''))
+const canServe = computed(() => ['MANAGER', 'RECEPTION'].includes(role.value || ''))
+const canSeeReservations = computed(() => ['MANAGER', 'RECEPTION', 'ACCOUNTANT'].includes(role.value || ''))
 
 const summary = useQuery({
   queryKey: computed(() => ['summary', role.value]),
@@ -52,6 +57,7 @@ async function signIn() {
     password.value = ''
     queryClient.clear() // Never reuse financial records from another staff role.
     user.value = account
+    if (account.role === 'ADMIN') await router.replace('/admin')
   } catch (caught) {
     error.value = String(caught)
   } finally {
@@ -92,8 +98,9 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 </script>
 
 <template>
-  <SiteLayout>
+  <PortalLayout area="staff">
     <p v-if="identity.isPending.value" role="status">Checking your staff session…</p>
+    <p v-else-if="user?.role === 'ADMIN'" role="status">Opening the administration console…</p>
     <form v-else-if="!user" class="card p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
       <p class="label">Team access</p>
       <h1 class="text-3xl">Staff sign in</h1>
@@ -168,5 +175,5 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         </div>
       </template>
     </div>
-  </SiteLayout>
+  </PortalLayout>
 </template>

@@ -6,7 +6,6 @@
         <nav aria-label="Main navigation" class="flex items-center gap-6 text-sm font-semibold">
           <RouterLink to="/" class="hover:text-[#317e6a]">Find a room</RouterLink>
           <RouterLink to="/verify" class="hover:text-[#317e6a]">My stay</RouterLink>
-          <RouterLink to="/staff" class="hover:text-[#317e6a]">Staff portal</RouterLink>
         </nav>
       </div>
     </header>

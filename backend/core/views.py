@@ -17,7 +17,7 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from . import services
 from .models import (Allocation, Audit, Folio, FolioEntry, Hotel, HousekeepingTask,
-                     OTP, Payment, PaymentAttempt, Quote, Reservation, Room, ServiceRequest, Stay, MaintenanceTicket)
+                     OTP, Payment, PaymentAttempt, Quote, Reservation, Room, ServiceRequest, Stay, MaintenanceTicket, User)
 
 def staff(request, *roles):
     if not request.user.is_authenticated or request.user.role not in roles:
@@ -236,6 +236,25 @@ def staff_reservations(request):
     return Response([detail(r) for r in Reservation.objects.select_related('guest', 'room__type', 'folio').order_by('-created_at')[:100]])
 
 @api_view(['GET'])
+def admin_staff(request):
+    staff(request, 'ADMIN')
+    return Response(list(User.objects.order_by('username').values('id', 'username', 'role', 'is_active', 'date_joined')))
+
+@api_view(['GET'])
+def admin_audit(request):
+    staff(request, 'ADMIN')
+    return Response(list(Audit.objects.order_by('-timestamp', '-pk').values('id', 'actor', 'action', 'target', 'timestamp')[:100]))
+
+@api_view(['GET'])
+def admin_hotel(request):
+    staff(request, 'ADMIN')
+    hotel = Hotel.objects.values('id', 'name', 'email', 'phone', 'timezone', 'currency',
+                                 'check_in_time', 'check_out_time', 'tax_percent', 'deposit_percent').first()
+    if hotel is None:
+        raise ValidationError('Hotel settings have not been configured')
+    return Response(hotel)
+
+@api_view(['GET'])
 def tasks(request):
     staff(request, 'ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING')
     return Response(list(HousekeepingTask.objects.values('id', 'room__number', 'status', 'notes', 'assignee__username')))
@@ -375,7 +394,7 @@ def report(request):
     except (ValueError, AttributeError):
         raise ValidationError('Invalid period')
     values = report_values(start, end)
-    if request.query_params.get('format') == 'csv':
+    if request.query_params.get('export') == 'csv':
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(['metric', 'value'])
@@ -400,6 +419,7 @@ urlpatterns = [
     path('reservations/<int:pk>/check-in', check_in), path('reservations/<int:pk>/check-out', check_out),
     path('reservations/<int:pk>/service-requests', service_requests),
     path('dashboard/summary', dashboard), path('staff/reservations', staff_reservations),
+    path('admin/staff', admin_staff), path('admin/audit', admin_audit), path('admin/hotel', admin_hotel),
     path('housekeeping/tasks', tasks), path('housekeeping/tasks/<int:pk>/transition', transition_task),
     path('staff/service-requests', staff_requests), path('staff/service-requests/<int:pk>/complete', finish_request),
     path('reservations/<int:pk>/cancel', cancel_reservation),

@@ -109,3 +109,44 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
     await staff.close().catch(() => {})
   }
 })
+
+test('guest navigation is public while staff and admin portals enforce separate roles', async ({ page }) => {
+  const { staffPassword } = test.info().config.metadata as { staffPassword: string }
+  await page.goto('/')
+  await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: /staff|admin/i })).toHaveCount(0)
+
+  await signIn(page, 'reception', staffPassword)
+  await page.goto('/admin')
+  await expect(page.getByRole('heading', { name: 'Administrator access required' })).toBeVisible()
+  expect((await page.request.get('http://127.0.0.1:8001/api/v1/admin/staff')).status()).toBe(403)
+  await page.getByRole('link', { name: 'Open staff workspace' }).click()
+  await page.getByRole('button', { name: 'Sign out' }).click()
+  await expect(page.getByRole('heading', { name: 'Staff sign in' })).toBeVisible()
+
+  await page.goto('/admin')
+  await expect(page.getByRole('heading', { name: 'Administrator sign in' })).toBeVisible()
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin')
+  await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await expect(page.getByRole('heading', { name: 'Administration overview' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Staff accounts' }).click()
+  await expect(page.getByRole('row').filter({ hasText: 'admin' })).toContainText('ADMIN')
+  await page.getByRole('button', { name: 'Audit history' }).click()
+  await expect(page.getByRole('heading', { name: 'Audit history' })).toBeVisible()
+  await page.getByRole('button', { name: 'Settings' }).click()
+  await expect(page.getByText('Asia/Phnom_Penh')).toBeVisible()
+  await page.getByRole('button', { name: 'Reports' }).click()
+  await expect(page.getByText('Sold room-nights')).toBeVisible()
+  const csv = await page.request.get(`http://127.0.0.1:8001/api/v1/reports/summary?start=${hotelDate()}&end=${hotelDate(1)}&export=csv`)
+  expect(csv.status()).toBe(200)
+  expect(csv.headers()['content-type']).toContain('text/csv')
+  expect(await csv.text()).toContain('net_room_revenue_minor')
+  const downloadPromise = page.waitForEvent('download')
+  await page.getByRole('link', { name: 'Download CSV' }).click()
+  const download = await downloadPromise
+  expect(download.suggestedFilename()).toBe('hotel-report.csv')
+
+  await page.goto('/staff')
+  await expect(page).toHaveURL(/\/admin$/)
+})
