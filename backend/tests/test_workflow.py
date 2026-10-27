@@ -131,17 +131,19 @@ def test_housekeeping_needs_inspection_after_checkout(inventory, client):
     stay = services.check_out(reservation, reservation.folio.version)
     task = HousekeepingTask.objects.get(stay=stay)
     cleaner = User.objects.create_user(username='cleaner', password='test', role='HOUSEKEEPING')
-    client.force_login(cleaner)
+    assert client.post('/api/v1/auth/login', {'username': cleaner.username, 'password': 'test'},
+        content_type='application/json', HTTP_X_PORTAL='staff').status_code == 200
     for state in ['CLEANING', 'INSPECTION']:
         response = client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
-            {'status': state}, content_type='application/json')
+            {'status': state}, content_type='application/json', HTTP_X_PORTAL='staff')
         assert response.status_code == 200
     assert client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
-        {'status': 'READY'}, content_type='application/json').status_code == 403
+        {'status': 'READY'}, content_type='application/json', HTTP_X_PORTAL='staff').status_code == 403
     receptionist = User.objects.create_user(username='reception', password='test', role='RECEPTION')
-    client.force_login(receptionist)
+    assert client.post('/api/v1/auth/login', {'username': receptionist.username, 'password': 'test'},
+        content_type='application/json', HTTP_X_PORTAL='staff').status_code == 200
     assert client.post(f'/api/v1/housekeeping/tasks/{task.pk}/transition',
-        {'status': 'READY'}, content_type='application/json').status_code == 200
+        {'status': 'READY'}, content_type='application/json', HTTP_X_PORTAL='staff').status_code == 200
     inventory.refresh_from_db()
     assert inventory.cleaning == 'READY'
     assert HousekeepingTask.objects.filter(stay=stay).count() == 1
@@ -156,10 +158,11 @@ def test_guest_cannot_read_other_booking(inventory, client):
 @pytest.mark.django_db
 def test_housekeeping_cannot_read_financial_dashboard(inventory, client):
     user = User.objects.create_user(username='cleaner', password='test', role='HOUSEKEEPING')
-    client.force_login(user)
-    response = client.get('/api/v1/dashboard/summary')
+    assert client.post('/api/v1/auth/login', {'username': user.username, 'password': 'test'},
+        content_type='application/json', HTTP_X_PORTAL='staff').status_code == 200
+    response = client.get('/api/v1/dashboard/summary', HTTP_X_PORTAL='staff')
     assert 'outstanding_minor' not in response.json()
-    assert 'rate_minor' not in client.get('/api/v1/rooms').json()[0]
+    assert 'rate_minor' not in client.get('/api/v1/rooms', HTTP_X_PORTAL='staff').json()[0]
     assert client.get('/api/v1/staff/reservations').status_code == 403
 
 @pytest.mark.django_db

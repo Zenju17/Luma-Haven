@@ -13,7 +13,7 @@ if ENV == 'production' and (len(SECRET_KEY) < 32 or SECRET_KEY == 'local-only-in
 DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true' and ENV != 'production'
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 INSTALLED_APPS = ['django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.postgres', 'rest_framework', 'drf_spectacular', 'corsheaders', 'core']
-MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'corsheaders.middleware.CorsMiddleware', 'django.contrib.sessions.middleware.SessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'core.middleware.StrictCSRFMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'core.middleware.RequestIDMiddleware']
+MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'corsheaders.middleware.CorsMiddleware', 'core.middleware.PortalSessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'core.middleware.StrictCSRFMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'core.middleware.RequestIDMiddleware']
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates',
               'DIRS': [], 'APP_DIRS': True,

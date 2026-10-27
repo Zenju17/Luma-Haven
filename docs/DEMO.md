@@ -47,7 +47,7 @@ uvx --from podman-compose podman-compose exec backend python manage.py changepas
 
 Do not share passwords, OTPs or session cookies in screenshots or presentation slides. `/admin` is the application's Vue administrator console, **not** Django's built-in `/admin/`. The `admin` account signs in at `/admin`; other staff sign in at `/staff`.
 
-**Tip:** keep the guest in a normal browser window and staff in a separate private window. Otherwise staff sign-in/logout can replace the guest's session, requiring the guest to verify again.
+**Tip:** guest, staff and admin now have independent HttpOnly sessions, so the three portals may be open in separate tabs of the same browser. You may still use a private window to keep presentation screenshots and credentials separate. Signing out of `/staff` does not sign out `/admin` or the verified guest session.
 
 ## 3. Prepare a repeatable demo
 

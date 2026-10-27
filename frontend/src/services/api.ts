@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/vue-query'
 
 const base = '/api/v1'
+type Portal = 'guest' | 'staff' | 'admin'
 export const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
 function errorMessage(value: unknown): string | null {
@@ -14,12 +15,12 @@ function errorMessage(value: unknown): string | null {
   return null
 }
 
-export async function api<T>(path: string, data?: unknown): Promise<T> {
+export async function api<T>(path: string, data?: unknown, portal: Portal = 'guest'): Promise<T> {
   const isWrite = data !== undefined
-  const headers: Record<string, string> = {}
+  const headers: Record<string, string> = { 'X-Portal': portal }
   if (isWrite) {
     // Django rotates its CSRF token on staff login. Never cache it across sessions.
-    const csrfResponse = await fetch(`${base}/auth/csrf`, { credentials: 'include' })
+    const csrfResponse = await fetch(`${base}/auth/csrf`, { credentials: 'include', headers: { 'X-Portal': portal } })
     if (!csrfResponse.ok) throw new Error('Unable to initialize your session. Refresh and retry.')
     const { csrfToken } = await csrfResponse.json() as { csrfToken: string }
     headers['Content-Type'] = 'application/json'
@@ -37,3 +38,6 @@ export async function api<T>(path: string, data?: unknown): Promise<T> {
   }
   return value as T
 }
+
+export const staffApi = <T>(path: string, data?: unknown) => api<T>(path, data, 'staff')
+export const adminApi = <T>(path: string, data?: unknown) => api<T>(path, data, 'admin')

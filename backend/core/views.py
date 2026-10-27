@@ -20,14 +20,14 @@ from .models import (Allocation, Audit, Folio, FolioEntry, Hotel, HousekeepingTa
                      OTP, Payment, PaymentAttempt, Quote, Reservation, Room, ServiceRequest, Stay, MaintenanceTicket, User)
 
 def staff(request, *roles):
-    if not request.user.is_authenticated or request.user.role not in roles:
+    if request.portal not in ('staff', 'admin') or not request.user.is_authenticated or request.user.role not in roles:
         raise PermissionDenied('Staff permission required')
 
 def booking(request, pk):
     obj = Reservation.objects.select_related('guest', 'room__type', 'folio').filter(pk=pk).first()
     if not obj:
         raise ValidationError('Reservation not found')
-    if request.user.is_authenticated and request.user.role in ('ADMIN', 'MANAGER', 'RECEPTION', 'ACCOUNTANT'):
+    if request.portal in ('staff', 'admin') and request.user.is_authenticated and request.user.role in ('ADMIN', 'MANAGER', 'RECEPTION', 'ACCOUNTANT'):
         return obj
     if request.session.get('guest_reservation') == obj.pk:
         return obj
@@ -52,20 +52,28 @@ def csrf(request):
 
 @api_view(['POST'])
 def staff_login(request):
+    if request.portal not in ('staff', 'admin'):
+        raise PermissionDenied('Sign in through the staff or administrator portal')
     user = authenticate(request, username=request.data.get('username', ''), password=request.data.get('password', ''))
     if not user or not user.is_active:
         raise ValidationError('Invalid credentials')
+    if request.portal == 'admin' and user.role != 'ADMIN':
+        raise PermissionDenied('Administrator account required')
     login(request, user)
     return Response({'username': user.username, 'role': user.role})
 
 @api_view(['POST'])
 def staff_logout(request):
+    if request.portal not in ('staff', 'admin'):
+        raise PermissionDenied('Use your staff or administrator session to sign out')
     logout(request)
     return Response({'ok': True})
 
 @api_view(['GET'])
 def me(request):
-    return Response({'username': request.user.username, 'role': request.user.role} if request.user.is_authenticated else {'guest_reservation': request.session.get('guest_reservation')})
+    if request.portal == 'guest':
+        return Response({'guest_reservation': request.session.get('guest_reservation')})
+    return Response({'username': request.user.username, 'role': request.user.role} if request.user.is_authenticated else {})
 
 @api_view(['GET'])
 def rooms(request):
@@ -424,5 +432,5 @@ urlpatterns = [
     path('staff/service-requests', staff_requests), path('staff/service-requests/<int:pk>/complete', finish_request),
     path('reservations/<int:pk>/cancel', cancel_reservation),
     path('maintenance/tickets', maintenance), path('maintenance/tickets/<int:pk>/resolve', resolve_maintenance),
-    path('reports/summary', report),
+    path('reports/summary', report), path('staff/reports/summary', report), path('admin/reports/summary', report),
 ]

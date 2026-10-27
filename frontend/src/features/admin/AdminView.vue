@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import Notice from '../../components/Notice.vue'
-import { api, queryClient } from '../../services/api'
+import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
 
 interface TeamMember { id: number; username: string; role: string; is_active: boolean; date_joined: string }
@@ -29,7 +28,6 @@ function businessDate(timezone: string, offset = 0) {
   return result.toISOString().slice(0, 10)
 }
 
-const router = useRouter()
 const user = ref<StaffUser | null>(null)
 const username = ref('')
 const password = ref('')
@@ -42,44 +40,43 @@ const sections = [
   { id: 'reports', label: 'Reports' },
 ] as const
 
-const identity = useQuery({ queryKey: ['auth', 'me'], queryFn: () => api<StaffUser | { guest_reservation?: number }>('/auth/me') })
+const identity = useQuery({ queryKey: ['auth', 'me', 'admin'], queryFn: () => adminApi<StaffUser>('/auth/me') })
 watch(identity.data, current => {
   if (current && 'username' in current) user.value = current
 }, { immediate: true })
 const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
 const summary = useQuery({
-  queryKey: ['admin', 'summary'], queryFn: () => api<Record<string, number>>('/dashboard/summary'), enabled: isAdmin,
+  queryKey: ['admin', 'summary'], queryFn: () => adminApi<Record<string, number>>('/dashboard/summary'), enabled: isAdmin,
 })
 const team = useQuery({
-  queryKey: ['admin', 'team'], queryFn: () => api<TeamMember[]>('/admin/staff'),
+  queryKey: ['admin', 'team'], queryFn: () => adminApi<TeamMember[]>('/admin/staff'),
   enabled: computed(() => isAdmin.value && section.value === 'team'),
 })
 const audit = useQuery({
-  queryKey: ['admin', 'audit'], queryFn: () => api<AuditEntry[]>('/admin/audit'),
+  queryKey: ['admin', 'audit'], queryFn: () => adminApi<AuditEntry[]>('/admin/audit'),
   enabled: computed(() => isAdmin.value && section.value === 'audit'),
 })
 const hotel = useQuery({
-  queryKey: ['admin', 'hotel'], queryFn: () => api<HotelSettings>('/admin/hotel'), enabled: isAdmin,
+  queryKey: ['admin', 'hotel'], queryFn: () => adminApi<HotelSettings>('/admin/hotel'), enabled: isAdmin,
 })
 const start = ref(businessDate('Asia/Phnom_Penh'))
 const end = ref(businessDate('Asia/Phnom_Penh', 1))
 const report = useQuery({
   queryKey: computed(() => ['admin', 'report', start.value, end.value]),
-  queryFn: () => api<Report>(`/reports/summary?start=${start.value}&end=${end.value}`),
+  queryFn: () => adminApi<Report>(`/admin/reports/summary?start=${start.value}&end=${end.value}`),
   enabled: computed(() => isAdmin.value && section.value === 'reports' && Boolean(start.value && end.value)),
 })
-const csvUrl = computed(() => `/api/v1/reports/summary?start=${start.value}&end=${end.value}&export=csv`)
+const csvUrl = computed(() => `/api/v1/admin/reports/summary?start=${start.value}&end=${end.value}&export=csv`)
 
 async function signIn() {
   error.value = ''
   busy.value = true
   try {
-    const account = await api<StaffUser>('/auth/login', { username: username.value, password: password.value })
+    const account = await adminApi<StaffUser>('/auth/login', { username: username.value, password: password.value })
     password.value = ''
     queryClient.clear()
     user.value = account
-    if (account.role !== 'ADMIN') await router.replace('/staff')
   } catch (caught) {
     error.value = String(caught)
   } finally {
@@ -91,7 +88,7 @@ async function signOut() {
   error.value = ''
   busy.value = true
   try {
-    await api('/auth/logout', {})
+    await adminApi('/auth/logout', {})
     user.value = null
     queryClient.clear()
   } catch (caught) {

@@ -16,11 +16,15 @@ def test_admin_endpoints_restrict_staff_and_guests(client):
     for url in endpoints:
         assert client.get(url).status_code == 403
     for user in [staff, manager]:
-        client.force_login(user)
+        assert client.post('/api/v1/auth/login', {'username': user.username, 'password': 'test-only'},
+            content_type='application/json', HTTP_X_PORTAL='staff').status_code == 200
         for url in endpoints:
             assert client.get(url).status_code == 403
 
-    client.force_login(admin)
+    assert client.post('/api/v1/auth/login', {'username': staff.username, 'password': 'test-only'},
+        content_type='application/json', HTTP_X_PORTAL='admin').status_code == 403
+    assert client.post('/api/v1/auth/login', {'username': admin.username, 'password': 'test-only'},
+        content_type='application/json', HTTP_X_PORTAL='admin').status_code == 200
     for url in endpoints:
         assert client.get(url).status_code == 200
     team = client.get('/api/v1/admin/staff').json()
@@ -28,7 +32,7 @@ def test_admin_endpoints_restrict_staff_and_guests(client):
     assert all('password' not in member and 'email' not in member for member in team)
     assert client.get('/api/v1/admin/audit').json()[0]['action'] == 'ROOM_INSPECTED'
     assert client.get('/api/v1/admin/hotel').json()['name'] == 'Fictional Hotel'
-    csv = client.get('/api/v1/reports/summary?export=csv')
+    csv = client.get('/api/v1/admin/reports/summary?export=csv')
     assert csv.status_code == 200
     assert csv['Content-Type'].startswith('text/csv')
     assert b'net_room_revenue_minor' in csv.content

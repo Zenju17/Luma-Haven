@@ -1,63 +1,57 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
-import { useRouter } from 'vue-router'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import Notice from '../../components/Notice.vue'
-import { api, queryClient } from '../../services/api'
+import { staffApi, queryClient } from '../../services/api'
 import { money, type Booking, type GuestRequest, type Room, type StaffUser, type Task } from '../../types'
 
 const user = ref<StaffUser | null>(null)
-const router = useRouter()
 const username = ref('')
 const password = ref('')
 const error = ref('')
 const busy = ref(false)
 
-const identity = useQuery({ queryKey: ['auth', 'me'], queryFn: () => api<StaffUser | { guest_reservation?: number }>('/auth/me') })
+const identity = useQuery({ queryKey: ['auth', 'me', 'staff'], queryFn: () => staffApi<StaffUser>('/auth/me') })
 watch(identity.data, current => {
-  if (current && 'username' in current) {
-    user.value = current
-    if (current.role === 'ADMIN') void router.replace('/admin')
-  }
+  if (current && 'username' in current) user.value = current
 }, { immediate: true })
 
 const role = computed(() => user.value?.role)
-const hasStaff = computed(() => Boolean(user.value && user.value.role !== 'ADMIN'))
-const canClean = computed(() => ['MANAGER', 'RECEPTION', 'HOUSEKEEPING'].includes(role.value || ''))
-const canServe = computed(() => ['MANAGER', 'RECEPTION'].includes(role.value || ''))
-const canSeeReservations = computed(() => ['MANAGER', 'RECEPTION', 'ACCOUNTANT'].includes(role.value || ''))
+const hasStaff = computed(() => Boolean(user.value))
+const canClean = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING'].includes(role.value || ''))
+const canServe = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION'].includes(role.value || ''))
+const canSeeReservations = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'ACCOUNTANT'].includes(role.value || ''))
 
 const summary = useQuery({
   queryKey: computed(() => ['summary', role.value]),
-  queryFn: () => api<Record<string, number>>('/dashboard/summary'), enabled: hasStaff,
+  queryFn: () => staffApi<Record<string, number>>('/dashboard/summary'), enabled: hasStaff,
 })
 const rooms = useQuery({
   queryKey: computed(() => ['rooms', role.value]),
-  queryFn: () => api<Room[]>('/rooms'), enabled: hasStaff,
+  queryFn: () => staffApi<Room[]>('/rooms'), enabled: hasStaff,
 })
 const tasks = useQuery({
   queryKey: computed(() => ['tasks', role.value]),
-  queryFn: () => api<Task[]>('/housekeeping/tasks'), enabled: canClean,
+  queryFn: () => staffApi<Task[]>('/housekeeping/tasks'), enabled: canClean,
 })
 const requests = useQuery({
   queryKey: computed(() => ['requests', role.value]),
-  queryFn: () => api<GuestRequest[]>('/staff/service-requests'), enabled: canServe,
+  queryFn: () => staffApi<GuestRequest[]>('/staff/service-requests'), enabled: canServe,
 })
 const reservations = useQuery({
   queryKey: computed(() => ['staff-reservations', role.value]),
-  queryFn: () => api<Booking[]>('/staff/reservations'), enabled: canSeeReservations,
+  queryFn: () => staffApi<Booking[]>('/staff/reservations'), enabled: canSeeReservations,
 })
 
 async function signIn() {
   error.value = ''
   busy.value = true
   try {
-    const account = await api<StaffUser>('/auth/login', { username: username.value, password: password.value })
+    const account = await staffApi<StaffUser>('/auth/login', { username: username.value, password: password.value })
     password.value = ''
     queryClient.clear() // Never reuse financial records from another staff role.
     user.value = account
-    if (account.role === 'ADMIN') await router.replace('/admin')
   } catch (caught) {
     error.value = String(caught)
   } finally {
@@ -68,7 +62,7 @@ async function signIn() {
 async function signOut() {
   error.value = ''
   try {
-    await api('/auth/logout', {})
+    await staffApi('/auth/logout', {})
     user.value = null
     queryClient.clear()
   } catch (caught) {
@@ -100,7 +94,6 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 <template>
   <PortalLayout area="staff">
     <p v-if="identity.isPending.value" role="status">Checking your staff session…</p>
-    <p v-else-if="user?.role === 'ADMIN'" role="status">Opening the administration console…</p>
     <form v-else-if="!user" class="card p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
       <p class="label">Team access</p>
       <h1 class="text-3xl">Staff sign in</h1>
@@ -141,7 +134,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div class="space-y-3">
           <div v-for="task in tasks.data.value" :key="task.id" class="card p-4 flex items-center justify-between">
             <span>Room {{ task.room__number }} · {{ task.status }}</span>
-            <button v-if="task.status !== 'READY' && !(task.status === 'INSPECTION' && role === 'HOUSEKEEPING')" class="btn-secondary" :disabled="busy" @click="act(() => api(`/housekeeping/tasks/${task.id}/transition`, { status: nextStep[task.status] }))">Next step →</button>
+            <button v-if="task.status !== 'READY' && !(task.status === 'INSPECTION' && role === 'HOUSEKEEPING')" class="btn-secondary" :disabled="busy" @click="act(() => staffApi(`/housekeeping/tasks/${task.id}/transition`, { status: nextStep[task.status] }))">Next step →</button>
           </div>
         </div>
       </template>
@@ -153,7 +146,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div class="space-y-3">
           <div v-for="request in requests.data.value" :key="request.id" class="card p-4 flex justify-between">
             <span>{{ request.type }} · {{ request.description }} · {{ request.status }}</span>
-            <button v-if="request.status !== 'COMPLETED'" class="btn-secondary" :disabled="busy" @click="act(() => api(`/staff/service-requests/${request.id}/complete`, {}))">Complete</button>
+            <button v-if="request.status !== 'COMPLETED'" class="btn-secondary" :disabled="busy" @click="act(() => staffApi(`/staff/service-requests/${request.id}/complete`, {}))">Complete</button>
           </div>
         </div>
       </template>
