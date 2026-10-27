@@ -47,6 +47,11 @@ Additional business rules, dedicated payment adapter boundaries, reporting, secu
 
 ## Next concrete steps
 
+### Pending after GitHub sync
+
+- [ ] Connect the **new** Supabase project using its private Session pooler URI in the ignored `.env` file; do not copy credentials into documentation or Git. Disable the new project's Data API, recreate backend/worker/beat with the new environment, confirm connectivity with `manage.py migrate --plan`, then apply migrations. Seed only synthetic demo data on the new empty project and change each staff account password interactively. The old project's bookings are not transferred by changing the URI.
+- [ ] Review the newer `origin/main` database-integrity commit (`3915fba`) before integrating it into `feat/hotel-management-system`. The branches diverged and their Vue frontend changes overlap; a simple fast-forward pull cannot merge them safely.
+
 1. Add login/OTP throttling and scoped short-lived guest access tokens; test replay and authorization across portals.
 2. Complete payment event authenticity, durable retry handling, refund approvals and transactional limits before considering any real provider.
 3. Implement reservation amendments, cancellation/no-show and maintenance conflict workflows using the existing PostgreSQL allocation constraints.
