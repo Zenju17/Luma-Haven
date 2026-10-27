@@ -1,0 +1,5 @@
+# Database security
+
+The current global staff role does not establish property access. The new membership tables do not change authorization. Before multi-property use, define explicit organization/property role-to-permission mappings for reservations, guests, payments, refunds, adjustments, housekeeping, maintenance, reports, settings, staff, audit and export; enforce in every API and service, deny disabled users, test cross-property access and record authorization failures. Separate finance, service and administrator duties.
+
+Inventory public schema grants and Supabase Data API exposure urgently. Restrict credentials and use TLS, a least-privilege runtime database role and a separate migration role; use a secret manager, rotation, production access reviews and environment separation. Existing documentation records an earlier database password exposure: rotate if not already done. Never put connection strings, tokens, OTPs or payment secrets in logs or version control. Payment processing currently is a development emulator, not production payment infrastructure.

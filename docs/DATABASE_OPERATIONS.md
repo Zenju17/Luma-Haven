@@ -1,0 +1,5 @@
+# Database operations
+
+Verify backup coverage, encryption, retention and restore access in Supabase for the actual plan; do not assume PITR is enabled. Set alert owners and thresholds for storage growth, available connections/pool saturation, slow queries, locks, deadlocks, replication/backup health, outbox backlog, expired holds, failed jobs and audit growth. Measure baseline and capacity before choosing thresholds. Track schema changes, query plans, load and retention; isolate development, staging and production. Rotate credentials through a secret manager, restrict production access, audit privileged operations, and test restore and disaster response regularly.
+
+Run migrations from a controlled release with a tested backup and preflight, never seed production blindly. Existing outbox delivery has no adapter: pending rows must not be interpreted as sent. The prepared code stops the previous task from marking undelivered events delivered; it does not implement retries or delivery. Define idempotent adapter, locked claims, retry/backoff and dead-letter monitoring before enabling it.
