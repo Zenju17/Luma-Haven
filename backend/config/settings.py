@@ -4,6 +4,7 @@ from urllib.parse import parse_qs, urlsplit
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+STAFF_CREDENTIALS_FILE = Path(os.getenv('STAFF_CREDENTIALS_FILE', str(BASE_DIR / '.private-staff-passwords')))
 ENV = os.getenv('APP_ENV', 'development')
 if ENV == 'production' and os.getenv('PAYMENT_PROVIDER', 'development') == 'development':
     raise RuntimeError('Development payment provider is forbidden in production')
@@ -32,6 +33,12 @@ if parsed_database.hostname and (parsed_database.hostname.endswith('.supabase.co
         raise RuntimeError('Use the direct or session-mode port 5432; transaction pooling is not supported here')
 DATABASES = {'default': dj_database_url.parse(database_url, conn_max_age=60)}
 AUTH_USER_MODEL = 'core.User'
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 12}},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
 USE_TZ = True
 TIME_ZONE = 'Asia/Phnom_Penh'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

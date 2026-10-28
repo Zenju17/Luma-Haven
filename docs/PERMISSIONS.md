@@ -13,8 +13,11 @@
 | Reports and CSV | Yes | Yes | No | No | Yes | No |
 | Complete guest requests | Yes | Yes | Yes | No | No | No |
 | Admin staff roster, audit history and hotel settings (read-only) | Yes | No | No | No | No | No |
+| Change another staff account password (development only) | Yes | No | No | No | No | No |
 
 The guest site at `/` has no staff/admin navigation. `/staff` is the operational staff workspace, and `/admin` is an administrator-only console backed by `/api/v1/admin/staff`, `/api/v1/admin/audit`, and `/api/v1/admin/hotel`. Non-admin requests to these API endpoints receive HTTP 403 even when the private URL is entered directly. Administrator credentials can also be used to **separately sign in** to the staff workspace, without reusing or ending the administrator session.
+
+`POST /api/v1/admin/staff/{id}/password` is permitted only to an administrator signed in via the admin portal, and cannot change that administrator's own password. In development it updates the target's hashed Django password and an ignored owner-only local credentials file, then writes a password-free audit entry. The endpoint is unavailable outside development. Existing sessions for the changed user are invalidated by Django's session authentication hash.
 
 Guest, staff and administrator sessions are stored by Django under **different HttpOnly cookies** (`sessionid`, `staff_sessionid`, `admin_sessionid`). An `X-Portal` request header selects the appropriate cookie for shared API routes; `/api/v1/admin/*` and `/api/v1/staff/*` always select their corresponding cookie regardless of that header. The header grants no permissions. Staff and administrator cookies are scoped to `/api/v1/`, and logging out deletes only that portal's cookie and server-side session. An old staff login held in a guest `sessionid` no longer confers staff permissions.
 

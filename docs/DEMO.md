@@ -45,6 +45,10 @@ The initial seed generates one password for **newly created** accounts and print
 uvx --from podman-compose podman-compose exec backend python manage.py changepassword USERNAME
 ```
 
+If an administrator has rotated all staff passwords with `reset_staff_passwords`, each account has a distinct password. The owner-only, Git-ignored `backend/.private-staff-passwords` file on the local machine contains those newly generated credentials until they are transferred to a password manager and deleted; do not copy the file into the repository history or presentation materials.
+
+Administrators can change another staff account's password in `/admin` → **Staff accounts** → **Change password**. It changes both the database hash and the private local credentials file. Only use a synthetic account during a demo, never show or read a password in screenshots, and transfer then remove the private file when done. Staff cannot use this administrator-only control.
+
 Do not share passwords, OTPs or session cookies in screenshots or presentation slides. `/admin` is the application's Vue administrator console, **not** Django's built-in `/admin/`. The `admin` account signs in at `/admin`; other staff sign in at `/staff`.
 
 **Tip:** guest, staff and admin now have independent HttpOnly sessions, so the three portals may be open in separate tabs of the same browser. You may still use a private window to keep presentation screenshots and credentials separate. Signing out of `/staff` does not sign out `/admin` or the verified guest session.

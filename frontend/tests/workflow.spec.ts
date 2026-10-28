@@ -111,7 +111,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
 })
 
 test('guest navigation is public while staff and admin portals enforce separate roles', async ({ page }) => {
-  const { staffPassword } = test.info().config.metadata as { staffPassword: string }
+  const { staffPassword, mailDir } = test.info().config.metadata as { staffPassword: string; mailDir: string }
   await page.goto('/')
   await expect(page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: /staff|admin/i })).toHaveCount(0)
 
@@ -126,7 +126,24 @@ test('guest navigation is public while staff and admin portals enforce separate 
 
   await page.getByRole('button', { name: 'Staff accounts' }).click()
   await expect(page.getByRole('row').filter({ hasText: 'admin' })).toContainText('ADMIN')
+  const changedPassword = `Playwright-Staff-${randomBytes(10).toString('hex')}`
+  await page.getByRole('row').filter({ hasText: 'accountant' }).getByRole('button', { name: 'Change password' }).click()
+  const passwordDialog = page.getByRole('dialog', { name: 'Change staff password' })
+  await passwordDialog.getByLabel('New password', { exact: true }).fill(changedPassword)
+  await passwordDialog.getByLabel('Confirm new password').fill(changedPassword)
+  await passwordDialog.getByRole('button', { name: 'Save password' }).click()
+  await expect(page.getByText('Password changed for accountant. The private local credentials file was updated.')).toBeVisible()
+  expect(readFileSync(join(mailDir, 'staff-credentials'), 'utf8')).toContain(`accountant\t${changedPassword}`)
+
+  const changedStaff = await page.context().browser()!.newContext()
+  try {
+    const staffPage = await changedStaff.newPage()
+    await signIn(staffPage, 'accountant', changedPassword)
+  } finally {
+    await changedStaff.close()
+  }
   await page.getByRole('button', { name: 'Audit history' }).click()
+  await expect(page.getByText('STAFF_PASSWORD_CHANGED')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Audit history' })).toBeVisible()
   await page.getByRole('button', { name: 'Settings' }).click()
   await expect(page.getByText('Asia/Phnom_Penh')).toBeVisible()

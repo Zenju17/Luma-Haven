@@ -10,5 +10,6 @@ frontend/dist/
 backend/db.sqlite3
 *.log
 backend/celerybeat-schedule*
+backend/.private-staff-passwords*
 frontend/playwright-report/
 frontend/test-results/

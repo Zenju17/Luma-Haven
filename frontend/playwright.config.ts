@@ -52,6 +52,7 @@ export default defineConfig({
         APP_ENV: 'development',
         NOTIFICATION_MODE: 'file',
         EMAIL_FILE_PATH: process.env.E2E_MAIL_DIR,
+        STAFF_CREDENTIALS_FILE: join(process.env.E2E_MAIL_DIR!, 'staff-credentials'),
       },
     },
     {

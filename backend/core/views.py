@@ -13,9 +13,9 @@ from django.urls import path
 from django.utils import timezone
 from django.db.models import Sum
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
-from . import services
+from . import services, staff_passwords
 from .models import (Allocation, Audit, Folio, FolioEntry, Hotel, HousekeepingTask,
                      OTP, Payment, PaymentAttempt, Quote, Reservation, Room, ServiceRequest, Stay, MaintenanceTicket, User)
 
@@ -248,6 +248,22 @@ def admin_staff(request):
     staff(request, 'ADMIN')
     return Response(list(User.objects.order_by('username').values('id', 'username', 'role', 'is_active', 'date_joined')))
 
+@api_view(['POST'])
+def admin_change_password(request, pk):
+    staff(request, 'ADMIN')
+    if request.portal != 'admin':
+        raise PermissionDenied('Use the administrator portal to change staff passwords')
+    password = request.data.get('new_password')
+    if password != request.data.get('confirm_password'):
+        raise ValidationError({'confirm_password': 'Passwords do not match.'})
+    try:
+        staff_passwords.change_password(request.user, pk, password)
+    except User.DoesNotExist as exc:
+        raise NotFound('Staff account not found') from exc
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from exc
+    return Response({'status': 'updated'})
+
 @api_view(['GET'])
 def admin_audit(request):
     staff(request, 'ADMIN')
@@ -427,7 +443,8 @@ urlpatterns = [
     path('reservations/<int:pk>/check-in', check_in), path('reservations/<int:pk>/check-out', check_out),
     path('reservations/<int:pk>/service-requests', service_requests),
     path('dashboard/summary', dashboard), path('staff/reservations', staff_reservations),
-    path('admin/staff', admin_staff), path('admin/audit', admin_audit), path('admin/hotel', admin_hotel),
+    path('admin/staff', admin_staff), path('admin/staff/<int:pk>/password', admin_change_password),
+    path('admin/audit', admin_audit), path('admin/hotel', admin_hotel),
     path('housekeeping/tasks', tasks), path('housekeeping/tasks/<int:pk>/transition', transition_task),
     path('staff/service-requests', staff_requests), path('staff/service-requests/<int:pk>/complete', finish_request),
     path('reservations/<int:pk>/cancel', cancel_reservation),

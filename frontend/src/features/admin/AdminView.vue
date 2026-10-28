@@ -33,6 +33,12 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const busy = ref(false)
+const editingUser = ref<TeamMember | null>(null)
+const newPassword = ref('')
+const confirmPassword = ref('')
+const passwordError = ref('')
+const passwordSuccess = ref('')
+const passwordBusy = ref(false)
 const section = ref<'overview' | 'team' | 'audit' | 'settings' | 'reports'>('overview')
 const sections = [
   { id: 'overview', label: 'Overview' }, { id: 'team', label: 'Staff accounts' },
@@ -97,6 +103,45 @@ async function signOut() {
     busy.value = false
   }
 }
+
+function openPasswordForm(member: TeamMember) {
+  editingUser.value = member
+  newPassword.value = ''
+  confirmPassword.value = ''
+  passwordError.value = ''
+  passwordSuccess.value = ''
+}
+
+function closePasswordForm() {
+  editingUser.value = null
+  newPassword.value = ''
+  confirmPassword.value = ''
+  passwordError.value = ''
+}
+
+async function changeStaffPassword() {
+  if (!editingUser.value || passwordBusy.value) return
+  passwordError.value = ''
+  if (newPassword.value.length < 12 || newPassword.value !== confirmPassword.value) {
+    passwordError.value = 'Enter matching passwords of at least 12 characters.'
+    return
+  }
+  passwordBusy.value = true
+  const target = editingUser.value
+  try {
+    await adminApi(`/admin/staff/${target.id}/password`, {
+      new_password: newPassword.value,
+      confirm_password: confirmPassword.value,
+    })
+    closePasswordForm()
+    passwordSuccess.value = `Password changed for ${target.username}. The private local credentials file was updated.`
+    await audit.refetch()
+  } catch (caught) {
+    passwordError.value = String(caught)
+  } finally {
+    passwordBusy.value = false
+  }
+}
 </script>
 
 <template>
@@ -139,14 +184,27 @@ async function signOut() {
 
       <section v-else-if="section === 'team'" aria-label="Staff accounts">
         <h2 class="text-2xl mt-8 mb-4">Staff accounts</h2>
+        <Notice :message="passwordSuccess" status />
         <p v-if="team.isPending.value" role="status">Loading staff accounts…</p>
         <Notice :message="team.error.value ? String(team.error.value) : ''" />
         <p v-if="team.data.value?.length === 0">No staff accounts configured.</p>
         <div v-else-if="team.data.value" class="card overflow-auto">
           <table class="w-full text-left text-sm">
-            <thead class="bg-[#eaf2eb]"><tr><th class="p-4">Username</th><th class="p-4">Role</th><th class="p-4">Status</th></tr></thead>
-            <tbody><tr v-for="member in team.data.value" :key="member.id" class="border-t"><td class="p-4">{{ member.username }}</td><td class="p-4">{{ member.role }}</td><td class="p-4">{{ member.is_active ? 'Active' : 'Inactive' }}</td></tr></tbody>
+            <thead class="bg-[#eaf2eb]"><tr><th class="p-4">Username</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4">Action</th></tr></thead>
+            <tbody><tr v-for="member in team.data.value" :key="member.id" class="border-t"><td class="p-4">{{ member.username }}</td><td class="p-4">{{ member.role }}</td><td class="p-4">{{ member.is_active ? 'Active' : 'Inactive' }}</td><td class="p-4"><button v-if="member.username !== user?.username" class="btn-secondary" @click="openPasswordForm(member)">Change password</button><span v-else>Use changepassword for your account</span></td></tr></tbody>
           </table>
+        </div>
+        <div v-if="editingUser" class="fixed inset-0 z-10 bg-[#0c2b26aa] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Change staff password" @click.self="closePasswordForm">
+          <form class="card p-8 w-full max-w-lg" @submit.prevent="changeStaffPassword">
+            <button type="button" class="float-right" aria-label="Close" @click="closePasswordForm">✕</button>
+            <p class="label">Administrator action</p>
+            <h3 class="text-2xl">Change password for {{ editingUser.username }}</h3>
+            <p class="mt-3 text-sm text-[#6d8075]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
+            <label class="block mt-5"><span class="label">New password</span><input v-model="newPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+            <label class="block mt-4"><span class="label">Confirm new password</span><input v-model="confirmPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+            <Notice :message="passwordError" />
+            <button class="btn w-full mt-6" :disabled="passwordBusy || newPassword.length < 12 || newPassword !== confirmPassword">{{ passwordBusy ? 'Saving…' : 'Save password' }}</button>
+          </form>
         </div>
       </section>
 
