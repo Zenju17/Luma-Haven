@@ -1,16 +1,34 @@
 <script setup lang="ts">
+import ThemeToggle from '../components/ThemeToggle.vue'
+
 defineProps<{ area: 'staff' | 'admin' }>()
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col bg-[#f4f7f5]">
-    <header class="bg-[#123e35] text-white">
-      <div class="max-w-6xl mx-auto px-5 min-h-20 flex items-center justify-between gap-4">
-        <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="serif text-2xl font-semibold">Luma Haven<span class="text-[#d7b683]">.</span></RouterLink>
-        <span class="text-xs uppercase tracking-[.2em] text-[#c0d7c9]">{{ area === 'admin' ? 'Administration console' : 'Staff operations' }}</span>
+  <div class="portal-shell">
+    <aside class="portal-rail" aria-label="Private workspace identity">
+      <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="brand-mark serif text-2xl font-semibold">Luma Haven<span class="text-[#d7b683]">.</span></RouterLink>
+      <div class="portal-rail-rule" aria-hidden="true" />
+      <p class="portal-rail-title">{{ area === 'admin' ? 'The hotel, at a glance.' : 'A clearer day at the desk.' }}</p>
+      <p class="portal-rail-note mt-5">{{ area === 'admin' ? 'People, performance and the decisions behind every stay.' : 'Arrivals, rooms and requests in one working view.' }}</p>
+      <div class="portal-rail-bottom">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <span>{{ area === 'admin' ? 'Administration console' : 'Staff operations' }}</span>
+          <ThemeToggle />
+        </div>
+        Luma Haven
       </div>
-    </header>
-    <main class="max-w-6xl mx-auto px-5 py-10 w-full grow"><slot /></main>
-    <footer class="border-t border-[#dfe7df] p-6 text-center text-xs text-[#738279]">Private hotel workspace · Luma Haven</footer>
+    </aside>
+    <div class="portal-stage">
+      <header class="portal-mobile-header">
+        <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="serif text-xl">Luma Haven<span class="text-[#d7b683]">.</span></RouterLink>
+        <div class="flex items-center gap-3">
+          <span class="text-xs">{{ area === 'admin' ? 'Administration' : 'Staff operations' }}</span>
+          <ThemeToggle />
+        </div>
+      </header>
+      <main><slot /></main>
+      <footer class="portal-footer p-6 text-center text-xs">Private hotel workspace · Luma Haven</footer>
+    </div>
   </div>
 </template>

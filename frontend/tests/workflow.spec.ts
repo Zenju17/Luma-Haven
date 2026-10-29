@@ -25,21 +25,22 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
   const { mailDir, staffPassword } = test.info().config.metadata as { mailDir: string; staffPassword: string }
   const email = `visitor-${randomBytes(6).toString('hex')}@example.test`
   await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'A room to come back to.' })).toBeVisible()
   await page.getByLabel('Arrival').fill(hotelDate())
   await page.getByLabel('Departure').fill(hotelDate(1))
   await page.getByLabel('Guests').fill('1')
-  await page.getByRole('button', { name: 'Search rooms →' }).click()
+  await page.getByRole('button', { name: 'Search rooms' }).click()
   const room = page.getByRole('article').filter({ hasText: 'Room 101' })
   await expect(room).toBeVisible()
-  await room.getByRole('button', { name: 'Select →' }).click()
+  await room.getByRole('button', { name: 'View quote' }).click()
   await page.getByLabel('Full name').fill('Playwright Demo Guest')
   await page.getByLabel('Email for verification').fill(email)
-  await page.getByRole('button', { name: 'Hold this room →' }).click()
+  await page.getByRole('button', { name: 'Hold this room' }).click()
   await expect(page).toHaveURL(/\/booking\/\d+$/)
   const bookingId = Number(page.url().match(/booking\/(\d+)/)?.[1])
   const reference = (await page.getByText(/Booking [A-F0-9]{16}/).textContent())!.match(/[A-F0-9]{16}/)![0]
   await page.getByRole('button', { name: /Pay balance \(simulation\)/ }).click()
-  await expect(page.getByText(/DEVELOPMENT SIMULATION/)).toBeVisible()
+  await expect(page.getByText(/Simulated payment · development only/)).toBeVisible()
   await page.getByRole('button', { name: 'Simulate success' }).click()
   await expect(page.getByText('CONFIRMED', { exact: true })).toBeVisible()
 
@@ -80,7 +81,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
     await page.reload()
     await expect(page.getByText('COMPLETED', { exact: true })).toBeVisible()
     await expect(page.getByText('Balance $0.00')).toBeVisible()
-    await page.getByRole('button', { name: 'Check out →' }).click()
+    await page.getByRole('button', { name: 'Check out' }).click()
     await expect(page.getByText('CHECKED OUT', { exact: true })).toBeVisible()
     await expect(page.getByText('Thank you for staying with us.')).toBeVisible()
 
@@ -92,7 +93,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
     await signIn(staffPage, 'housekeeping', staffPassword)
     for (const status of ['DIRTY', 'CLEANING']) {
       const task = staffPage.getByText(`Room 101 · ${status}`).locator('..')
-      await task.getByRole('button', { name: 'Next step →' }).click()
+      await task.getByRole('button', { name: 'Next step' }).click()
     }
     await expect(staffPage.getByText('Room 101 · INSPECTION')).toBeVisible()
     const forbidden = await staff.request.get('http://127.0.0.1:8001/api/v1/staff/reservations')
@@ -101,7 +102,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
     await expect(staffPage.getByRole('textbox', { name: 'Username' })).toBeVisible({ timeout: 5_000 })
     await signIn(staffPage, 'reception', staffPassword)
     const inspection = staffPage.getByText('Room 101 · INSPECTION').locator('..')
-    await inspection.getByRole('button', { name: 'Next step →' }).click()
+    await inspection.getByRole('button', { name: 'Next step' }).click()
     await expect(staffPage.getByText('Room 101 · READY')).toBeVisible()
     const readyRoom = staffPage.getByText('Room 101', { exact: true }).locator('..')
     await expect(readyRoom.getByText('Vacant · READY · In service')).toBeVisible()

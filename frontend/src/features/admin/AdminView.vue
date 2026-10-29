@@ -146,8 +146,12 @@ async function changeStaffPassword() {
 
 <template>
   <PortalLayout area="admin">
-    <p v-if="identity.isPending.value" role="status">Checking your administrator session…</p>
-    <form v-else-if="!user" class="card p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
+    <div v-if="identity.isPending.value" role="status" class="space-y-4">
+      <p>Checking your administrator session…</p>
+      <div class="skeleton h-8 w-48"></div>
+      <div class="skeleton h-32 w-full"></div>
+    </div>
+    <form v-else-if="!user" class="card portal-login p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
       <p class="label">Restricted access</p>
       <h1 class="text-3xl">Administrator sign in</h1>
       <input v-model="username" class="field" placeholder="Username" aria-label="Username" required />
@@ -166,7 +170,7 @@ async function changeStaffPassword() {
         <button class="btn-secondary" :disabled="busy" @click="signOut">Sign out</button>
       </div>
       <Notice :message="error" />
-      <nav class="flex flex-wrap gap-2 mt-8 border-b pb-4" aria-label="Administration sections">
+      <nav class="admin-tabs flex flex-wrap gap-2 mt-8 pb-4" aria-label="Administration sections">
         <button v-for="item in sections" :key="item.id" type="button" :class="section === item.id ? 'btn' : 'btn-secondary'" @click="section = item.id">{{ item.label }}</button>
       </nav>
 
@@ -175,7 +179,7 @@ async function changeStaffPassword() {
         <p v-if="summary.isPending.value" role="status">Loading operational metrics…</p>
         <Notice :message="summary.error.value ? String(summary.error.value) : ''" />
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div v-for="(value, key) in summary.data.value || {}" :key="key" class="card p-5">
+          <div v-for="(value, key) in summary.data.value || {}" :key="key" class="card metric-card">
             <p class="label">{{ String(key).replaceAll('_', ' ') }}</p>
             <p class="text-3xl font-bold">{{ String(key).includes('minor') ? money(value) : value }}</p>
           </div>
@@ -189,23 +193,25 @@ async function changeStaffPassword() {
         <Notice :message="team.error.value ? String(team.error.value) : ''" />
         <p v-if="team.data.value?.length === 0">No staff accounts configured.</p>
         <div v-else-if="team.data.value" class="card overflow-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-[#eaf2eb]"><tr><th class="p-4">Username</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4">Action</th></tr></thead>
-            <tbody><tr v-for="member in team.data.value" :key="member.id" class="border-t"><td class="p-4">{{ member.username }}</td><td class="p-4">{{ member.role }}</td><td class="p-4">{{ member.is_active ? 'Active' : 'Inactive' }}</td><td class="p-4"><button v-if="member.username !== user?.username" class="btn-secondary" @click="openPasswordForm(member)">Change password</button><span v-else>Use changepassword for your account</span></td></tr></tbody>
+          <table class="data-table w-full text-left text-sm">
+            <thead><tr><th class="p-4">Username</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4">Action</th></tr></thead>
+            <tbody><tr v-for="member in team.data.value" :key="member.id" class="border-t border-[var(--line)]"><td class="p-4">{{ member.username }}</td><td class="p-4">{{ member.role }}</td><td class="p-4">{{ member.is_active ? 'Active' : 'Inactive' }}</td><td class="p-4"><button v-if="member.username !== user?.username" class="btn-secondary" @click="openPasswordForm(member)">Change password</button><span v-else>Use changepassword for your account</span></td></tr></tbody>
           </table>
         </div>
-        <div v-if="editingUser" class="fixed inset-0 z-10 bg-[#0c2b26aa] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Change staff password" @click.self="closePasswordForm">
-          <form class="card p-8 w-full max-w-lg" @submit.prevent="changeStaffPassword">
-            <button type="button" class="float-right" aria-label="Close" @click="closePasswordForm">✕</button>
-            <p class="label">Administrator action</p>
-            <h3 class="text-2xl">Change password for {{ editingUser.username }}</h3>
-            <p class="mt-3 text-sm text-[#6d8075]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
-            <label class="block mt-5"><span class="label">New password</span><input v-model="newPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
-            <label class="block mt-4"><span class="label">Confirm new password</span><input v-model="confirmPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
-            <Notice :message="passwordError" />
-            <button class="btn w-full mt-6" :disabled="passwordBusy || newPassword.length < 12 || newPassword !== confirmPassword">{{ passwordBusy ? 'Saving…' : 'Save password' }}</button>
-          </form>
-        </div>
+        <Transition name="modal">
+          <div v-if="editingUser" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="Change staff password" @click.self="closePasswordForm">
+            <form class="card p-8 w-full max-w-lg" @submit.prevent="changeStaffPassword">
+              <button type="button" class="float-right" aria-label="Close" @click="closePasswordForm">✕</button>
+              <p class="label">Administrator action</p>
+              <h3 class="text-2xl">Change password for {{ editingUser.username }}</h3>
+              <p class="mt-3 text-sm text-[var(--muted)]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
+              <label class="block mt-5"><span class="label">New password</span><input v-model="newPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+              <label class="block mt-4"><span class="label">Confirm new password</span><input v-model="confirmPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+              <Notice :message="passwordError" />
+              <button class="btn w-full mt-6" :disabled="passwordBusy || newPassword.length < 12 || newPassword !== confirmPassword">{{ passwordBusy ? 'Saving…' : 'Save password' }}</button>
+            </form>
+          </div>
+        </Transition>
       </section>
 
       <section v-else-if="section === 'audit'" aria-label="Audit history">
@@ -214,9 +220,9 @@ async function changeStaffPassword() {
         <Notice :message="audit.error.value ? String(audit.error.value) : ''" />
         <p v-if="audit.data.value?.length === 0">No sensitive actions recorded yet.</p>
         <div v-else-if="audit.data.value" class="card overflow-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-[#eaf2eb]"><tr><th class="p-4">Time</th><th class="p-4">Actor</th><th class="p-4">Action</th><th class="p-4">Target</th></tr></thead>
-            <tbody><tr v-for="entry in audit.data.value" :key="entry.id" class="border-t"><td class="p-4">{{ entry.timestamp }}</td><td class="p-4">{{ entry.actor }}</td><td class="p-4">{{ entry.action }}</td><td class="p-4">{{ entry.target }}</td></tr></tbody>
+          <table class="data-table w-full text-left text-sm">
+            <thead><tr><th class="p-4">Time</th><th class="p-4">Actor</th><th class="p-4">Action</th><th class="p-4">Target</th></tr></thead>
+            <tbody><tr v-for="entry in audit.data.value" :key="entry.id" class="border-t border-[var(--line)]"><td class="p-4">{{ entry.timestamp }}</td><td class="p-4">{{ entry.actor }}</td><td class="p-4">{{ entry.action }}</td><td class="p-4">{{ entry.target }}</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -225,7 +231,7 @@ async function changeStaffPassword() {
         <h2 class="text-2xl mt-8 mb-4">Hotel settings</h2>
         <p v-if="hotel.isPending.value" role="status">Loading hotel settings…</p>
         <Notice :message="hotel.error.value ? String(hotel.error.value) : ''" />
-        <dl v-if="hotel.data.value" class="card p-6 grid sm:grid-cols-2 gap-6">
+        <dl v-if="hotel.data.value" class="card settings-sheet p-6 grid sm:grid-cols-2 gap-6">
           <div v-for="[label, value] in [
             ['Name', hotel.data.value.name], ['Email', hotel.data.value.email || 'Not set'],
             ['Phone', hotel.data.value.phone || 'Not set'], ['Timezone', hotel.data.value.timezone],
@@ -237,7 +243,7 @@ async function changeStaffPassword() {
 
       <section v-else aria-label="Reports">
         <h2 class="text-2xl mt-8 mb-4">Reports</h2>
-        <p class="text-sm text-[#6d8075] mb-5">Room revenue uses service dates; cash uses payment settlement dates. Period end is exclusive.</p>
+        <p class="text-sm text-[var(--muted)] mb-5">Room revenue uses service dates; cash uses payment settlement dates. Period end is exclusive.</p>
         <div class="flex flex-wrap gap-4 items-end mb-5">
           <label><span class="label">Start date</span><input v-model="start" class="field" type="date" /></label>
           <label><span class="label">End date (exclusive)</span><input v-model="end" class="field" type="date" /></label>
@@ -245,7 +251,7 @@ async function changeStaffPassword() {
         </div>
         <p v-if="report.isPending.value" role="status">Calculating report…</p>
         <Notice :message="report.error.value ? String(report.error.value) : ''" />
-        <div v-if="report.data.value" class="card p-6">
+        <div v-if="report.data.value" class="card report-sheet p-6">
           <p class="label">{{ report.data.value.hotel }} · {{ report.data.value.timezone }} · {{ report.data.value.currency }}</p>
           <div class="grid sm:grid-cols-3 gap-5 mt-5">
             <div><p class="label">Occupancy rate</p><p>{{ report.data.value.occupancy_rate_percent ?? 'N/A' }}{{ report.data.value.occupancy_rate_percent === null ? '' : '%' }}</p></div>

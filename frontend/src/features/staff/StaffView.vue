@@ -93,8 +93,12 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 
 <template>
   <PortalLayout area="staff">
-    <p v-if="identity.isPending.value" role="status">Checking your staff session…</p>
-    <form v-else-if="!user" class="card p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
+    <div v-if="identity.isPending.value" role="status" class="space-y-4">
+      <p>Checking your staff session…</p>
+      <div class="skeleton h-8 w-48"></div>
+      <div class="skeleton h-32 w-full"></div>
+    </div>
+    <form v-else-if="!user" class="card portal-login p-8 max-w-md mx-auto space-y-5" @submit.prevent="signIn">
       <p class="label">Team access</p>
       <h1 class="text-3xl">Staff sign in</h1>
       <input v-model="username" class="field" placeholder="Username" aria-label="Username" required />
@@ -111,7 +115,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
       <Notice :message="summary.error.value ? String(summary.error.value) : ''" />
 
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-        <div v-for="(value, key) in summary.data.value || {}" :key="key" class="card p-5">
+        <div v-for="(value, key) in summary.data.value || {}" :key="key" class="card metric-card">
           <p class="label">{{ String(key).replaceAll('_', ' ') }}</p>
           <p class="text-3xl font-bold">{{ String(key).includes('minor') ? money(value) : value }}</p>
         </div>
@@ -119,7 +123,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
       <h2 class="text-2xl mt-10 mb-4">Room board</h2>
       <Notice :message="rooms.error.value ? String(rooms.error.value) : ''" />
       <div class="grid md:grid-cols-4 gap-4">
-        <div v-for="room in rooms.data.value" :key="room.id" class="card p-5">
+        <div v-for="room in rooms.data.value" :key="room.id" class="card room-tile" :data-cleaning="room.cleaning" :data-service="room.in_service ? 'in' : 'out'">
           <span class="label">Room {{ room.number }}</span>
           <h3 class="text-xl">{{ room.type }}</h3>
           <p class="mt-2 text-sm">{{ room.occupied ? 'Occupied' : 'Vacant' }} · {{ room.cleaning }} · {{ room.in_service ? 'In service' : 'Out of service' }}</p>
@@ -132,9 +136,9 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <Notice :message="tasks.error.value ? String(tasks.error.value) : ''" />
         <p v-if="tasks.data.value?.length === 0">No housekeeping tasks.</p>
         <div class="space-y-3">
-          <div v-for="task in tasks.data.value" :key="task.id" class="card p-4 flex items-center justify-between">
+          <div v-for="task in tasks.data.value" :key="task.id" class="card queue-row flex items-center justify-between">
             <span>Room {{ task.room__number }} · {{ task.status }}</span>
-            <button v-if="task.status !== 'READY' && !(task.status === 'INSPECTION' && role === 'HOUSEKEEPING')" class="btn-secondary" :disabled="busy" @click="act(() => staffApi(`/housekeeping/tasks/${task.id}/transition`, { status: nextStep[task.status] }))">Next step →</button>
+            <button v-if="task.status !== 'READY' && !(task.status === 'INSPECTION' && role === 'HOUSEKEEPING')" class="btn-secondary" :disabled="busy" @click="act(() => staffApi(`/housekeeping/tasks/${task.id}/transition`, { status: nextStep[task.status] }))">Next step</button>
           </div>
         </div>
       </template>
@@ -144,7 +148,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <Notice :message="requests.error.value ? String(requests.error.value) : ''" />
         <p v-if="requests.data.value?.length === 0">No guest requests.</p>
         <div class="space-y-3">
-          <div v-for="request in requests.data.value" :key="request.id" class="card p-4 flex justify-between">
+          <div v-for="request in requests.data.value" :key="request.id" class="card queue-row flex justify-between items-center">
             <span>{{ request.type }} · {{ request.description }} · {{ request.status }}</span>
             <button v-if="request.status !== 'COMPLETED'" class="btn-secondary" :disabled="busy" @click="act(() => staffApi(`/staff/service-requests/${request.id}/complete`, {}))">Complete</button>
           </div>
@@ -156,10 +160,10 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <Notice :message="reservations.error.value ? String(reservations.error.value) : ''" />
         <p v-if="reservations.data.value?.length === 0">No reservations found.</p>
         <div v-else class="card overflow-auto">
-          <table class="w-full text-left text-sm">
-            <thead class="bg-[#eaf2eb]"><tr><th v-for="heading in ['Reference', 'Guest', 'Room', 'Arrival', 'Status']" :key="heading" class="p-4">{{ heading }}</th></tr></thead>
+          <table class="data-table w-full text-left text-sm">
+            <thead><tr><th v-for="heading in ['Reference', 'Guest', 'Room', 'Arrival', 'Status']" :key="heading" class="p-4">{{ heading }}</th></tr></thead>
             <tbody>
-              <tr v-for="booking in reservations.data.value" :key="booking.id" class="border-t">
+              <tr v-for="booking in reservations.data.value" :key="booking.id" class="border-t border-[var(--line)]">
                 <td class="p-4">{{ booking.reference }}</td><td class="p-4">{{ booking.guest_name }}</td>
                 <td class="p-4">{{ booking.room }}</td><td class="p-4">{{ booking.arrival }}</td><td class="p-4">{{ booking.status }}</td>
               </tr>

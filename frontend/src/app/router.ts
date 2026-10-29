@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../features/guest/HomeView.vue'
-import BookingView from '../features/guest/BookingView.vue'
-import CheckoutView from '../features/guest/CheckoutView.vue'
-import VerifyView from '../features/guest/VerifyView.vue'
-import StaffView from '../features/staff/StaffView.vue'
-import AdminView from '../features/admin/AdminView.vue'
+
+const HomeView = () => import('../features/guest/HomeView.vue')
+const BookingView = () => import('../features/guest/BookingView.vue')
+const CheckoutView = () => import('../features/guest/CheckoutView.vue')
+const VerifyView = () => import('../features/guest/VerifyView.vue')
+const StaffView = () => import('../features/staff/StaffView.vue')
+const AdminView = () => import('../features/admin/AdminView.vue')
 
 export const router = createRouter({
   history: createWebHistory(),
