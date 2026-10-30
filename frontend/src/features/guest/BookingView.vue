@@ -81,12 +81,12 @@ async function sendRequest() {
     <Notice v-else-if="booking.error.value" :message="String(booking.error.value)" />
     <div v-else-if="booking.data.value" class="max-w-3xl mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
       <p class="label">Your reservation</p>
-      <h1 class="text-4xl">Welcome, {{ booking.data.value.guest_name }}.</h1>
+      <h1 class="text-4xl text-[var(--brand-text)]">Welcome, {{ booking.data.value.guest_name }}.</h1>
       <p class="mt-3 text-[var(--muted)]">Booking {{ booking.data.value.reference }} · <span class="badge">{{ booking.data.value.status.replaceAll('_', ' ') }}</span></p>
       <div class="grid md:grid-cols-2 gap-5 mt-8">
         <div class="card stay-room p-6">
           <span class="label">Your room</span>
-          <h2 class="text-2xl">{{ booking.data.value.room_type }} · {{ booking.data.value.room }}</h2>
+          <h2 class="text-2xl text-[var(--brand-text)]">{{ booking.data.value.room_type }} · {{ booking.data.value.room }}</h2>
           <p class="mt-3">{{ booking.data.value.arrival }} → {{ booking.data.value.departure }}</p>
           <p class="mt-3 text-sm text-[var(--muted)]">Please collect your physical key at reception. QR entry is for booking verification only.</p>
         </div>

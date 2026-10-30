@@ -1,0 +1,211 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div class="luma-dashboard">
+  <!-- Operations Header Bar -->
+  <div class="luma-ops-header">
+    <div>
+      <span class="luma-badge-live">Live Operations</span>
+      <h1 class="luma-dashboard-title">{{ hotel_name }} Dashboard</h1>
+      <p class="luma-dashboard-sub">
+        Hotel Business Date: <strong>{{ business_date }}</strong> · Timezone: <code>{{ hotel_timezone }}</code>
+      </p>
+    </div>
+    <div class="luma-header-actions">
+      <a href="{% url 'luma_admin:core_reservation_add' %}" class="luma-btn-primary">+ New Reservation</a>
+      <a href="{% url 'luma_admin:core_room_changelist' %}" class="luma-btn-secondary">View Room Board</a>
+    </div>
+  </div>
+
+  <!-- Operational Metrics Grid -->
+  <div class="luma-metrics-grid">
+    <div class="luma-metric-card" style="border-top-color: #388476;">
+      <span class="luma-metric-label">Available Rooms</span>
+      <div class="luma-metric-value">{{ available_rooms }} <span class="luma-metric-total">/ {{ total_rooms }}</span></div>
+      <p class="luma-metric-note">Clean, vacant & in-service</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: var(--brass);">
+      <span class="luma-metric-label">In-House Stays</span>
+      <div class="luma-metric-value">{{ occupied_rooms }}</div>
+      <p class="luma-metric-note">Currently checked-in guests</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: #559c8d;">
+      <span class="luma-metric-label">Today's Arrivals</span>
+      <div class="luma-metric-value">{{ today_arrivals }}</div>
+      <p class="luma-metric-note">Expected on {{ business_date }}</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: #b08d55;">
+      <span class="luma-metric-label">Today's Departures</span>
+      <div class="luma-metric-value">{{ today_departures }}</div>
+      <p class="luma-metric-note">Due checkout today</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: #437d72;">
+      <span class="luma-metric-label">Active Reservations</span>
+      <div class="luma-metric-value">{{ active_reservations }}</div>
+      <p class="luma-metric-note">Holds, confirmed & in-house</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: #c9884e;">
+      <span class="luma-metric-label">Pending Payments</span>
+      <div class="luma-metric-value">{{ pending_payments }}</div>
+      <p class="luma-metric-note">Awaiting settlement</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: var(--brass);">
+      <span class="luma-metric-label">Settled Revenue</span>
+      <div class="luma-metric-value" style="color: var(--brass);">{{ settled_revenue }}</div>
+      <p class="luma-metric-note">Historical settled cash</p>
+    </div>
+
+    <div class="luma-metric-card" style="border-top-color: #2b7468;">
+      <span class="luma-metric-label">Housekeeping Ready</span>
+      <div class="luma-metric-value">{{ hk_ready }} <span class="luma-metric-total">/ {{ total_rooms }}</span></div>
+      <p class="luma-metric-note">Rooms inspected & ready</p>
+    </div>
+  </div>
+
+  <!-- Housekeeping Status Bar -->
+  <div class="luma-card luma-hk-bar mt-6">
+    <div class="luma-card-header flex items-center justify-between">
+      <h3 class="luma-card-title">Housekeeping Fleet Breakdown</h3>
+      <a href="{% url 'luma_admin:core_housekeepingtask_changelist' %}" class="luma-card-link">View Housekeeping Queue →</a>
+    </div>
+    <div class="luma-hk-items">
+      <div class="luma-hk-item hk-ready">
+        <span class="hk-count">{{ hk_ready }}</span>
+        <span class="hk-label">Ready</span>
+      </div>
+      <div class="luma-hk-item hk-inspection">
+        <span class="hk-count">{{ hk_inspection }}</span>
+        <span class="hk-label">Awaiting Inspection</span>
+      </div>
+      <div class="luma-hk-item hk-cleaning">
+        <span class="hk-count">{{ hk_cleaning }}</span>
+        <span class="hk-label">In Cleaning</span>
+      </div>
+      <div class="luma-hk-item hk-dirty">
+        <span class="hk-count">{{ hk_dirty }}</span>
+        <span class="hk-label">Dirty</span>
+      </div>
+      <div class="luma-hk-item hk-out">
+        <span class="hk-count">{{ hk_out_of_service }}</span>
+        <span class="hk-label">Out of Service</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Split Grid -->
+  <div class="luma-split-grid mt-6">
+    <!-- Recent Reservations -->
+    <div class="luma-card">
+      <div class="luma-card-header flex items-center justify-between">
+        <h3 class="luma-card-title">Recent Reservations</h3>
+        <a href="{% url 'luma_admin:core_reservation_changelist' %}" class="luma-card-link">All Reservations →</a>
+      </div>
+      <div class="luma-table-wrap">
+        <table class="luma-table">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Arrival</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for res in recent_reservations %}
+              <tr>
+                <td>
+                  <a href="{% url 'luma_admin:core_reservation_change' res.id %}" class="admin-link">
+                    {{ res.reference }}
+                  </a>
+                </td>
+                <td>{{ res.guest.full_name }}</td>
+                <td>Room {{ res.room.number }}</td>
+                <td>{{ res.arrival }}</td>
+                <td>
+                  <span class="status-pill {% if res.status == 'CONFIRMED' or res.status == 'COMPLETED' %}badge-success{% elif res.status == 'CHECKED_IN' %}badge-primary{% elif res.status == 'HOLD' %}badge-info{% else %}badge-muted{% endif %}">
+                    {{ res.status }}
+                  </span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="5" class="text-muted">No reservations recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Audit History -->
+    <div class="luma-card">
+      <div class="luma-card-header flex items-center justify-between">
+        <h3 class="luma-card-title">Security & Audit History</h3>
+        <a href="{% url 'luma_admin:core_audit_changelist' %}" class="luma-card-link">Full Audit Trail →</a>
+      </div>
+      <div class="luma-table-wrap">
+        <table class="luma-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Actor</th>
+              <th>Action</th>
+              <th>Target</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for audit in recent_audits %}
+              <tr>
+                <td class="text-sm font-mono">{{ audit.timestamp|date:"M d, H:i" }}</td>
+                <td><strong>{{ audit.actor }}</strong></td>
+                <td><span class="status-pill badge-primary">{{ audit.action }}</span></td>
+                <td class="text-muted">{{ audit.target }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="text-muted">No sensitive audit entries logged.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Standard Admin Model Directory -->
+  <div class="luma-card mt-8">
+    <div class="luma-card-header">
+      <h3 class="luma-card-title">Hotel Model Directories</h3>
+      <p class="luma-card-sub">Direct access to manage all database records.</p>
+    </div>
+    <div class="luma-app-list">
+      {% for app in app_list %}
+        <div class="luma-app-section">
+          <h4 class="luma-app-name">{{ app.name }}</h4>
+          <div class="luma-model-grid">
+            {% for model in app.models %}
+              <div class="luma-model-card">
+                <div class="luma-model-info">
+                  <a href="{{ model.admin_url }}" class="luma-model-title">{{ model.name }}</a>
+                </div>
+                <div class="luma-model-actions">
+                  {% if model.add_url %}
+                    <a href="{{ model.add_url }}" class="luma-btn-add" title="Add {{ model.name }}">+ Add</a>
+                  {% endif %}
+                  {% if model.admin_url %}
+                    <a href="{{ model.admin_url }}" class="luma-btn-view" title="View {{ model.name }}">View</a>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

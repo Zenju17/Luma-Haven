@@ -23,10 +23,13 @@ class Command(BaseCommand):
                     HousekeepingTask.objects.create(room=room)
         password = os.getenv('SEED_PASSWORD') or secrets.token_urlsafe(18)
         for username, role in [('admin', 'ADMIN'), ('manager', 'MANAGER'), ('reception', 'RECEPTION'), ('housekeeping', 'HOUSEKEEPING'), ('accountant', 'ACCOUNTANT')]:
-            user, created = User.objects.get_or_create(username=username, defaults={'role': role})
+            user, created = User.objects.get_or_create(username=username, defaults={'role': role, 'is_staff': True})
             if created:
                 user.set_password(password)
                 user.save(update_fields=['password'])
+            elif not user.is_staff:
+                user.is_staff = True
+                user.save(update_fields=['is_staff'])
         today = services.hotel_today(hotel)
         if not MaintenanceTicket.objects.filter(room__hotel=hotel).exists():
             room = Room.objects.get(hotel=hotel, number='202')

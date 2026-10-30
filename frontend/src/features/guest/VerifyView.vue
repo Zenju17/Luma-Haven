@@ -45,7 +45,7 @@ async function verify() {
   <SiteLayout>
     <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto items-center animate-[fadeIn_0.4s_ease-out]">
       <div>
-        <h1 class="text-4xl">Find your booking.</h1>
+        <h1 class="text-4xl text-[var(--brand-text)]">Find your booking.</h1>
         <p class="mt-4 text-[var(--muted)]">Enter your booking reference and email to request a one-time code. For local development, find the code in the backend container logs.</p>
         <div class="card qr-frame p-5 mt-8 inline-block text-center shadow-md">
           <div class="p-2 bg-white rounded-lg inline-block">
@@ -55,7 +55,7 @@ async function verify() {
         </div>
       </div>
       <form class="card verification-form p-8 space-y-5" @submit.prevent="verify">
-        <h2 class="text-2xl">Verify your booking</h2>
+        <h2 class="text-2xl text-[var(--brand-text)]">Verify your booking</h2>
         <label class="block"><span class="label">Booking reference</span><input v-model="reference" class="field" required /></label>
         <label class="block"><span class="label">Email address</span><input v-model="email" class="field" type="email" required /></label>
         <Transition name="slide-up">

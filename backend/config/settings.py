@@ -13,12 +13,45 @@ if ENV == 'production' and (len(SECRET_KEY) < 32 or SECRET_KEY == 'local-only-in
     raise RuntimeError('Set a strong DJANGO_SECRET_KEY')
 DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true' and ENV != 'production'
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
-INSTALLED_APPS = ['django.contrib.auth', 'django.contrib.contenttypes', 'django.contrib.sessions', 'django.contrib.postgres', 'rest_framework', 'drf_spectacular', 'corsheaders', 'core']
-MIDDLEWARE = ['django.middleware.security.SecurityMiddleware', 'corsheaders.middleware.CorsMiddleware', 'core.middleware.PortalSessionMiddleware', 'django.middleware.common.CommonMiddleware', 'django.middleware.csrf.CsrfViewMiddleware', 'core.middleware.StrictCSRFMiddleware', 'django.contrib.auth.middleware.AuthenticationMiddleware', 'core.middleware.RequestIDMiddleware']
+INSTALLED_APPS = [
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.admin',
+    'django.contrib.postgres',
+    'rest_framework',
+    'drf_spectacular',
+    'corsheaders',
+    'core',
+]
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'core.middleware.PortalSessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'core.middleware.StrictCSRFMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'core.middleware.RequestIDMiddleware',
+]
 ROOT_URLCONF = 'config.urls'
-TEMPLATES = [{'BACKEND': 'django.template.backends.django.DjangoTemplates',
-              'DIRS': [], 'APP_DIRS': True,
-              'OPTIONS': {'context_processors': ['django.template.context_processors.request']}}]
+TEMPLATES = [{
+    'BACKEND': 'django.template.backends.django.DjangoTemplates',
+    'DIRS': [BASE_DIR / 'templates'],
+    'APP_DIRS': True,
+    'OPTIONS': {
+        'context_processors': [
+            'django.template.context_processors.request',
+            'django.contrib.auth.context_processors.auth',
+            'django.contrib.messages.context_processors.messages',
+        ],
+    },
+}]
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 WSGI_APPLICATION = 'config.wsgi.application'
 database_url = os.getenv('DATABASE_URL', '')
 if not database_url or any(placeholder in database_url for placeholder in ('PROJECT_REF', 'YOUR_ENCODED_PASSWORD', 'YOUR_POOLER_HOST')):

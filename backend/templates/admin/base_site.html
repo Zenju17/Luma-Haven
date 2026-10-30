@@ -1,0 +1,82 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Luma Haven Admin" }}{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="{% static 'admin/css/luma_admin.css' %}">
+  <script>
+    (function() {
+      var stored = localStorage.getItem('lh-theme');
+      var dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (dark) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+  </script>
+{% endblock %}
+
+{% block branding %}
+  <div class="luma-brand-header">
+    <a href="{% url 'luma_admin:index' %}" class="luma-logo">
+      <span class="luma-monogram"></span>
+      <span class="luma-title">Luma Haven<span class="luma-dot">.</span></span>
+    </a>
+    <span class="luma-subtitle">Hotel Operations & Management</span>
+  </div>
+{% endblock %}
+
+{% block usertools %}
+  <div id="user-tools" class="luma-user-tools">
+    <div class="luma-quick-links">
+      <a href="http://localhost:5173/" target="_blank" rel="noopener" class="luma-nav-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        Guest Portal
+      </a>
+      <a href="http://localhost:5173/staff" target="_blank" rel="noopener" class="luma-nav-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Staff Workspace
+      </a>
+    </div>
+
+    <button type="button" id="luma-theme-toggle" class="luma-theme-btn" aria-label="Toggle theme">
+      <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+
+    {% if user.is_authenticated %}
+      <div class="luma-user-profile">
+        <span class="luma-avatar">{{ user.username|slice:":1"|upper }}</span>
+        <div class="luma-user-info">
+          <span class="luma-username">{{ user.username }}</span>
+          <span class="luma-role">{{ user.role|default:"Staff" }}</span>
+        </div>
+      </div>
+      <form action="{% url 'luma_admin:logout' %}" method="post" class="luma-logout-form">
+        {% csrf_token %}
+        <button type="submit" class="luma-logout-btn">Log out</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('luma-theme-toggle');
+      if (btn) {
+        btn.addEventListener('click', function() {
+          var isDark = document.documentElement.classList.toggle('dark');
+          document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+          localStorage.setItem('lh-theme', isDark ? 'dark' : 'light');
+        });
+      }
+    });
+  </script>
+{% endblock %}

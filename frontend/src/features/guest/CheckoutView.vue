@@ -40,7 +40,7 @@ async function simulate(outcome: 'SUCCESS' | 'FAILED' | 'PENDING') {
   <SiteLayout>
     <div class="card payment-panel p-8 max-w-lg mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
       <span class="badge">Simulated payment · development only</span>
-      <h1 class="text-3xl mt-4">Simulated checkout</h1>
+      <h1 class="text-3xl mt-4 text-[var(--brand-text)]">Simulated checkout</h1>
       <div v-if="checkout.isPending.value" class="mt-6 space-y-4" role="status">
         <p>Loading payment session…</p>
         <div class="skeleton h-8 w-48 rounded-md"></div>
