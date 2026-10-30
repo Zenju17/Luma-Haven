@@ -26,7 +26,7 @@ class PortalSessionMiddleware(SessionMiddleware):
     def process_request(self, request):
         if request.path.startswith('/api/v1/admin/'):
             portal = 'admin'
-        elif request.path.startswith('/api/v1/staff/'):
+        elif request.path.startswith(('/api/v1/staff/', '/api/v1/manager/', '/api/v1/reports/', '/api/v1/housekeeping/', '/api/v1/accountant/', '/api/v1/maintenance/')):
             portal = 'staff'
         else:
             portal = request.headers.get('X-Portal', 'guest')

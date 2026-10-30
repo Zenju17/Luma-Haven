@@ -68,7 +68,7 @@ DATABASES = {'default': dj_database_url.parse(database_url, conn_max_age=60)}
 AUTH_USER_MODEL = 'core.User'
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 12}},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 8}},
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
@@ -91,5 +91,7 @@ if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
     EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-CELERY_BROKER_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-CELERY_BEAT_SCHEDULE = {'expire-holds': {'task': 'core.tasks.expire_holds', 'schedule': 60.0}}
+CELERY_BEAT_SCHEDULE = {
+    'expire-holds': {'task': 'core.tasks.expire_holds', 'schedule': 60.0},
+    'archive-daily-mis-snapshot': {'task': 'core.tasks.archive_daily_mis_snapshot', 'schedule': 3600.0},
+}

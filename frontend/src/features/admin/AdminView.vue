@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
+import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
@@ -52,9 +53,6 @@ watch(identity.data, current => {
 }, { immediate: true })
 const isAdmin = computed(() => user.value?.role === 'ADMIN')
 
-const summary = useQuery({
-  queryKey: ['admin', 'summary'], queryFn: () => adminApi<Record<string, number>>('/dashboard/summary'), enabled: isAdmin,
-})
 const team = useQuery({
   queryKey: ['admin', 'team'], queryFn: () => adminApi<TeamMember[]>('/admin/staff'),
   enabled: computed(() => isAdmin.value && section.value === 'team'),
@@ -74,6 +72,11 @@ const report = useQuery({
   enabled: computed(() => isAdmin.value && section.value === 'reports' && Boolean(start.value && end.value)),
 })
 const csvUrl = computed(() => `/api/v1/admin/reports/summary?start=${start.value}&end=${end.value}&export=csv`)
+const csvDaily = computed(() => '/api/v1/admin/reports/daily-summary?export=csv')
+const csvRevOcc = computed(() => `/api/v1/admin/reports/revenue-occupancy?start=${start.value}&end=${end.value}&export=csv`)
+const csvCash = computed(() => `/api/v1/admin/reports/cash-reconciliation?start=${start.value}&end=${end.value}&export=csv`)
+const csvHK = computed(() => `/api/v1/admin/reports/housekeeping-turnaround?start=${start.value}&end=${end.value}&export=csv`)
+const csvAR = computed(() => '/api/v1/admin/reports/accounts-receivable?export=csv')
 
 async function signIn() {
   error.value = ''
@@ -122,8 +125,16 @@ function closePasswordForm() {
 async function changeStaffPassword() {
   if (!editingUser.value || passwordBusy.value) return
   passwordError.value = ''
-  if (newPassword.value.length < 12 || newPassword.value !== confirmPassword.value) {
-    passwordError.value = 'Enter matching passwords of at least 12 characters.'
+  if (newPassword.value !== confirmPassword.value) {
+    passwordError.value = 'Passwords do not match. Please ensure both fields are identical.'
+    return
+  }
+  if (newPassword.value.length < 8) {
+    passwordError.value = `Password must be at least 8 characters long (currently ${newPassword.value.length} characters).`
+    return
+  }
+  if (newPassword.value.length > 12) {
+    passwordError.value = `Password cannot exceed 12 characters (currently ${newPassword.value.length} characters).`
     return
   }
   passwordBusy.value = true
@@ -174,16 +185,8 @@ async function changeStaffPassword() {
         <button v-for="item in sections" :key="item.id" type="button" :class="section === item.id ? 'btn' : 'btn-secondary'" @click="section = item.id">{{ item.label }}</button>
       </nav>
 
-      <section v-if="section === 'overview'" aria-label="Operational overview">
-        <h2 class="text-2xl mt-8 mb-4">Hotel operations</h2>
-        <p v-if="summary.isPending.value" role="status">Loading operational metrics…</p>
-        <Notice :message="summary.error.value ? String(summary.error.value) : ''" />
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div v-for="(value, key) in summary.data.value || {}" :key="key" class="card metric-card">
-            <p class="label">{{ String(key).replaceAll('_', ' ') }}</p>
-            <p class="text-3xl font-bold">{{ String(key).includes('minor') ? money(value) : value }}</p>
-          </div>
-        </div>
+      <section v-if="section === 'overview'" aria-label="Executive MIS Intelligence">
+        <ManagerDashboard portal="admin" :user="user" />
       </section>
 
       <section v-else-if="section === 'team'" aria-label="Staff accounts">
@@ -205,10 +208,37 @@ async function changeStaffPassword() {
               <p class="label">Administrator action</p>
               <h3 class="text-2xl">Change password for {{ editingUser.username }}</h3>
               <p class="mt-3 text-sm text-[var(--muted)]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
-              <label class="block mt-5"><span class="label">New password</span><input v-model="newPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
-              <label class="block mt-4"><span class="label">Confirm new password</span><input v-model="confirmPassword" class="field" type="password" autocomplete="new-password" minlength="12" maxlength="128" required /></label>
+              <div class="mt-5">
+                <div class="flex justify-between items-center mb-1">
+                  <label for="new-staff-password" class="label mb-0">New password</label>
+                  <span v-if="newPassword.length > 0" class="text-xs" :class="newPassword.length >= 8 && newPassword.length <= 12 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-amber-600 dark:text-amber-400'">
+                    {{ newPassword.length }} characters {{ newPassword.length >= 8 && newPassword.length <= 12 ? '✓' : '(8–12 characters)' }}
+                  </span>
+                </div>
+                <input id="new-staff-password" v-model="newPassword" class="field w-full" type="password" autocomplete="new-password" minlength="8" maxlength="12" required />
+              </div>
+
+              <div class="mt-4">
+                <div class="flex justify-between items-center mb-1">
+                  <label for="confirm-staff-password" class="label mb-0">Confirm new password</label>
+                  <span v-if="confirmPassword.length > 0" class="text-xs font-medium" :class="newPassword === confirmPassword ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'">
+                    {{ newPassword === confirmPassword ? 'Passwords match ✓' : 'Passwords do not match' }}
+                  </span>
+                </div>
+                <input id="confirm-staff-password" v-model="confirmPassword" class="field w-full" type="password" autocomplete="new-password" minlength="8" maxlength="12" required />
+              </div>
+
+              <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted,#eaf1ee)] dark:bg-[var(--surface-muted,#122523)] text-xs text-[var(--muted)] space-y-1">
+                <p class="font-medium text-[var(--brand-text)]">Password requirements:</p>
+                <ul class="list-disc list-inside space-y-0.5">
+                  <li>Between 8 and 12 characters</li>
+                  <li>Cannot be too similar to the username or email</li>
+                  <li>Cannot be a commonly used password or entirely numeric</li>
+                  <li>Must differ from the user's current password</li>
+                </ul>
+              </div>
               <Notice :message="passwordError" />
-              <button class="btn w-full mt-6" :disabled="passwordBusy || newPassword.length < 12 || newPassword !== confirmPassword">{{ passwordBusy ? 'Saving…' : 'Save password' }}</button>
+              <button class="btn w-full mt-6" :disabled="passwordBusy || !newPassword || !confirmPassword">{{ passwordBusy ? 'Saving…' : 'Save password' }}</button>
             </form>
           </div>
         </Transition>
@@ -242,8 +272,97 @@ async function changeStaffPassword() {
       </section>
 
       <section v-else aria-label="Reports">
-        <h2 class="text-2xl mt-8 mb-4">Reports</h2>
-        <p class="text-sm text-[var(--muted)] mb-5">Room revenue uses service dates; cash uses payment settlement dates. Period end is exclusive.</p>
+        <h2 class="text-2xl mt-8 mb-2 font-serif">Executive Management Reports</h2>
+        <p class="text-sm text-[var(--muted)] mb-6">
+          Pre-formatted, authorized management information reports with formula-injection-sanitized CSV export for compliance and auditing.
+        </p>
+
+        <!-- The 5 MIS Reports Grid -->
+        <div class="grid md:grid-cols-2 gap-4 mb-8">
+          <div class="card p-5 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="label text-xs">MIS Report 1</span>
+                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Daily Archive</span>
+              </div>
+              <h3 class="text-lg font-serif mt-1">Daily Manager Summary</h3>
+              <p class="text-xs text-[var(--muted)] mt-1">
+                Executive operational snapshot: sellable/sold room-nights, RevPAR, ADR, cash collections, and room readiness for today.
+              </p>
+            </div>
+            <a :href="csvDaily" download="daily-manager-summary.csv" class="btn-secondary text-xs text-center">
+              Export Daily Summary (CSV) ↓
+            </a>
+          </div>
+
+          <div class="card p-5 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="label text-xs">MIS Report 2</span>
+                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">Yield & Demand</span>
+              </div>
+              <h3 class="text-lg font-serif mt-1">Revenue & Occupancy by Room Type</h3>
+              <p class="text-xs text-[var(--muted)] mt-1">
+                Comparative room-type performance: capacity, sellable nights, realized occupancy %, net revenue, and ADR.
+              </p>
+            </div>
+            <a :href="csvRevOcc" download="revenue-occupancy-report.csv" class="btn-secondary text-xs text-center">
+              Export Room Type Yield (CSV) ↓
+            </a>
+          </div>
+
+          <div class="card p-5 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="label text-xs">MIS Report 3</span>
+                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Financial Audit</span>
+              </div>
+              <h3 class="text-lg font-serif mt-1">Cash Reconciliation & Audit Ledger</h3>
+              <p class="text-xs text-[var(--muted)] mt-1">
+                Gross payment collections, settled refunds, net cash variance, and payment gateway audit records.
+              </p>
+            </div>
+            <a :href="csvCash" download="cash-reconciliation.csv" class="btn-secondary text-xs text-center">
+              Export Cash Reconciliation (CSV) ↓
+            </a>
+          </div>
+
+          <div class="card p-5 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="label text-xs">MIS Report 4</span>
+                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">Operational SLA</span>
+              </div>
+              <h3 class="text-lg font-serif mt-1">Housekeeping Turnaround & Efficiency</h3>
+              <p class="text-xs text-[var(--muted)] mt-1">
+                Turnover duration from checkout to ready status, staff member task completion, and inspection logs.
+              </p>
+            </div>
+            <a :href="csvHK" download="housekeeping-turnaround.csv" class="btn-secondary text-xs text-center">
+              Export Housekeeping Efficiency (CSV) ↓
+            </a>
+          </div>
+
+          <div class="card p-5 flex flex-col justify-between space-y-3 md:col-span-2">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="label text-xs">MIS Report 5</span>
+                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Credit Risk</span>
+              </div>
+              <h3 class="text-lg font-serif mt-1">Accounts Receivable Aging & Outstanding Balances</h3>
+              <p class="text-xs text-[var(--muted)] mt-1">
+                Aging buckets (Current 0–7 days, 8–14 days, 15–30 days, 30+ days) across unclosed active reservation folios.
+              </p>
+            </div>
+            <a :href="csvAR" download="accounts-receivable-aging.csv" class="btn-secondary text-xs text-center">
+              Export Accounts Receivable Aging (CSV) ↓
+            </a>
+          </div>
+        </div>
+
+        <!-- Custom Date Range KPI Report -->
+        <h3 class="text-xl font-serif mt-8 mb-2">Custom Period Financial Metrics</h3>
+        <p class="text-sm text-[var(--muted)] mb-4">Room revenue recognizes stay dates; cash uses payment settlement dates. Period end is exclusive.</p>
         <div class="flex flex-wrap gap-4 items-end mb-5">
           <label><span class="label">Start date</span><input v-model="start" class="field" type="date" /></label>
           <label><span class="label">End date (exclusive)</span><input v-model="end" class="field" type="date" /></label>
@@ -254,12 +373,12 @@ async function changeStaffPassword() {
         <div v-if="report.data.value" class="card report-sheet p-6">
           <p class="label">{{ report.data.value.hotel }} · {{ report.data.value.timezone }} · {{ report.data.value.currency }}</p>
           <div class="grid sm:grid-cols-3 gap-5 mt-5">
-            <div><p class="label">Occupancy rate</p><p>{{ report.data.value.occupancy_rate_percent ?? 'N/A' }}{{ report.data.value.occupancy_rate_percent === null ? '' : '%' }}</p></div>
-            <div><p class="label">Average daily rate</p><p>{{ report.data.value.average_daily_rate_minor === null ? 'N/A' : money(report.data.value.average_daily_rate_minor) }}</p></div>
-            <div><p class="label">Revenue per available room</p><p>{{ report.data.value.revpar_minor === null ? 'N/A' : money(report.data.value.revpar_minor) }}</p></div>
-            <div><p class="label">Sold room-nights</p><p>{{ report.data.value.sold_room_nights }}</p></div>
-            <div><p class="label">Net room revenue</p><p>{{ money(report.data.value.net_room_revenue_minor) }}</p></div>
-            <div><p class="label">Settled cash</p><p>{{ money(report.data.value.settled_cash_minor) }}</p></div>
+            <div><p class="label">Occupancy rate</p><p class="text-2xl font-bold">{{ report.data.value.occupancy_rate_percent ?? 'N/A' }}{{ report.data.value.occupancy_rate_percent === null ? '' : '%' }}</p></div>
+            <div><p class="label">Average daily rate</p><p class="text-2xl font-bold">{{ report.data.value.average_daily_rate_minor === null ? 'N/A' : money(report.data.value.average_daily_rate_minor) }}</p></div>
+            <div><p class="label">Revenue per available room</p><p class="text-2xl font-bold">{{ report.data.value.revpar_minor === null ? 'N/A' : money(report.data.value.revpar_minor) }}</p></div>
+            <div><p class="label">Sold room-nights</p><p class="text-2xl font-bold">{{ report.data.value.sold_room_nights }}</p></div>
+            <div><p class="label">Net room revenue</p><p class="text-2xl font-bold font-mono">{{ money(report.data.value.net_room_revenue_minor) }}</p></div>
+            <div><p class="label">Settled cash</p><p class="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400">{{ money(report.data.value.settled_cash_minor) }}</p></div>
           </div>
         </div>
       </section>

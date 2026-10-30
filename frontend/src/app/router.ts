@@ -6,6 +6,7 @@ const CheckoutView = () => import('../features/guest/CheckoutView.vue')
 const VerifyView = () => import('../features/guest/VerifyView.vue')
 const StaffView = () => import('../features/staff/StaffView.vue')
 const AdminView = () => import('../features/admin/AdminView.vue')
+const ManagerView = () => import('../features/manager/ManagerView.vue')
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -15,6 +16,7 @@ export const router = createRouter({
     { path: '/checkout/:id', component: CheckoutView },
     { path: '/verify', component: VerifyView },
     { path: '/staff', component: StaffView },
+    { path: '/manager', component: ManagerView },
     { path: '/admin', component: AdminView },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],

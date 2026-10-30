@@ -93,16 +93,7 @@ async function reserve() {
       </label>
       <label>
         <span class="label">Guests</span>
-        <select v-model.number="occupants" class="field cursor-pointer" required aria-label="Guests">
-          <option :value="1">1 Guest</option>
-          <option :value="2">2 Guests</option>
-          <option :value="3">3 Guests</option>
-          <option :value="4">4 Guests</option>
-          <option :value="5">5 Guests</option>
-          <option :value="6">6 Guests</option>
-          <option :value="7">7 Guests</option>
-          <option :value="8">8 Guests</option>
-        </select>
+        <input v-model.number="occupants" class="field cursor-pointer" type="number" min="1" max="8" required aria-label="Guests" />
       </label>
       <button class="btn w-full" type="submit">Search rooms</button>
     </form>

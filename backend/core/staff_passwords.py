@@ -50,8 +50,8 @@ def change_password(actor: User, staff_id: int, password: str) -> str:
     """
     if settings.ENV != 'development':
         raise ValueError('Local credential-file changes are available only in development.')
-    if not isinstance(password, str) or not 12 <= len(password) <= 128:
-        raise ValueError('Choose a password between 12 and 128 characters.')
+    if not isinstance(password, str) or not 8 <= len(password) <= 12:
+        raise ValueError('Choose a password between 8 and 12 characters.')
     if any(ord(character) < 32 or ord(character) == 127 or character in ('\u2028', '\u2029') for character in password):
         raise ValueError('Passwords cannot contain control characters.')
 
@@ -83,7 +83,8 @@ def change_password(actor: User, staff_id: int, password: str) -> str:
                 try:
                     validate_password(password, target)
                 except DjangoValidationError as exc:
-                    raise ValueError('The new password does not meet the configured requirements.') from exc
+                    detail = ' '.join(exc.messages) if hasattr(exc, 'messages') else str(exc)
+                    raise ValueError(f'The new password does not meet the configured requirements: {detail}') from exc
                 entries[target.username] = password
                 updated = ''.join(f'{username}\t{secret}\n' for username, secret in entries.items()).encode('utf-8')
                 if len(updated) > 65536:

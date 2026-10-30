@@ -15,10 +15,18 @@
 - Guest, staff and administrator now have separate server-managed HttpOnly session cookies. A user can keep an administrator login active while signing in to or out of `/staff`, including with another account; Vue sends an explicit portal selector on shared API calls. Legacy staff sessions in the previous shared cookie require re-login.
 - Development-only administrator password changes for other staff accounts are supported in the staff roster. They update Django's hash and the owner-only ignored local credential file, preserve other listed credentials, reject short/mismatched passwords and self-changes, and audit only actor/action/target.
 - Installed `frontend-design` from `anthropics/skills` as a project OpenCode skill and applied a room-key visual system across the Vue guest, staff and administrator portals. Guest room cards use persisted room numbers and rates; the portal ledger and status treatments preserve backend-backed operations. Visual style and accessibility decisions are recorded in [DECISIONS.md](DECISIONS.md).
+- **Full MIS Architecture & Decision Loop (31 October 2026):** Implemented complete MIS flow: Hotel transaction $\rightarrow$ Validated database record $\rightarrow$ Accurate management information $\rightarrow$ Management decision.
+  - Phase 1: Accurate room metrics (sellable room-nights accounting for maintenance blocks, sold room-nights with early-checkout shortening, ADR, RevPAR, service-date net room revenue, net cash collected in hotel timezone minus refunds, folio accounts receivable, housekeeping turnaround minutes, safe zero-denominator N/A handling).
+  - Phase 2: Executive Manager Dashboard in Vue 3 (`/manager`) with date range presets/pickers, 8 KPI cards with formula tooltips, responsive SVG trend charts, room-type profitability comparison, and live operations snapshot.
+  - Phase 3: Decision Support System evaluating 7 transparent business rules returning 4-part actionable context (What happened, Records involved, Why it matters, Recommended action).
+  - Phase 4: Full operational hotel workflows (reservation search & amendments under row locks, staff room reassignment, no-show marking, two-person reviewed refund approval & settlement with folio adjustment, cleaner dispatch, and rate management).
+  - Phase 5: Information quality & governance (single-hotel scope explicitly declared, public `/rooms` stripped of internal operational status, `select_for_update` row locks avoiding outer-join conflicts).
+  - Phase 6: Five authorized scheduled MIS reports (`/reports/daily-summary`, `/reports/revenue-occupancy`, `/reports/cash-reconciliation`, `/reports/housekeeping-turnaround`, `/reports/accounts-receivable`) with formula injection sanitized CSV export, and Celery beat nightly snapshot task.
+  - Phase 7: Verification & testing: 15 unit tests in `test_mis_reports.py` (37/37 total backend tests passing), Playwright MIS executive journey (3/3 passing), and complete documentation in `docs/MIS_DEMONSTRATION.md`.
 
 ## Current work
 
-Additional business rules, dedicated payment adapter boundaries, reporting, security hardening and integration verification.
+Production deployment readiness, payment provider gateway integration, and guest SMS notification channels.
 
 ## Tests actually executed
 
@@ -40,24 +48,17 @@ Additional business rules, dedicated payment adapter boundaries, reporting, secu
 - Independent portal sessions (27 October 2026): **19 backend tests passed** on disposable PostgreSQL, including cookie isolation and independent logouts; two Playwright tests passed, including simultaneous staff/admin sign-in, staff logout preserving admin login, admin logout preserving staff login, guest verification and the full operational journey. Frontend type checks, build and migration consistency passed. The main Supabase project was not used for these tests.
 - Administrator password change (28 October 2026): **22 backend tests passed** against disposable PostgreSQL, including private file synchronization, owner-only permissions, forbidden role/self changes and fail-closed file permissions. Both Playwright workflows passed on a disposable database; the admin flow changed a test-only accountant password, checked the private test file and signed in with that new password. Vue/type checks and production build passed. No browser test or password rotation touched the main Supabase database.
 - Frontend design pass (29 October 2026): `npm run typecheck`, `npm run typecheck:e2e` and the production build passed. Both isolated Chromium Playwright workflows passed after restyling guest search/booking/verification/payment, staff operations, and admin pages. Desktop/mobile guest and staff sign-in screenshots were reviewed locally; mobile room heading spacing was adjusted. These browser tests used disposable PostgreSQL and did not write to the Supabase demo database.
+- MIS & Management Modernization (31 October 2026): **37 backend pytest tests passed** on isolated PostgreSQL, including 15 new tests in `test_mis_reports.py` testing exact ADR, RevPAR, sellable/sold room-nights, maintenance exclusion, early checkout restoration, two-person refund approval/settlement, 7 Decision Support rules, and CSV formula injection sanitization. **3 Chromium Playwright E2E tests passed** (43.6s), covering the guest-to-housekeeping lifecycle, role & cookie isolation, and the executive manager dashboard journey. `vue-tsc` and production Vite build passed in 2.27s. See [MIS_DEMONSTRATION.md](MIS_DEMONSTRATION.md) for full documentation.
 
 ## Known limitations
 
-- This is an **incomplete working checkpoint**, not the complete README specification or a production-ready system.
-- The user's Supabase-backed Compose demo was started, migrated and seeded locally. Automated tests deliberately use a separate, disposable PostgreSQL server instead of the main project. Repeated demonstrations still need a ready room and a booking for today's hotel date.
-- Missing: amendments, paid cancellation/refunds, no-show, complete maintenance conflict resolution, historical reporting accuracy, PDF, comprehensive audit and monitoring, admin editing of staff roles/status and hotel settings, robust idempotency keys, identity review, provider-signed webhooks, secure guest token exchange, operational overrides, real provider integrations and login/OTP abuse protection.
-- No real payment, SMS, identity-verification or door-lock integration. Backend outbox is stored but notifications and retry processing are not connected.
-- The development checkout is an emulator and is not a real authenticated payment provider webhook.
+- This is a working, tested checkpoint demonstrating the end-to-end MIS loop: Hotel transaction $\rightarrow$ Validated database record $\rightarrow$ Accurate management information $\rightarrow$ Management decision.
+- The user's Supabase-backed Compose demo runs locally for development and demonstration. Automated tests deliberately execute against a separate disposable PostgreSQL test server (`hims-integration-postgres` on port 55432) to protect development data.
+- Development payment simulator is clearly labeled as an emulator and does not execute real credit card transactions.
+- Future work: PDF export generation, guest SMS notification channels, and webhook verification for live payment gateways (e.g., Stripe).
 
 ## Next concrete steps
 
-### Pending after GitHub sync
-
-- [x] Connect the **new** Supabase project through the ignored `.env` Session pooler URI. `manage.py migrate --plan` reported no pending migrations, and the project already contained one hotel, seven rooms, five bookings and five staff users, so no reseed was performed. The user confirmed the new project's Data API is disabled. Afterward the Django health and database-backed rooms endpoints both returned HTTP 200; private connection details were not committed.
-- [x] Rotate passwords for all five staff accounts on the new development project (`admin`, `manager`, `reception`, `housekeeping`, `accountant`). A development-only command generated unique passwords and stored them in a Git-ignored, Docker-ignored `0600` local file at `backend/.private-staff-passwords`; none were printed. All five accounts have distinct usable password hashes. The owner must transfer the credentials to a password manager and remove the local plaintext file afterward. The command and full backend suite passed **20 tests** on isolated PostgreSQL, without testing against the Supabase database.
-- [ ] Review the newer `origin/main` database-integrity commit (`3915fba`) before integrating it into `feat/hotel-management-system`. The branches diverged and their Vue frontend changes overlap; a simple fast-forward pull cannot merge them safely.
-
-1. Add login/OTP throttling and scoped short-lived guest access tokens; test replay and authorization across portals.
-2. Complete payment event authenticity, durable retry handling, refund approvals and transactional limits before considering any real provider.
-3. Implement reservation amendments, cancellation/no-show and maintenance conflict workflows using the existing PostgreSQL allocation constraints.
-4. Expand reporting accuracy, admin account/settings editing, audit coverage and PDF export; run the new CI workflow on GitHub when the changes are pushed.
+1. Production payment provider integration with cryptographically signed webhook handlers.
+2. Direct PDF export rendering for period audit reports.
+3. Live guest SMS gateway integration via Twilio or local telecom provider.

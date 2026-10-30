@@ -20,7 +20,7 @@ def test_admin_password_change_updates_database_private_file_and_audit(client, t
     other = User.objects.create_user(username='accountant', password='original-test-only', role='ACCOUNTANT')
     call_command('reset_staff_passwords', output=str(output))
     original = dict(line.split('\t', 1) for line in output.read_text().splitlines())
-    new_password = 'Only-For-Local-Tests-2026!'
+    new_password = 'ValidPass99!'
     url = f'/api/v1/admin/staff/{target.pk}/password'
     payload = {'new_password': new_password, 'confirm_password': new_password}
 
@@ -38,7 +38,7 @@ def test_admin_password_change_updates_database_private_file_and_audit(client, t
             content_type='application/json').status_code == 400
         assert client.post(url, {'new_password': 'short', 'confirm_password': 'short'},
             content_type='application/json').status_code == 400
-        assert client.post(url, {'new_password': '1234567890123456', 'confirm_password': '1234567890123456'},
+        assert client.post(url, {'new_password': '1234567890', 'confirm_password': '1234567890'},
             content_type='application/json').status_code == 400
 
         response = client.post(url, payload, content_type='application/json')
@@ -67,14 +67,14 @@ def test_missing_private_file_is_created_and_insecure_file_fails_closed(client, 
     url = f'/api/v1/admin/staff/{target.pk}/password'
     with override_settings(STAFF_CREDENTIALS_FILE=output):
         assert sign_in(client, 'admin', admin.username).status_code == 200
-        first = 'Strong-Local-Test-Password-One!'
+        first = 'TestPass88!'
         assert client.post(url, {'new_password': first, 'confirm_password': first},
             content_type='application/json').status_code == 200
         assert stat.S_IMODE(output.stat().st_mode) == 0o600
         assert output.read_text() == f'housekeeping\t{first}\n'
 
         output.chmod(0o644)
-        second = 'Strong-Local-Test-Password-Two!'
+        second = 'TestPass99!'
         response = client.post(url, {'new_password': second, 'confirm_password': second},
             content_type='application/json')
         assert response.status_code == 400

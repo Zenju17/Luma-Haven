@@ -13,7 +13,7 @@ from . import services
 from .models import (
     Allocation, Audit, Folio, FolioEntry, Guest, Hotel, HousekeepingTask,
     MaintenanceTicket, OTP, Outbox, Payment, PaymentAttempt, PaymentEvent,
-    PaymentException, Quote, Reservation, Room, RoomType, ServiceRequest, Stay, User
+    PaymentException, Quote, Refund, Reservation, Room, RoomType, ServiceRequest, Stay, User
 )
 
 
@@ -479,6 +479,31 @@ class OTPAdmin(LumaBaseAdmin):
         return format_html('<span class="status-pill badge-success">Valid</span>')
 
 
+class RefundAdmin(LumaBaseAdmin):
+    list_display = ('id', 'payment_info', 'amount_display', 'status_badge', 'requested_by', 'reviewed_by', 'created_at', 'settled_at')
+    list_filter = ('status', 'created_at', 'settled_at')
+    search_fields = ('reason', 'payment__attempt__reservation__reference')
+
+    @admin.display(description='Payment')
+    def payment_info(self, obj):
+        return f"Payment #{obj.payment_id} ({obj.payment.attempt.reservation.reference})"
+
+    @admin.display(description='Amount')
+    def amount_display(self, obj):
+        return f"${obj.amount_minor / 100:.2f}"
+
+    @admin.display(description='Status')
+    def status_badge(self, obj):
+        classes = {
+            'SETTLED': 'badge-success',
+            'APPROVED': 'badge-primary',
+            'PENDING': 'badge-warning',
+            'REJECTED': 'badge-danger',
+        }
+        badge_cls = classes.get(obj.status, 'badge-neutral')
+        return format_html('<span class="status-pill {}">{}</span>', badge_cls, obj.status)
+
+
 # Register all models with the custom Luma Haven Admin Site
 luma_admin_site.register(Hotel, HotelAdmin)
 luma_admin_site.register(RoomType, RoomTypeAdmin)
@@ -494,6 +519,7 @@ luma_admin_site.register(ServiceRequest, ServiceRequestAdmin)
 luma_admin_site.register(MaintenanceTicket, MaintenanceTicketAdmin)
 luma_admin_site.register(PaymentAttempt, PaymentAttemptAdmin)
 luma_admin_site.register(Payment, PaymentAdmin)
+luma_admin_site.register(Refund, RefundAdmin)
 luma_admin_site.register(PaymentEvent)
 luma_admin_site.register(PaymentException)
 luma_admin_site.register(User, UserAdmin)

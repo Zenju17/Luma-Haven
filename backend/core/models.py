@@ -68,6 +68,8 @@ class Reservation(models.Model):
     status = models.CharField(max_length=20, default='HOLD')
     hold_expires_at = models.DateTimeField()
     verified = models.BooleanField(default=False)
+    cancelled_at = models.DateTimeField(null=True, blank=True)
+    cancellation_reason = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(default=timezone.now)
 
 class Allocation(models.Model):
@@ -132,6 +134,16 @@ class PaymentException(models.Model):
     reason = models.CharField(max_length=200)
     created_at = models.DateTimeField(default=timezone.now)
 
+class Refund(models.Model):
+    payment = models.ForeignKey(Payment, related_name='refunds', on_delete=models.PROTECT)
+    amount_minor = models.PositiveIntegerField()
+    reason = models.CharField(max_length=200)
+    status = models.CharField(max_length=20, default='PENDING', choices=[(x, x) for x in ['PENDING', 'APPROVED', 'REJECTED', 'SETTLED']])
+    requested_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='requested_refunds')
+    reviewed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_refunds')
+    created_at = models.DateTimeField(default=timezone.now)
+    settled_at = models.DateTimeField(null=True, blank=True)
+
 class OTP(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE)
     digest = models.CharField(max_length=64)
@@ -150,6 +162,7 @@ class HousekeepingTask(models.Model):
     stay = models.OneToOneField(Stay, null=True, blank=True, on_delete=models.PROTECT)
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
     status = models.CharField(max_length=24, default='DIRTY')
+    priority = models.CharField(max_length=12, default='NORMAL', choices=[(x, x) for x in ['NORMAL', 'HIGH', 'URGENT']])
     assignee = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(default=timezone.now)
@@ -171,6 +184,8 @@ class MaintenanceTicket(models.Model):
     status = models.CharField(max_length=20, default='OPEN')
     assignee = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     allocation = models.OneToOneField(Allocation, null=True, blank=True, on_delete=models.PROTECT)
+    created_at = models.DateTimeField(default=timezone.now)
+    resolved_at = models.DateTimeField(null=True, blank=True)
 
 class Audit(models.Model):
     actor = models.CharField(max_length=120)

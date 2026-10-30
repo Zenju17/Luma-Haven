@@ -127,7 +127,7 @@ test('guest navigation is public while staff and admin portals enforce separate 
 
   await page.getByRole('button', { name: 'Staff accounts' }).click()
   await expect(page.getByRole('row').filter({ hasText: 'admin' })).toContainText('ADMIN')
-  const changedPassword = `Playwright-Staff-${randomBytes(10).toString('hex')}`
+  const changedPassword = `Staff${randomBytes(3).toString('hex')}!`
   await page.getByRole('row').filter({ hasText: 'accountant' }).getByRole('button', { name: 'Change password' }).click()
   const passwordDialog = page.getByRole('dialog', { name: 'Change staff password' })
   await passwordDialog.getByLabel('New password', { exact: true }).fill(changedPassword)
@@ -179,3 +179,40 @@ test('guest navigation is public while staff and admin portals enforce separate 
   await page.goto('/staff')
   await expect(page.getByRole('heading', { name: 'Good to see you, admin.' })).toBeVisible()
 })
+
+test('MIS manager journey: executive dashboard, decision support, room types, and reports', async ({ page }) => {
+  const { staffPassword } = test.info().config.metadata as { staffPassword: string }
+
+  // 1. Sign in as manager
+  await page.goto('/manager')
+  await expect(page.getByRole('heading', { name: 'Executive sign in' })).toBeVisible()
+  await page.getByRole('textbox', { name: 'Username' }).fill('manager')
+  await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+
+  // 2. Verify Manager Intelligence Dashboard loads
+  await expect(page.getByRole('heading', { name: 'Manager Intelligence Dashboard' })).toBeVisible()
+  await expect(page.getByText('Attention Needed · Decision Support')).toBeVisible()
+
+  // 3. Verify KPI cards
+  await expect(page.getByText('Occupancy Rate', { exact: true })).toBeVisible()
+  await expect(page.getByText('Average Daily Rate (ADR)', { exact: true })).toBeVisible()
+  await expect(page.getByText('Net Room Revenue', { exact: true })).toBeVisible()
+  await expect(page.getByText('Net Settled Cash', { exact: true })).toBeVisible()
+
+  // 4. Verify Room-Type breakdown
+  await expect(page.getByRole('heading', { name: 'Room-Type Performance Breakdown' })).toBeVisible()
+
+  // 5. Navigate to staff operations to view workflow tabs
+  await page.goto('/staff')
+  await expect(page.getByRole('heading', { name: 'Good to see you, manager.' })).toBeVisible()
+  await page.getByRole('button', { name: 'Reservations & Amendments' }).click()
+  await expect(page.getByRole('heading', { name: 'Reservation Management' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Refunds & Reconciliation' }).click()
+  await expect(page.getByRole('heading', { name: 'Refund Management & Ledger Reconciliation' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Room Rates & Pricing' }).click()
+  await expect(page.getByRole('heading', { name: 'Room Rate Management' })).toBeVisible()
+})
+
