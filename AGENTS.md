@@ -88,7 +88,7 @@ compose.yaml         redis, backend, worker, beat, frontend (no local database)
 - **Sessions**: guest, staff and admin use separate HttpOnly cookies (`sessionid`, `staff_sessionid`, `admin_sessionid`). The `X-Portal` header selects a cookie jar, never authorization. Role checks still happen server-side.
 - **CSRF**: every API write requires a CSRF token; the frontend refreshes it per write.
 - **OTP**: six-digit codes are HMAC-hashed, expire in 5 minutes, and are never returned by the API (console/file email only).
-- **Payments** are a **development emulator**. `/development/checkout/<uuid>` fabricates provider events. Bakong KHQR is the intended real provider; the integration is designed but **not implemented** — see [`docs/PAYMENTS.md`](docs/PAYMENTS.md). There is no real gateway, signature verification, provider refunds, or webhook endpoint yet.
+- **Payments**: default is the **development emulator** (`/development/checkout/<uuid>`). Bakong KHQR is implemented behind `core/payments/` (`PAYMENT_PROVIDER=bakong`, see [`docs/PAYMENTS.md`](docs/PAYMENTS.md)) but is untested against the real Bakong API. No signed webhook, provider refunds or PSP reconciliation exist; settlement is server-side polling.
 - **Single hotel**: `Hotel` is effectively a singleton (`Asia/Phnom_Penh`, USD). Multi-property isolation is not implemented; do not claim it is.
 - **Test isolation**: pytest creates `test_*` databases and Playwright creates/drops `hims_e2e_*`; both must stay on the disposable local server.
 

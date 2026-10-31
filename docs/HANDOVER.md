@@ -28,9 +28,11 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 
 - P1 legal/consent/data-rights (see IMPLEMENTATION_STATUS): code complete, **tests not yet run**.
 
+- P2 Bakong KHQR (see PAYMENTS.md): code complete behind `PAYMENT_PROVIDER=bakong`; **no real Bakong call and no DB test run yet**.
+
 ## Deliberately simulated or missing
 
-- **Payments are fake.** `/api/v1/development/checkout/<uuid>` is an emulator that writes provider events. No real gateway, signed webhooks, provider refunds, reconciliation with a PSP, or card storage.
+- **Payments are fake by default** (KHQR exists but is unverified against Bakong). `/api/v1/development/checkout/<uuid>` is an emulator that writes provider events. No real gateway, signed webhooks, provider refunds, reconciliation with a PSP, or card storage.
 - **No real identity verification, SMS, or door-lock integration.** QR is a generic link to `/verify`; physical keys are collected at reception.
 - **Single property only.** No enforced organization/property tenancy or RLS. Do not present it as multi-tenant.
 - **No PDF export.** CSV only.

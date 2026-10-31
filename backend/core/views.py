@@ -18,6 +18,8 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from . import legal, services, staff_passwords
+from .payments import service as payment_service
+from .payments.base import ProviderError  # noqa: F401
 from .decision_support import evaluate_decision_support_alerts
 from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, LegalDocument, Folio, FolioEntry, Hotel, HousekeepingTask,
                      OTP, Outbox, Payment, PaymentAttempt, PaymentException, Quote, Refund,
@@ -45,7 +47,7 @@ def detail(obj):
             'departure': obj.departure, 'room': obj.room.number, 'room_type': obj.room.type.name,
             'guest_name': obj.guest.full_name, 'verified': obj.verified, 'currency': folio.currency,
             'hotel_today': services.hotel_today(obj.room.hotel), 'hotel_timezone': obj.room.hotel.timezone,
-            'balance_minor': services.balance(folio), 'folio_version': folio.version,
+            'balance_minor': services.balance(folio), 'folio_version': folio.version, 'payment_provider': settings.PAYMENT_PROVIDER,
             'entries': list(folio.entries.values('category', 'description', 'amount_minor', 'service_date')),
             'stay_id': stay.pk if stay else None, 'checked_in_at': stay.checked_in_at if stay else None,
             'checked_out_at': stay.checked_out_at if stay else None,
@@ -175,6 +177,14 @@ def reservations(request):
 def reservation(request, pk):
     return Response(detail(booking(request, pk)))
 
+def _attempt_payload(attempt, include_qr=True):
+    data = {'id': attempt.pk, 'provider': attempt.provider, 'status': attempt.status, 'amount_minor': attempt.amount_minor,
+            'currency': attempt.currency, 'reservation_id': attempt.reservation_id, 'expires_at': attempt.expires_at,
+            'simulated': attempt.provider == 'development', 'checkout_url': f'/checkout/{attempt.pk}'}
+    if include_qr and attempt.provider == 'bakong' and attempt.status == 'PENDING':
+        data['qr'] = attempt.provider_qr  # shown only while payable; never logged
+    return data
+
 @api_view(['POST'])
 def payment_session(request, pk):
     obj = booking(request, pk)
@@ -183,9 +193,22 @@ def payment_session(request, pk):
     amount = services.balance(obj.folio)
     if amount <= 0:
         raise ValidationError('Nothing outstanding')
-    attempt = PaymentAttempt.objects.create(reservation=obj, amount_minor=amount, currency=obj.folio.currency)
-    return Response({'id': attempt.pk, 'amount_minor': amount, 'currency': attempt.currency,
-                     'checkout_url': f'/checkout/{attempt.pk}', 'simulated': True}, status=201)
+    try:
+        attempt = payment_service.create_session(obj, amount, obj.folio.currency)
+    except payment_service.SessionError as exc:
+        raise ValidationError(str(exc))
+    return Response(_attempt_payload(attempt), status=201)
+
+@api_view(['GET'])
+def payment_session_status(request, pk):
+    """Booking-scoped status. The browser never reports payment; the server asks the provider."""
+    attempt = PaymentAttempt.objects.filter(pk=pk).first()
+    if not attempt:
+        raise NotFound('Payment session not found')
+    booking(request, attempt.reservation_id)  # guest session or staff only
+    if attempt.provider != 'development':
+        attempt = payment_service.refresh_attempt(attempt.pk)
+    return Response(_attempt_payload(attempt))
 
 @api_view(['GET', 'POST'])
 def development_checkout(request, pk):
@@ -1308,11 +1331,27 @@ def report_cash_reconciliation(request):
     refunded_cash = sum(r.amount_minor for r in refunds)
     net_cash = gross_cash - refunded_cash
 
+    channel_mix = {}
+    for p in payments:
+        row = channel_mix.setdefault(p.attempt.provider, {'count': 0, 'amount_minor': 0})
+        row['count'] += 1
+        row['amount_minor'] += p.amount_minor
+    attempts = PaymentAttempt.objects.filter(created_at__gte=beginning, created_at__lt=ending)
+    attempt_funnel = {}
+    for provider_name, status_name in attempts.values_list('provider', 'status'):
+        row = attempt_funnel.setdefault(provider_name, {'created': 0, 'SUCCESS': 0, 'EXPIRED': 0, 'FAILED': 0, 'EXCEPTION': 0, 'PENDING': 0})
+        row['created'] += 1
+        row[status_name] = row.get(status_name, 0) + 1
+    for row in attempt_funnel.values():
+        row['abandon_rate_percent'] = round((row['EXPIRED'] + row['FAILED']) * 100 / row['created'], 1) if row['created'] else 0
+    payment_exceptions = list(PaymentException.objects.filter(created_at__gte=beginning, created_at__lt=ending).values(
+        'id', 'attempt__reservation__reference', 'reason', 'created_at'))
+
     if request.query_params.get('export') == 'csv':
         headers = ['Type', 'Record ID', 'Reservation Ref', 'Amount Minor', 'Reason / Channel', 'Settled At']
         rows = []
         for p in payments:
-            rows.append(['PAYMENT', p.id, p.attempt.reservation.reference, p.amount_minor, 'Guest Checkout / Deposit', p.settled_at.isoformat()])
+            rows.append(['PAYMENT', p.id, p.attempt.reservation.reference, p.amount_minor, f'Channel: {p.attempt.provider}', p.settled_at.isoformat()])
         for r in refunds:
             rows.append(['REFUND', r.id, r.payment.attempt.reservation.reference, -r.amount_minor, r.reason, r.settled_at.isoformat()])
         rows.append(['TOTAL_GROSS', '', '', gross_cash, '', ''])
@@ -1328,8 +1367,11 @@ def report_cash_reconciliation(request):
         'net_cash_minor': net_cash,
         'payments_count': len(payments),
         'refunds_count': len(refunds),
+        'channel_mix': channel_mix,
+        'attempt_funnel': attempt_funnel,
+        'payment_exceptions': payment_exceptions,
         'payments': [
-            {'id': p.id, 'reference': p.attempt.reservation.reference, 'amount_minor': p.amount_minor, 'settled_at': p.settled_at.isoformat()}
+            {'id': p.id, 'reference': p.attempt.reservation.reference, 'amount_minor': p.amount_minor, 'channel': p.attempt.provider, 'settled_at': p.settled_at.isoformat()}
             for p in payments
         ],
         'refunds': [
@@ -1788,6 +1830,7 @@ urlpatterns = [
     path('admin/visual-assets/<int:pk>', staff_visual_asset_detail),
     path('reservations', reservations), path('reservations/<int:pk>', reservation),
     path('reservations/<int:pk>/payment-sessions', payment_session),
+    path('payment-sessions/<uuid:pk>', payment_session_status),
     path('development/checkout/<uuid:pk>', development_checkout),
     path('guest-access/request-otp', request_otp), path('guest-access/verify-otp', verify_otp),
     path('reservations/<int:pk>/check-in', check_in), path('reservations/<int:pk>/check-out', check_out),

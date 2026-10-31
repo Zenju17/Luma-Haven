@@ -41,3 +41,12 @@ def archive_daily_mis_snapshot():
 def run_retention():
     from .legal import run_retention as run
     return run()
+
+
+@shared_task
+def sweep_payment_attempts():
+    from django.conf import settings
+    if settings.PAYMENT_PROVIDER == 'development':
+        return {'skipped': 'development provider'}
+    from .payments.service import sweep
+    return sweep()

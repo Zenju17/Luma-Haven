@@ -22,6 +22,7 @@ export interface Quote {
 }
 
 export interface Booking {
+  payment_provider?: 'development' | 'bakong'
   id: number
   reference: string
   status: string

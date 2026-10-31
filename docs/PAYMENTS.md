@@ -1,6 +1,15 @@
 # Bakong KHQR payments — integration plan
 
-**Status: not implemented.** This is the design for replacing the development payment emulator. No Bakong code, dependency, model field or endpoint exists yet. The current simulator (`/api/v1/development/checkout/<uuid>`) remains the only payment path.
+**Status: implemented (31 Oct 2026), not yet run against Bakong or a test database.** The adapter, migration `0007`, session/status endpoints, sweeper, checkout QR page and MIS additions exist; the unit tests use a fake provider and two tests exercise the real SDK offline. The development emulator remains the default (`PAYMENT_PROVIDER=development`). Set `PAYMENT_PROVIDER=bakong` plus the `BAKONG_*` variables in the ignored `.env` to enable KHQR.
+
+**Implementation notes (differences from the original design):**
+- The SDK's QR expiry is in **whole days**, so the hotel enforces the 15-minute window itself (`PaymentAttempt.expires_at`). A QR can still be paid in the bank app after our window, so the Celery sweeper (`core.tasks.sweep_payment_attempts`, every 30 s) keeps polling `PENDING` and `EXPIRED` attempts for `PAYMENT_LATE_WINDOW_HOURS` (24) with back-off. A late payment goes through `process_event`: it confirms if the room is still free, otherwise it becomes a `PaymentException` needing a manual refund.
+- Endpoints: `POST /reservations/<id>/payment-sessions` (reuses a live attempt, max 5 new per 10 min) and `GET /payment-sessions/<uuid>` (booking-scoped; server-side provider check, at most one provider call per 3 s per attempt). Payment never settles from browser input.
+- A QR payment extends an unpaid hold up to the QR expiry (+2 min), only within the first hour of the booking.
+- Only USD is supported (`payments.E004`); KHR is rejected until it has tests. `manage.py check` fails if `bakong` is selected without token/account/merchant settings, or if `development` is used with `APP_ENV=production`.
+- Bakong's NBC API accepts requests **from Cambodian IP addresses only**: the production server (or an egress proxy) must run in Cambodia, or use a KHQR.dev `rbk_` token.
+- MIS: cash-reconciliation report now returns `channel_mix`, `attempt_funnel` (with abandon rate) and `payment_exceptions`; Decision Support rules 8 (unreconciled KHQR attempts) and 9 (KHQR abandonment > 50 %).
+
 
 > **SDK note.** The linked [`mrrhak/khqr_sdk`](https://github.com/mrrhak/khqr_sdk) is a **Flutter/Dart** package (`pubspec.yaml`, `KhqrSdk.generateMerchant(...)`, `KhqrCardWidget`). It cannot run in this Django/Python backend or the Vue frontend. Use the Python package [`bakong-khqr`](https://pypi.org/project/bakong-khqr/) (unofficial, MIT, Python 3.8+) for the backend, or build a separate Flutter client later. Both implement the same KHQR/EMVCo concepts.
 

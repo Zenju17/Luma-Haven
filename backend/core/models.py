@@ -164,6 +164,13 @@ class PaymentAttempt(models.Model):
     currency = models.CharField(max_length=3)
     status = models.CharField(max_length=20, default='PENDING')
     created_at = models.DateTimeField(default=timezone.now)
+    provider = models.CharField(max_length=20, default='development')
+    provider_qr = models.TextField(blank=True, default='')
+    provider_md5 = models.CharField(max_length=32, blank=True, default='', db_index=True)
+    provider_tran_id = models.CharField(max_length=64, blank=True, default='')
+    checkout_url = models.CharField(max_length=500, blank=True, default='')
+    expires_at = models.DateTimeField(null=True, blank=True)
+    last_checked_at = models.DateTimeField(null=True, blank=True)
 
 class PaymentEvent(models.Model):
     event_id = models.CharField(max_length=100, unique=True)

@@ -10,6 +10,8 @@ attrs==26.1.0
     # via
     #   jsonschema
     #   referencing
+bakong-khqr==0.6.5
+    # via -r backend/requirements.txt
 billiard==4.3.1
     # via celery
 celery==5.5.3

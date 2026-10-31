@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from . import services
 from .models import (
-    Hotel, HousekeepingTask, MaintenanceTicket, PaymentException,
+    Hotel, HousekeepingTask, MaintenanceTicket, PaymentAttempt, PaymentException,
     Reservation, Room, ServiceRequest
 )
 
@@ -235,6 +235,42 @@ def evaluate_decision_support_alerts(hotel=None, period_start=None, period_end=N
                 'records_involved': f'{cohort_cancelled} cancelled / {cohort_bookings} total bookings ({check_start} to {check_end})',
                 'why_it_matters': 'High cancellation velocity destabilizes occupancy forecasting, disrupts housekeeping staffing plans, and inflates booking acquisition costs.',
                 'recommended_action': 'Analyze cancellation reasons, consider tightening cancellation policies for peak periods, or introduce non-refundable rate plans with pricing incentives.'
+            })
+
+    # -------------------------------------------------------------
+    # Rule 8: KHQR attempts the sweeper has not reconciled (provider outage / worker stalled)
+    # -------------------------------------------------------------
+    stale = PaymentAttempt.objects.filter(provider='bakong', status='PENDING', expires_at__lt=now - timedelta(minutes=30))
+    if stale.exists():
+        count = stale.count()
+        alerts.append({
+            'id': 'unreconciled_khqr_attempts',
+            'severity': 'CRITICAL',
+            'category': 'PAYMENT_RECONCILIATION',
+            'title': f'{count} KHQR Payment Attempt(s) Not Reconciled',
+            'what_happened': f'{count} Bakong payment attempt(s) passed their expiry more than 30 minutes ago but are still PENDING.',
+            'records_involved': ", ".join(f'attempt {str(a.pk)[:8]}' for a in stale[:10]),
+            'why_it_matters': 'Guests may have paid without the booking being confirmed, or the payment worker or Bakong connection is down.',
+            'recommended_action': 'Check the Celery worker/beat and Bakong connectivity, then verify the listed payments in the bank portal before releasing rooms.'
+        })
+
+    # -------------------------------------------------------------
+    # Rule 9: High KHQR abandonment (>50% over 7 days, minimum 5 attempts)
+    # -------------------------------------------------------------
+    week = PaymentAttempt.objects.filter(provider='bakong', created_at__gte=now - timedelta(days=7)).exclude(status='PENDING')
+    week_total = week.count()
+    if week_total >= 5:
+        lost = week.filter(status__in=['EXPIRED', 'FAILED']).count()
+        if lost * 100 / week_total > 50:
+            alerts.append({
+                'id': 'high_khqr_abandonment',
+                'severity': 'WARNING',
+                'category': 'PAYMENT_CONVERSION',
+                'title': f'High KHQR Abandonment ({round(lost * 100 / week_total)}%)',
+                'what_happened': f'{lost} of {week_total} KHQR attempts in the last 7 days expired or failed.',
+                'records_involved': f'{lost} expired/failed / {week_total} attempts (last 7 days)',
+                'why_it_matters': 'Guests who cannot complete payment lose their hold and the hotel loses revenue.',
+                'recommended_action': 'Review the QR window and checkout flow, test scanning with common banking apps, and consider a longer payment window.'
             })
 
     return alerts

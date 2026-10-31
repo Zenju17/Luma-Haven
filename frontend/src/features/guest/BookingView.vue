@@ -100,7 +100,7 @@ async function sendRequest() {
           <p v-for="(entry, index) in booking.data.value.entries" :key="index" class="flex justify-between mt-2 text-sm">
             <span>{{ entry.description }} · {{ entry.service_date }}</span><span>{{ money(entry.amount_minor) }}</span>
           </p>
-          <button v-if="booking.data.value.balance_minor > 0" class="btn mt-5" :disabled="busy" @click="pay">Pay balance (simulation)</button>
+          <button v-if="booking.data.value.balance_minor > 0" class="btn mt-5" :disabled="busy" @click="pay">{{ booking.data.value.payment_provider === 'bakong' ? 'Pay with Bakong' : 'Pay balance (simulation)' }}</button>
         </div>
       </div>
 

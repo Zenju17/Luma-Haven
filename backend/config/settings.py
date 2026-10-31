@@ -93,11 +93,22 @@ if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
     EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Payments. PAYMENT_PROVIDER=development keeps the emulator; bakong enables KHQR (secrets only via env, never VITE_*).
+PAYMENT_PROVIDER = os.getenv('PAYMENT_PROVIDER', 'development')
+PAYMENT_ATTEMPT_MINUTES = int(os.getenv('PAYMENT_ATTEMPT_MINUTES', '15'))
+PAYMENT_LATE_WINDOW_HOURS = int(os.getenv('PAYMENT_LATE_WINDOW_HOURS', '24'))
+BAKONG_TOKEN = os.getenv('BAKONG_TOKEN', '')
+BAKONG_ACCOUNT_ID = os.getenv('BAKONG_ACCOUNT_ID', '')
+BAKONG_MERCHANT_NAME = os.getenv('BAKONG_MERCHANT_NAME', 'Luma Haven')
+BAKONG_MERCHANT_CITY = os.getenv('BAKONG_MERCHANT_CITY', 'Phnom Penh')
+BAKONG_CURRENCY = os.getenv('BAKONG_CURRENCY', 'USD')
+
 # Data retention (see docs/IMPLEMENTATION_PLAN.md). Accounting records are never deleted.
 RETENTION_GUEST_YEARS = int(os.getenv('RETENTION_GUEST_YEARS', '3'))
 RETENTION_SHORT_LIVED_HOURS = int(os.getenv('RETENTION_SHORT_LIVED_HOURS', '24'))
 
 CELERY_BEAT_SCHEDULE = {
+    'sweep-payment-attempts': {'task': 'core.tasks.sweep_payment_attempts', 'schedule': 30.0},
     'run-retention': {'task': 'core.tasks.run_retention', 'schedule': 86400.0},
     'expire-holds': {'task': 'core.tasks.expire_holds', 'schedule': 60.0},
     'archive-daily-mis-snapshot': {'task': 'core.tasks.archive_daily_mis_snapshot', 'schedule': 3600.0},
