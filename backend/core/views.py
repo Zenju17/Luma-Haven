@@ -17,9 +17,9 @@ from django.db.models import Sum
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
-from . import services, staff_passwords
+from . import legal, services, staff_passwords
 from .decision_support import evaluate_decision_support_alerts
-from .models import (Allocation, Audit, Folio, FolioEntry, Hotel, HousekeepingTask,
+from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, LegalDocument, Folio, FolioEntry, Hotel, HousekeepingTask,
                      OTP, Outbox, Payment, PaymentAttempt, PaymentException, Quote, Refund,
                      Reservation, Room, RoomType, ServiceRequest, Stay, MaintenanceTicket, User,
                      VisualAsset)
@@ -78,7 +78,11 @@ def staff_logout(request):
 def me(request):
     if request.portal == 'guest':
         return Response({'guest_reservation': request.session.get('guest_reservation')})
-    return Response({'username': request.user.username, 'role': request.user.role} if request.user.is_authenticated else {})
+    if not request.user.is_authenticated:
+        return Response({})
+    pending = legal.pending_staff_documents(request.user, request.query_params.get('lang', 'en') if request.query_params.get('lang') in legal.LANGUAGES else 'en')
+    return Response({'username': request.user.username, 'role': request.user.role,
+                     'pending_agreements': [{'id': d.pk, 'kind': d.kind, 'version': d.version, 'title': d.title} for d in pending]})
 
 @api_view(['GET'])
 def rooms(request):
@@ -148,11 +152,18 @@ def quotes(request):
 @api_view(['POST'])
 def reservations(request):
     try:
-        quote = Quote.objects.select_related('room__type', 'room__hotel').get(pk=request.data['quote_id'])
-        name, email = request.data['name'].strip(), request.data['email'].strip()
-        if not name or not email or '@' not in email:
-            raise ValueError('Name and email required')
-        reservation = services.reserve(quote, name, email)
+        docs = legal.validate_consent(request.data.get('consent_document_ids'), legal.BOOKING_KINDS)
+    except ValueError as exc:
+        raise ValidationError(str(exc))
+    try:
+        with transaction.atomic():
+            quote = Quote.objects.select_related('room__type', 'room__hotel').get(pk=request.data['quote_id'])
+            name, email = request.data['name'].strip(), request.data['email'].strip()
+            if not name or not email or '@' not in email:
+                raise ValueError('Name and email required')
+            reservation = services.reserve(quote, name, email)
+            legal.record_consent(docs, guest=reservation.guest, method='BOOKING',
+                                 ip=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT'))
     except (KeyError, ValueError, Quote.DoesNotExist, IntegrityError) as exc:
         raise ValidationError('Quote expired, invalid, or room no longer available') from exc
     request.session['guest_reservation'] = reservation.pk
@@ -1635,7 +1646,138 @@ def staff_visual_asset_detail(request, pk):
         return Response({'deleted': True, 'id': pk})
 
 
+
+# ---- Legal documents, consent and data-subject rights (P1) ----
+
+def _lang(request):
+    lang = request.query_params.get('lang', 'en')
+    return lang if lang in legal.LANGUAGES else 'en'
+
+def _legal_public(doc, body=False):
+    data = {'id': doc.pk, 'kind': doc.kind, 'language': doc.language, 'version': doc.version,
+            'title': doc.title, 'effective_at': doc.effective_at}
+    if body:
+        data['body_markdown'] = doc.body_markdown
+    return data
+
+@api_view(['GET'])
+def legal_documents(request):
+    docs = legal.current_documents(_lang(request))
+    return Response([_legal_public(d) for d in docs.values()])
+
+@api_view(['GET'])
+def legal_document(request, kind):
+    doc = legal.current_documents(_lang(request), [kind.upper()]).get(kind.upper())
+    if not doc:
+        raise NotFound('Document not found')
+    return Response(_legal_public(doc, body=True))
+
+@api_view(['POST'])
+def accept_agreement(request):
+    """Staff acceptance of the current acceptable-use agreement."""
+    if request.portal not in ('staff', 'admin') or not request.user.is_authenticated:
+        raise PermissionDenied('Staff permission required')
+    try:
+        docs = legal.validate_consent(request.data.get('consent_document_ids'), ('STAFF_AGREEMENT',))
+    except ValueError as exc:
+        raise ValidationError(str(exc))
+    docs = [d for d in docs if d.kind == 'STAFF_AGREEMENT']
+    legal.record_consent(docs, user=request.user, method='STAFF_LOGIN',
+                         ip=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT'))
+    return Response({'accepted': [d.pk for d in docs]}, status=201)
+
+def _verified_guest_booking(request, pk):
+    obj = booking(request, pk)
+    if request.portal == 'guest' and not obj.verified:
+        raise PermissionDenied('Verify your booking with the emailed code first')
+    return obj
+
+@api_view(['POST'])
+def guest_data_request(request, pk):
+    obj = _verified_guest_booking(request, pk)
+    type_ = str(request.data.get('type', '')).upper()
+    if type_ not in ('ACCESS', 'EXPORT', 'RECTIFY', 'DELETE'):
+        raise ValidationError('Unknown request type')
+    req = legal.open_request(obj.guest, type_, str(request.data.get('note', '')))
+    return Response({'id': req.pk, 'type': req.type, 'status': req.status, 'due_at': req.due_at}, status=201)
+
+@api_view(['GET'])
+def guest_data_export(request, pk):
+    obj = _verified_guest_booking(request, pk)
+    Audit.objects.create(actor=f'guest:{obj.guest.pk}', action='DATA_EXPORTED', target=f'guest:{obj.guest.pk}')
+    return Response(legal.export_guest_data(obj.guest))
+
+def _request_row(r):
+    return {'id': r.pk, 'type': r.type, 'status': r.status, 'guest_id': r.guest_id, 'guest_name': r.guest.full_name,
+            'guest_email': r.guest.email, 'note': r.note, 'resolution': r.resolution, 'requested_at': r.requested_at,
+            'due_at': r.due_at, 'overdue': r.status == 'OPEN' and r.due_at < timezone.now(),
+            'handled_by': r.handled_by, 'handled_at': r.handled_at}
+
+@api_view(['GET'])
+def admin_data_requests(request):
+    staff(request, 'ADMIN')
+    qs = DataSubjectRequest.objects.select_related('guest').order_by('status', 'due_at')[:200]
+    return Response([_request_row(r) for r in qs])
+
+@api_view(['POST'])
+def admin_resolve_data_request(request, pk):
+    staff(request, 'ADMIN')
+    req = DataSubjectRequest.objects.select_related('guest').filter(pk=pk).first()
+    if not req:
+        raise NotFound('Request not found')
+    try:
+        req = legal.resolve_request(req, str(request.data.get('decision', '')), request.user.username, str(request.data.get('resolution', '')))
+    except ValueError as exc:
+        raise ValidationError(str(exc))
+    return Response(_request_row(req))
+
+@api_view(['GET', 'POST'])
+def admin_legal(request):
+    staff(request, 'ADMIN')
+    if request.method == 'POST':
+        kind, lang = str(request.data.get('kind', '')).upper(), request.data.get('language')
+        title, body = str(request.data.get('title', '')).strip(), str(request.data.get('body_markdown', '')).strip()
+        if kind not in dict(LegalDocument._meta.get_field('kind').choices) or lang not in legal.LANGUAGES or not title or not body:
+            raise ValidationError('kind, language, title and body_markdown are required')
+        doc = legal.new_draft(kind, lang, title, body, request.user.username)
+        Audit.objects.create(actor=request.user.username, action='LEGAL_DRAFT_CREATED', target=f'{kind}/{lang}/v{doc.version}')
+        return Response(dict(_legal_public(doc, body=True), status=doc.status), status=201)
+    rows = LegalDocument.objects.order_by('kind', 'language', '-version')
+    consents = dict(ConsentRecord.objects.values_list('document_id').annotate(n=models.Count('pk')))
+    return Response([dict(_legal_public(d), status=d.status, created_by=d.created_by, consent_count=consents.get(d.pk, 0)) for d in rows])
+
+@api_view(['GET', 'PATCH'])
+def admin_legal_detail(request, pk):
+    staff(request, 'ADMIN')
+    doc = LegalDocument.objects.filter(pk=pk).first()
+    if not doc:
+        raise NotFound('Document not found')
+    if request.method == 'PATCH':
+        if doc.status != 'DRAFT':
+            raise ValidationError('Published documents are immutable; create a new version')
+        doc.title = str(request.data.get('title', doc.title)).strip() or doc.title
+        doc.body_markdown = str(request.data.get('body_markdown', doc.body_markdown))
+        doc.save()
+    return Response(dict(_legal_public(doc, body=True), status=doc.status))
+
+@api_view(['POST'])
+def admin_legal_publish(request, pk):
+    staff(request, 'ADMIN')
+    doc = LegalDocument.objects.filter(pk=pk).first()
+    if not doc:
+        raise NotFound('Document not found')
+    try:
+        doc = legal.publish(doc, request.user.username)
+    except ValueError as exc:
+        raise ValidationError(str(exc))
+    return Response(dict(_legal_public(doc, body=True), status=doc.status))
+
 urlpatterns = [
+    path('legal/documents', legal_documents), path('legal/documents/<str:kind>', legal_document),
+    path('auth/accept-agreement', accept_agreement),
+    path('reservations/<int:pk>/data-requests', guest_data_request), path('reservations/<int:pk>/data-export', guest_data_export),
+    path('admin/data-requests', admin_data_requests), path('admin/data-requests/<int:pk>/resolve', admin_resolve_data_request),
+    path('admin/legal', admin_legal), path('admin/legal/<int:pk>', admin_legal_detail), path('admin/legal/<int:pk>/publish', admin_legal_publish),
     path('health', lambda r: JsonResponse({'status': 'ok'})),
     path('auth/csrf', csrf), path('auth/login', staff_login), path('auth/logout', staff_logout), path('auth/me', me),
     path('rooms', rooms), path('availability', availability), path('quotes', quotes),

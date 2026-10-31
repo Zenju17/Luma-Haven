@@ -35,3 +35,9 @@ def archive_daily_mis_snapshot():
     )
     return {'status': 'archived', 'date': str(yesterday), 'kpis': values}
 
+
+
+@shared_task
+def run_retention():
+    from .legal import run_retention as run
+    return run()

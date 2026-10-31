@@ -26,6 +26,8 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 - Independent guest/staff/admin HttpOnly sessions; strict CSRF on API writes; role gates and guest booking isolation.
 - Visual asset management (`VisualAsset`, import command, media manager) and the room-key visual system.
 
+- P1 legal/consent/data-rights (see IMPLEMENTATION_STATUS): code complete, **tests not yet run**.
+
 ## Deliberately simulated or missing
 
 - **Payments are fake.** `/api/v1/development/checkout/<uuid>` is an emulator that writes provider events. No real gateway, signed webhooks, provider refunds, reconciliation with a PSP, or card storage.

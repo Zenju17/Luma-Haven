@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import SiteLayout from '../../layouts/SiteLayout.vue'
 import Notice from '../../components/Notice.vue'
+import MyDataPanel from './components/MyDataPanel.vue'
 import { api } from '../../services/api'
 import { money, type Booking } from '../../types'
 
@@ -135,6 +136,7 @@ async function sendRequest() {
         <p class="mt-2 text-[var(--muted)]">Your receipt is shown above. We hope to welcome you back.</p>
         <button class="btn-secondary mt-4" @click="printReceipt">Print receipt</button>
       </div>
+      <MyDataPanel :booking-id="id" :verified="booking.data.value.verified" />
       <Notice :message="message" :status="!failed" />
     </div>
   </SiteLayout>

@@ -93,7 +93,12 @@ if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
     EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Data retention (see docs/IMPLEMENTATION_PLAN.md). Accounting records are never deleted.
+RETENTION_GUEST_YEARS = int(os.getenv('RETENTION_GUEST_YEARS', '3'))
+RETENTION_SHORT_LIVED_HOURS = int(os.getenv('RETENTION_SHORT_LIVED_HOURS', '24'))
+
 CELERY_BEAT_SCHEDULE = {
+    'run-retention': {'task': 'core.tasks.run_retention', 'schedule': 86400.0},
     'expire-holds': {'task': 'core.tasks.expire_holds', 'schedule': 60.0},
     'archive-daily-mis-snapshot': {'task': 'core.tasks.archive_daily_mis_snapshot', 'schedule': 3600.0},
 }

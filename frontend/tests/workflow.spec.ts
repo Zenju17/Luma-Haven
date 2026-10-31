@@ -35,6 +35,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
   await room.getByRole('button', { name: 'View quote' }).click()
   await page.getByLabel('Full name').fill('Playwright Demo Guest')
   await page.getByLabel('Email for verification').fill(email)
+  await page.getByLabel(/I have read and accept/).check()
   await page.getByRole('button', { name: 'Hold this room' }).click()
   await expect(page).toHaveURL(/\/booking\/\d+$/)
   const bookingId = Number(page.url().match(/booking\/(\d+)/)?.[1])

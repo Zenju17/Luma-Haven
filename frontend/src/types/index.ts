@@ -245,3 +245,7 @@ export interface PublicVisualAssetsResponse {
   room_types: Record<string, VisualAsset[]>
 }
 
+
+export interface LegalDocSummary { id: number; kind: string; language: 'en' | 'km'; version: number; title: string; effective_at: string | null }
+export interface LegalDoc extends LegalDocSummary { body_markdown: string }
+export interface DataRequestResult { id: number; type: string; status: string; due_at: string }

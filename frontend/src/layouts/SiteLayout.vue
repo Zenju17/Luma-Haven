@@ -282,6 +282,10 @@ function handleCheckAvailability() {
           <p>© {{ new Date().getFullYear() }} Luma Haven Boutique Hotel. All rights reserved.</p>
           <div class="flex items-center gap-6">
             <RouterLink to="/verify" class="hover:text-[var(--brand-text)] transition-colors">Find My Stay</RouterLink>
+            <RouterLink to="/legal/terms" class="hover:text-[var(--brand-text)] transition-colors">Terms</RouterLink>
+            <RouterLink to="/legal/privacy" class="hover:text-[var(--brand-text)] transition-colors">Privacy</RouterLink>
+            <RouterLink to="/legal/cancellation" class="hover:text-[var(--brand-text)] transition-colors">Cancellation</RouterLink>
+            <RouterLink to="/legal/cookies" class="hover:text-[var(--brand-text)] transition-colors">Cookies</RouterLink>
             <RouterLink to="/staff" class="text-[var(--muted)]/75 hover:text-[var(--brand-text)] transition-colors flex items-center gap-1">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

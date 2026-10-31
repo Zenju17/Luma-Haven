@@ -6,6 +6,7 @@ const GalleryView = () => import('../features/guest/GalleryView.vue')
 const SpacesView = () => import('../features/guest/SpacesView.vue')
 const BookingView = () => import('../features/guest/BookingView.vue')
 const CheckoutView = () => import('../features/guest/CheckoutView.vue')
+const LegalPage = () => import('../features/legal/LegalPage.vue')
 const VerifyView = () => import('../features/guest/VerifyView.vue')
 const StaffView = () => import('../features/staff/StaffView.vue')
 const AdminView = () => import('../features/admin/AdminView.vue')
@@ -21,6 +22,7 @@ export const router = createRouter({
     { path: '/booking/:id', component: BookingView },
     { path: '/checkout/:id', component: CheckoutView },
     { path: '/verify', component: VerifyView },
+    { path: '/legal/:kind', component: LegalPage },
     { path: '/staff', component: StaffView },
     { path: '/manager', component: ManagerView },
     { path: '/admin', component: AdminView },

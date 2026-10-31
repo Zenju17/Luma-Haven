@@ -74,6 +74,7 @@ class Guest(models.Model):
     full_name = models.CharField(max_length=120)
     email = models.EmailField()
     phone = models.CharField(max_length=40, blank=True)
+    anonymized_at = models.DateTimeField(null=True, blank=True)
 
 class Quote(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -285,3 +286,66 @@ class VisualAsset(models.Model):
     def __str__(self):
         return f"{self.title} ({self.category})"
 
+
+
+LEGAL_KINDS = ['TERMS', 'PRIVACY', 'CANCELLATION', 'COOKIES', 'PAYMENT', 'STAFF_AGREEMENT']
+
+
+class LegalDocument(models.Model):
+    """Versioned legal text. A published version is immutable; publish a new version to change it."""
+    kind = models.CharField(max_length=20, choices=[(x, x) for x in LEGAL_KINDS])
+    language = models.CharField(max_length=2, choices=[('en', 'en'), ('km', 'km')])
+    version = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=160)
+    body_markdown = models.TextField()
+    status = models.CharField(max_length=12, default='DRAFT', choices=[(x, x) for x in ['DRAFT', 'PUBLISHED']])
+    effective_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.CharField(max_length=150, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['kind', 'language', 'version'], name='unique_legal_version')]
+
+    def save(self, *args, **kwargs):
+        if self.pk and LegalDocument.objects.filter(pk=self.pk, status='PUBLISHED').exists():
+            raise ValueError('Published legal documents are immutable; create a new version')
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.status == 'PUBLISHED':
+            raise ValueError('Published legal documents cannot be deleted')
+        return super().delete(*args, **kwargs)
+
+
+class ConsentRecord(models.Model):
+    """Append-only proof that a guest or staff member accepted a document version."""
+    document = models.ForeignKey(LegalDocument, on_delete=models.PROTECT)
+    guest = models.ForeignKey(Guest, null=True, blank=True, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.PROTECT)
+    method = models.CharField(max_length=20, default='BOOKING')
+    ip_hash = models.CharField(max_length=64, blank=True)
+    user_agent_hash = models.CharField(max_length=64, blank=True)
+    accepted_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.CheckConstraint(condition=Q(guest__isnull=False) | Q(user__isnull=False), name='consent_has_subject')]
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise ValueError('Consent records are append-only')
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError('Consent records are append-only')
+
+
+class DataSubjectRequest(models.Model):
+    guest = models.ForeignKey(Guest, on_delete=models.PROTECT)
+    type = models.CharField(max_length=12, choices=[(x, x) for x in ['ACCESS', 'EXPORT', 'RECTIFY', 'DELETE']])
+    status = models.CharField(max_length=12, default='OPEN', choices=[(x, x) for x in ['OPEN', 'COMPLETED', 'REJECTED']])
+    note = models.CharField(max_length=500, blank=True)
+    resolution = models.CharField(max_length=500, blank=True)
+    requested_at = models.DateTimeField(default=timezone.now)
+    due_at = models.DateTimeField()
+    handled_by = models.CharField(max_length=150, blank=True)
+    handled_at = models.DateTimeField(null=True, blank=True)

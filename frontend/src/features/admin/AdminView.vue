@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AgreementGate from '../legal/AgreementGate.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
@@ -168,6 +169,7 @@ function handleManagerNavigate(destination: string) {
 
 <template>
   <PortalLayout area="admin">
+    <AgreementGate portal="admin" :active="Boolean(user)" />
     <div v-if="identity.isPending.value" role="status" class="space-y-4">
       <p>Checking your administrator session…</p>
       <div class="skeleton h-8 w-48"></div>

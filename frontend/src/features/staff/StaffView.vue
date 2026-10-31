@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import AgreementGate from '../legal/AgreementGate.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
@@ -314,6 +315,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 
 <template>
   <PortalLayout area="staff">
+    <AgreementGate portal="staff" :active="hasStaff" />
     <div v-if="identity.isPending.value" role="status" class="space-y-4">
       <p>Checking your staff session…</p>
       <div class="skeleton h-8 w-48" />

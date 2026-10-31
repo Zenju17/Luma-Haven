@@ -6,6 +6,7 @@ import SiteLayout from '../../layouts/SiteLayout.vue'
 import Notice from '../../components/Notice.vue'
 import AvailabilitySearch from './components/AvailabilitySearch.vue'
 import RoomSpacesModal from './components/RoomSpacesModal.vue'
+import ConsentCheck from '../legal/ConsentCheck.vue'
 import { api } from '../../services/api'
 import { money, type PublicVisualAssetsResponse, type Quote, type Room } from '../../types'
 
@@ -21,6 +22,8 @@ const selected = ref<Room | null>(null)
 const quote = ref<Quote | null>(null)
 const name = ref('')
 const email = ref('')
+const accepted = ref(false)
+const consentIds = ref<number[]>([])
 const error = ref('')
 const saving = ref(false)
 
@@ -142,6 +145,7 @@ async function reserve() {
       quote_id: quote.value.id,
       name: name.value,
       email: email.value,
+      consent_document_ids: consentIds.value,
     })
     await router.push(`/booking/${result.id}`)
   } catch (caught) {
@@ -408,8 +412,9 @@ async function reserve() {
               Email for verification
               <input v-model="email" class="field mt-1.5 normal-case w-full" type="email" required />
             </label>
+            <ConsentCheck v-model:accepted="accepted" v-model:document-ids="consentIds" />
             <Notice :message="error" class="mt-4" />
-            <button class="btn w-full mt-6 py-3 font-semibold text-base shadow-md" :disabled="saving || !name || !email">
+            <button class="btn w-full mt-6 py-3 font-semibold text-base shadow-md" :disabled="saving || !name || !email || !accepted">
               Hold this room
             </button>
           </form>
