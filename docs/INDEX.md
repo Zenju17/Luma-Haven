@@ -1,0 +1,27 @@
+# Documentation index
+
+Use this page to load only what a task needs. Token estimates are bytes ÷ 4 (prose), rounded; they vary by tokenizer.
+
+| Document | Read it when | Size (≈tokens) |
+|---|---|---|
+| [`../AGENTS.md`](../AGENTS.md) | **Always first.** Stack, commands, architecture invariants, conventions, done criteria. | 107 lines · ~1.7k |
+| [`HANDOVER.md`](HANDOVER.md) | Starting a new session; need current state, risks, branch divergence, next steps. | 82 lines · ~1.7k |
+| [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) | Need the detailed completed/pending list and executed-test log. | 64 lines · ~3.3k |
+| [`DEMO.md`](DEMO.md) | Presenting the app; start/stop Podman, accounts, OTP retrieval, walkthrough. | 97 lines · ~2.6k |
+| [`TESTING.md`](TESTING.md) | Running pytest/Playwright safely on disposable PostgreSQL. | 68 lines · ~0.9k |
+| [`MIS_DEMONSTRATION.md`](MIS_DEMONSTRATION.md) | Explaining the MIS loop, KPI formulas, DSS rules, governance story. | 219 lines · ~3.9k |
+| [`PAYMENTS.md`](PAYMENTS.md) | Planning the Bakong KHQR payment integration (not implemented yet). | 119 lines · ~2.1k |
+| [`PERMISSIONS.md`](PERMISSIONS.md) | Checking who may call which operation. | 24 lines · ~0.8k |
+| [`DECISIONS.md`](DECISIONS.md) | Understanding why key architecture choices were made. | 16 lines · ~1.2k |
+| [`../README.md`](../README.md) | Human-facing setup and the **target specification** (not a feature list). | 1,314 lines · ~12.2k |
+
+## Suggested reading paths
+
+- **Fix a bug:** `AGENTS.md` → relevant source (`backend/core/services.py`, `views.py`, or a `frontend/src/features/*` folder) → `TESTING.md` only if tests are needed.
+- **Add a feature:** `AGENTS.md` → `HANDOVER.md` (gaps) → `PERMISSIONS.md` → `DECISIONS.md` → source.
+- **Run a demo:** `DEMO.md` (and `MIS_DEMONSTRATION.md` for the management story).
+- **Check project state:** `HANDOVER.md` → `IMPLEMENTATION_STATUS.md`.
+
+Do not load `README.md` or `MIS_DEMONSTRATION.md` by default; they are long and mostly context, not current implementation instructions.
+- [`ROADMAP_PLAN.md`](ROADMAP_PLAN.md) — proposed phases: legal/consent, KHQR, CMS, infrastructure, Telegram (draft)
+- [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) — approved phased plan: merge, legal, KHQR, admin+dev dashboard, infra

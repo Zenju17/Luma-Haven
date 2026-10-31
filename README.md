@@ -1,5 +1,7 @@
 # Hotel Information Management System (HIMS) — Luma Haven
 
+> **Working on the code?** Start with [`AGENTS.md`](AGENTS.md) for the compact stack/commands/invariants, [`docs/HANDOVER.md`](docs/HANDOVER.md) for current state and next steps, and [`docs/INDEX.md`](docs/INDEX.md) for the doc map. Do not load this entire README unless you need the target specification.
+
 > **MIS Demonstration Guide:** For a complete demonstration of the Management Information Systems (MIS) loop — $\text{Hotel Transaction} \rightarrow \text{Validated Database Record} \rightarrow \text{Accurate Management Information} \rightarrow \text{Management Decision}$ — see the [MIS Demonstration Document](docs/MIS_DEMONSTRATION.md), [Implementation Status](docs/IMPLEMENTATION_STATUS.md), and [Demo Guide](docs/DEMO.md).
 
 **Current implementation:** Vue 3, TypeScript, Vue Router, TanStack Vue Query, Vite and Tailwind CSS on the frontend; Django/DRF, PostgreSQL, Celery and Redis on the backend. Includes an Executive Manager Dashboard (`/manager`), Decision Support Engine with 7 transparent business rules, 5 authorized scheduled MIS reports with formula-injection sanitized CSV exports, row-level concurrency locks (`select_for_update`), two-person refund approval workflow, and full operational staff management (`/staff`).
