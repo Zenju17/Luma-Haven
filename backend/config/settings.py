@@ -64,7 +64,7 @@ if parsed_database.hostname and (parsed_database.hostname.endswith('.supabase.co
         raise RuntimeError('Supabase DATABASE_URL must include sslmode=require (or stricter)')
     if parsed_database.port == 6543:
         raise RuntimeError('Use the direct or session-mode port 5432; transaction pooling is not supported here')
-DATABASES = {'default': dj_database_url.parse(database_url, conn_max_age=60)}
+DATABASES = {'default': dj_database_url.parse(database_url, conn_max_age=int(os.getenv('DATABASE_CONN_MAX_AGE', '0')))}
 AUTH_USER_MODEL = 'core.User'
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
