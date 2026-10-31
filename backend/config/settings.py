@@ -35,6 +35,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'core.middleware.RequestIDMiddleware',
+    'core.middleware.ErrorCaptureMiddleware',
 ]
 ROOT_URLCONF = 'config.urls'
 TEMPLATES = [{

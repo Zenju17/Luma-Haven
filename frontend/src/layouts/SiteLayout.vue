@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import { api } from '../services/api'
+import { useLanguage } from '../composables/useLanguage'
 import type { PublicVisualAssetsResponse } from '../types'
 
 const route = useRoute()
@@ -15,6 +16,20 @@ const visualAssets = useQuery({
   queryFn: () => api<PublicVisualAssetsResponse>('/visual-assets'),
 })
 const logoAsset = computed(() => visualAssets.data.value?.logo ?? null)
+
+const { lang } = useLanguage()
+interface CmsBlock { key: string; content: { text?: string; link?: string } }
+const blocks = useQuery({
+  queryKey: computed(() => ['cms-blocks', lang.value]),
+  queryFn: () => api<CmsBlock[]>(`/cms/blocks?lang=${lang.value}`),
+  staleTime: 60_000,
+})
+// Staff-edited announcement (CMS). Plain text only; links must be internal or https.
+const announcement = computed(() => blocks.data.value?.find(b => b.key === 'site.announcement')?.content ?? null)
+const announcementLink = computed(() => {
+  const link = announcement.value?.link ?? ''
+  return link.startsWith('/') && !link.startsWith('//') ? { internal: link } : link.startsWith('https://') ? { external: link } : null
+})
 
 const toggleMobile = () => { mobileOpen.value = !mobileOpen.value }
 const closeMobile = () => { mobileOpen.value = false }
@@ -36,6 +51,10 @@ function handleCheckAvailability() {
 
 <template>
   <div class="site-layout min-h-screen flex flex-col bg-[var(--mist)] text-[var(--ink)]">
+    <div v-if="announcement?.text" class="bg-[var(--brass)] text-white text-center text-sm px-4 py-2" role="status">
+      <component :is="announcementLink?.internal ? 'RouterLink' : 'a'" v-if="announcementLink" :to="announcementLink.internal" :href="announcementLink.external" class="underline">{{ announcement.text }}</component>
+      <span v-else>{{ announcement.text }}</span>
+    </div>
     <!-- Section 1: Header -->
     <header class="guest-header sticky top-0 z-40 backdrop-blur-md bg-[var(--surface-overlay)] border-b border-[var(--glass-border)] transition-colors">
       <div class="guest-header-inner max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between gap-4">

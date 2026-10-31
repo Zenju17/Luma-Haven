@@ -6,8 +6,11 @@ from django.db import models, transaction
 from django.db.models import Q, F
 from django.utils import timezone
 
+ROLES = ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'ACCOUNTANT', 'DEVELOPER', 'CONTENT_EDITOR']
+
+
 class User(AbstractUser):
-    role = models.CharField(max_length=20, choices=[(x, x) for x in ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'ACCOUNTANT']], default='RECEPTION')
+    role = models.CharField(max_length=20, choices=[(x, x) for x in ROLES], default='RECEPTION')
 
 class Organization(models.Model):
     name = models.CharField(max_length=120)
@@ -356,3 +359,75 @@ class DataSubjectRequest(models.Model):
     due_at = models.DateTimeField()
     handled_by = models.CharField(max_length=150, blank=True)
     handled_at = models.DateTimeField(null=True, blank=True)
+
+
+class FeatureFlag(models.Model):
+    key = models.SlugField(max_length=60, unique=True)
+    enabled = models.BooleanField(default=False)
+    description = models.CharField(max_length=200, blank=True)
+    updated_by = models.CharField(max_length=150, blank=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+
+class CmsPage(models.Model):
+    """Draft fields are edited freely; publishing copies them to the published_* fields served to guests."""
+    slug = models.SlugField(max_length=60)
+    language = models.CharField(max_length=2, choices=[('en', 'en'), ('km', 'km')], default='en')
+    title = models.CharField(max_length=160)
+    body_markdown = models.TextField(blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+    is_published = models.BooleanField(default=False)
+    published_title = models.CharField(max_length=160, blank=True)
+    published_body = models.TextField(blank=True)
+    published_seo_description = models.CharField(max_length=300, blank=True)
+    published_at = models.DateTimeField(null=True, blank=True)
+    updated_by = models.CharField(max_length=150, blank=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['slug', 'language'], name='unique_cms_page')]
+
+
+class CmsBlock(models.Model):
+    """A small structured content slot such as an announcement banner (key + language)."""
+    key = models.SlugField(max_length=60)
+    language = models.CharField(max_length=2, choices=[('en', 'en'), ('km', 'km')], default='en')
+    content = models.JSONField(default=dict)
+    is_published = models.BooleanField(default=False)
+    published_content = models.JSONField(default=dict)
+    starts_at = models.DateTimeField(null=True, blank=True)
+    ends_at = models.DateTimeField(null=True, blank=True)
+    updated_by = models.CharField(max_length=150, blank=True)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['key', 'language'], name='unique_cms_block')]
+
+
+class CmsRevision(models.Model):
+    page = models.ForeignKey(CmsPage, related_name='revisions', on_delete=models.CASCADE)
+    title = models.CharField(max_length=160)
+    body_markdown = models.TextField(blank=True)
+    seo_description = models.CharField(max_length=300, blank=True)
+    action = models.CharField(max_length=12, default='SAVE', choices=[(x, x) for x in ['SAVE', 'PUBLISH', 'RESTORE']])
+    saved_by = models.CharField(max_length=150, blank=True)
+    saved_at = models.DateTimeField(default=timezone.now)
+
+
+class JobRun(models.Model):
+    task = models.CharField(max_length=120, db_index=True)
+    task_id = models.CharField(max_length=60, blank=True)
+    status = models.CharField(max_length=10, choices=[(x, x) for x in ['SUCCESS', 'FAILURE']])
+    started_at = models.DateTimeField(default=timezone.now)
+    duration_ms = models.PositiveIntegerField(default=0)
+    error = models.CharField(max_length=300, blank=True)
+
+
+class ErrorEvent(models.Model):
+    """Scrubbed server exception record (no query strings, bodies, emails or tokens)."""
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
+    request_id = models.CharField(max_length=40, blank=True)
+    method = models.CharField(max_length=8, blank=True)
+    path = models.CharField(max_length=200, blank=True)
+    exc_type = models.CharField(max_length=120)
+    message = models.CharField(max_length=300, blank=True)

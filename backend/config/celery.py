@@ -12,3 +12,6 @@ app.autodiscover_tasks()
 def close_db_connections(**kwargs):
     from django.db import close_old_connections
     close_old_connections()
+
+
+import core.jobs  # noqa: E402,F401  (registers task-outcome signal handlers)

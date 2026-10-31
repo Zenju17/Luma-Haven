@@ -7,6 +7,11 @@ import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import MediaAssetManager from '../media/MediaAssetManager.vue'
+import CmsManager from './cms/CmsManager.vue'
+import LegalManager from './LegalManager.vue'
+import PrivacyQueue from './PrivacyQueue.vue'
+import PaymentsPanel from './PaymentsPanel.vue'
+import DevConsole from '../dev/DevConsole.vue'
 import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
 
@@ -45,13 +50,29 @@ const confirmPassword = ref('')
 const passwordError = ref('')
 const passwordSuccess = ref('')
 const passwordBusy = ref(false)
-const section = ref<'overview' | 'team' | 'audit' | 'settings' | 'media' | 'reports'>('overview')
-const sections = [
-  { id: 'overview', label: 'Overview' }, { id: 'team', label: 'Staff accounts' },
-  { id: 'audit', label: 'Audit history' }, { id: 'settings', label: 'Settings' },
-  { id: 'media', label: 'Media Assets' },
-  { id: 'reports', label: 'Reports' },
-] as const
+type Section = 'overview' | 'team' | 'audit' | 'settings' | 'media' | 'reports' | 'cms' | 'legal' | 'privacy' | 'payments' | 'dev'
+const section = ref<Section>('overview')
+// Navigation is grouped; the server enforces every role again on each endpoint.
+const NAV: { group: string; roles: string[]; items: { id: Section; label: string; roles: string[] }[] }[] = [
+  { group: 'Company', roles: ['ADMIN', 'CONTENT_EDITOR'], items: [
+    { id: 'overview', label: 'Overview', roles: ['ADMIN'] },
+    { id: 'cms', label: 'Content (CMS)', roles: ['ADMIN', 'CONTENT_EDITOR'] },
+    { id: 'legal', label: 'Legal', roles: ['ADMIN'] },
+    { id: 'privacy', label: 'Privacy requests', roles: ['ADMIN'] },
+    { id: 'payments', label: 'Payments', roles: ['ADMIN'] },
+    { id: 'reports', label: 'Reports', roles: ['ADMIN'] },
+    { id: 'team', label: 'Staff accounts', roles: ['ADMIN'] },
+    { id: 'settings', label: 'Hotel settings', roles: ['ADMIN'] },
+    { id: 'media', label: 'Media assets', roles: ['ADMIN'] },
+    { id: 'audit', label: 'Audit history', roles: ['ADMIN'] },
+  ] },
+  { group: 'Developer', roles: ['ADMIN', 'DEVELOPER'], items: [{ id: 'dev', label: 'Developer console', roles: ['ADMIN', 'DEVELOPER'] }] },
+]
+const nav = computed(() => {
+  const role = user.value?.role ?? ''
+  return NAV.map(g => ({ group: g.group, items: g.items.filter(i => i.roles.includes(role)) })).filter(g => g.items.length)
+})
+const FIRST: Record<string, Section> = { ADMIN: 'overview', DEVELOPER: 'dev', CONTENT_EDITOR: 'cms' }
 
 
 const identity = useQuery({ queryKey: ['auth', 'me', 'admin'], queryFn: () => adminApi<StaffUser>('/auth/me') })
@@ -59,6 +80,8 @@ watch(identity.data, current => {
   if (current && 'username' in current) user.value = current
 }, { immediate: true })
 const isAdmin = computed(() => user.value?.role === 'ADMIN')
+const hasAccess = computed(() => ['ADMIN', 'DEVELOPER', 'CONTENT_EDITOR'].includes(user.value?.role ?? ''))
+watch(() => user.value?.role, role => { if (role) section.value = FIRST[role] ?? 'overview' }, { immediate: true })
 
 const team = useQuery({
   queryKey: ['admin', 'team'], queryFn: () => adminApi<TeamMember[]>('/admin/staff'),
@@ -183,24 +206,33 @@ function handleManagerNavigate(destination: string) {
       <button class="btn w-full" :disabled="busy">Sign in</button>
       <Notice :message="error" />
     </form>
-    <div v-else-if="!isAdmin" class="card p-8 max-w-xl mx-auto">
+    <div v-else-if="!hasAccess" class="card p-8 max-w-xl mx-auto">
       <h1 class="text-3xl">Administrator access required</h1>
       <p class="mt-3">Your staff role cannot view administration records.</p>
       <RouterLink class="btn inline-block mt-5" to="/staff">Open staff workspace</RouterLink>
     </div>
     <div v-else>
       <div class="flex flex-wrap justify-between items-center gap-4">
-        <div><p class="label">Administrator · {{ user.username }}</p><h1 class="text-4xl">Administration overview</h1></div>
+        <div><p class="label">{{ user.role === 'DEVELOPER' ? 'Developer' : user.role === 'CONTENT_EDITOR' ? 'Content editor' : 'Administrator' }} · {{ user.username }}</p><h1 class="text-4xl">{{ user.role === 'DEVELOPER' ? 'Developer console' : user.role === 'CONTENT_EDITOR' ? 'Content management' : 'Administration overview' }}</h1></div>
         <button class="btn-secondary" :disabled="busy" @click="signOut">Sign out</button>
       </div>
       <Notice :message="error" />
-      <nav class="admin-tabs flex flex-wrap gap-2 mt-8 pb-4" aria-label="Administration sections">
-        <button v-for="item in sections" :key="item.id" type="button" :class="section === item.id ? 'btn' : 'btn-secondary'" @click="section = item.id">{{ item.label }}</button>
+      <nav class="admin-tabs mt-8 pb-4 space-y-3" aria-label="Administration sections">
+        <div v-for="g in nav" :key="g.group" class="flex flex-wrap items-center gap-2">
+          <span class="label w-24">{{ g.group }}</span>
+          <button v-for="item in g.items" :key="item.id" type="button" :class="section === item.id ? 'btn' : 'btn-secondary'" :aria-current="section === item.id ? 'page' : undefined" @click="section = item.id">{{ item.label }}</button>
+        </div>
       </nav>
 
       <section v-if="section === 'overview'" aria-label="Executive MIS Intelligence">
         <ManagerDashboard portal="admin" :user="user" @navigate="handleManagerNavigate" />
       </section>
+
+      <CmsManager v-else-if="section === 'cms'" :role="user.role" />
+      <LegalManager v-else-if="section === 'legal'" />
+      <PrivacyQueue v-else-if="section === 'privacy'" />
+      <PaymentsPanel v-else-if="section === 'payments'" />
+      <DevConsole v-else-if="section === 'dev'" :role="user.role" />
 
       <section v-else-if="section === 'team'" aria-label="Staff accounts">
         <h2 class="text-2xl mt-8 mb-4">Staff accounts</h2>

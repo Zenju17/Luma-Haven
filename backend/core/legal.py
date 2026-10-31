@@ -203,6 +203,9 @@ def run_retention(now=None):
                 anonymized += int(anonymize_guest(guest, 'retention'))
             except ValueError:
                 continue
+    from .models import ErrorEvent, JobRun
+    JobRun.objects.filter(started_at__lt=now - timedelta(days=30)).delete()
+    ErrorEvent.objects.filter(created_at__lt=now - timedelta(days=90)).delete()
     result = {'otp_deleted': otp_deleted, 'quotes_deleted': quote_deleted, 'guests_anonymized': anonymized}
     Audit.objects.create(actor='retention', action='RETENTION_RUN',
                          target=f'otp={otp_deleted}:quotes={quote_deleted}:guests={anonymized}')

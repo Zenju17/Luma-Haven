@@ -13,11 +13,25 @@ function hotelDate(offset = 0) {
   return current.toISOString().slice(0, 10)
 }
 
+// The staff acceptable-use agreement (P1) appears once per account after sign-in and blocks the page until accepted.
+async function acceptAgreement(page: Page) {
+  const dialog = page.getByRole('dialog', { name: 'Staff agreement' })
+  try {
+    await dialog.waitFor({ state: 'visible', timeout: 4000 })
+  } catch {
+    return // already accepted for this account
+  }
+  await dialog.getByRole('checkbox').check()
+  await dialog.getByRole('button', { name: 'Accept and continue' }).click()
+  await expect(dialog).toBeHidden()
+}
+
 async function signIn(page: Page, username: string, password: string) {
   await page.goto('/staff')
   await page.getByRole('textbox', { name: 'Username' }).fill(username)
   await page.getByRole('textbox', { name: 'Password' }).fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
+  await acceptAgreement(page)
   await expect(page.getByRole('heading', { name: `Good to see you, ${username}.` })).toBeVisible()
 }
 
@@ -124,6 +138,7 @@ test('guest navigation is public while staff and admin portals enforce separate 
   await page.getByRole('textbox', { name: 'Username' }).fill('admin')
   await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
+  await acceptAgreement(page)
   await expect(page.getByRole('heading', { name: 'Administration overview' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Staff accounts' }).click()
@@ -173,6 +188,7 @@ test('guest navigation is public while staff and admin portals enforce separate 
   await page.getByRole('textbox', { name: 'Username' }).fill('admin')
   await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
+  await acceptAgreement(page)
   await expect(page.getByRole('heading', { name: 'Good to see you, admin.' })).toBeVisible()
   await page.goto('/admin')
   await page.getByRole('button', { name: 'Sign out' }).click()
@@ -190,6 +206,7 @@ test('MIS manager journey: executive dashboard, decision support, room types, an
   await page.getByRole('textbox', { name: 'Username' }).fill('manager')
   await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
   await page.getByRole('button', { name: 'Sign in' }).click()
+  await acceptAgreement(page)
 
   // 2. Verify Manager Intelligence Dashboard loads
   await expect(page.getByRole('heading', { name: 'Manager Intelligence Dashboard' })).toBeVisible()
@@ -215,5 +232,35 @@ test('MIS manager journey: executive dashboard, decision support, room types, an
 
   await page.getByRole('button', { name: 'Room Rates & Pricing' }).click()
   await expect(page.getByRole('heading', { name: 'Room Rate Management' })).toBeVisible()
+})
+
+test('administrator publishes a CMS page and the guest site shows it', async ({ page, browser }) => {
+  const { staffPassword } = test.info().config.metadata as { staffPassword: string }
+  await page.goto('/admin')
+  await page.getByRole('textbox', { name: 'Username' }).fill('admin')
+  await page.getByRole('textbox', { name: 'Password' }).fill(staffPassword)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+  await acceptAgreement(page)
+  await page.getByRole('button', { name: 'Content (CMS)' }).click()
+  await page.getByRole('button', { name: 'New page' }).click()
+  await page.getByLabel('Slug').fill('about-e2e')
+  await page.getByLabel('Title').fill('About the E2E Hotel')
+  await page.getByLabel('Body (Markdown)').fill('## Welcome\n\nA quiet courtyard.')
+  await page.getByRole('button', { name: 'Save draft' }).click()
+  await expect(page.getByText('Draft saved.')).toBeVisible()
+
+  const guest = await browser.newContext()
+  const guestPage = await guest.newPage()
+  try {
+    await guestPage.goto('/p/about-e2e')
+    await expect(guestPage.getByRole('heading', { name: 'Page not found' })).toBeVisible() // drafts are private
+    await page.getByRole('button', { name: 'Publish', exact: true }).click()
+    await expect(page.getByText('Published. Guests now see this version.')).toBeVisible()
+    await guestPage.goto('/p/about-e2e')
+    await expect(guestPage.getByRole('heading', { name: 'About the E2E Hotel' })).toBeVisible()
+    await expect(guestPage.getByText('A quiet courtyard.')).toBeVisible()
+  } finally {
+    await guest.close()
+  }
 })
 

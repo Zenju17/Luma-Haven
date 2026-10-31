@@ -22,7 +22,7 @@ class Command(BaseCommand):
                     room.save(update_fields=['cleaning'])
                     HousekeepingTask.objects.create(room=room)
         password = os.getenv('SEED_PASSWORD') or secrets.token_urlsafe(18)
-        for username, role in [('admin', 'ADMIN'), ('manager', 'MANAGER'), ('reception', 'RECEPTION'), ('housekeeping', 'HOUSEKEEPING'), ('accountant', 'ACCOUNTANT')]:
+        for username, role in [('admin', 'ADMIN'), ('manager', 'MANAGER'), ('reception', 'RECEPTION'), ('housekeeping', 'HOUSEKEEPING'), ('accountant', 'ACCOUNTANT'), ('developer', 'DEVELOPER'), ('editor', 'CONTENT_EDITOR')]:
             user, created = User.objects.get_or_create(username=username, defaults={'role': role, 'is_staff': True})
             if created:
                 user.set_password(password)

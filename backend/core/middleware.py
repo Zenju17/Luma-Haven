@@ -89,3 +89,31 @@ class RequestIDMiddleware:
         response = self.get_response(request)
         response['X-Request-ID'] = request.request_id
         return response
+
+
+_EMAIL = __import__('re').compile(r'[\w.+-]+@[\w-]+\.[\w.-]+')
+_TOKEN = __import__('re').compile(r'[A-Za-z0-9_\-]{24,}')
+
+
+def scrub(text):
+    """Remove emails and long token-like strings from exception text before storing it."""
+    return _TOKEN.sub('[token]', _EMAIL.sub('[email]', str(text)))[:300]
+
+
+class ErrorCaptureMiddleware:
+    """Store a scrubbed record of unhandled exceptions for the Developer Console."""
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        return self.get_response(request)
+
+    def process_exception(self, request, exception):
+        try:
+            from .models import ErrorEvent
+            ErrorEvent.objects.create(
+                request_id=getattr(request, 'request_id', '')[:40], method=request.method[:8],
+                path=request.path[:200], exc_type=exception.__class__.__name__[:120], message=scrub(exception))
+        except Exception:  # never mask the original error
+            pass
+        return None

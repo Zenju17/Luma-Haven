@@ -22,9 +22,11 @@ from .payments import service as payment_service
 from .payments.base import ProviderError  # noqa: F401
 from .decision_support import evaluate_decision_support_alerts
 from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, LegalDocument, Folio, FolioEntry, Hotel, HousekeepingTask,
-                     OTP, Outbox, Payment, PaymentAttempt, PaymentException, Quote, Refund,
+                     OTP, Outbox, Payment, ROLES, PaymentAttempt, PaymentException, Quote, Refund,
                      Reservation, Room, RoomType, ServiceRequest, Stay, MaintenanceTicket, User,
                      VisualAsset)
+
+ADMIN_PORTAL_ROLES = ('ADMIN', 'DEVELOPER', 'CONTENT_EDITOR')
 
 def staff(request, *roles):
     if request.portal not in ('staff', 'admin') or not request.user.is_authenticated or request.user.role not in roles:
@@ -63,8 +65,9 @@ def staff_login(request):
         raise PermissionDenied('Sign in through the staff or administrator portal')
     user = authenticate(request, username=request.data.get('username', ''), password=request.data.get('password', ''))
     if not user or not user.is_active:
+        Audit.objects.create(actor=str(request.data.get('username', ''))[:120], action='LOGIN_FAILED', target=request.portal)
         raise ValidationError('Invalid credentials')
-    if request.portal == 'admin' and user.role != 'ADMIN':
+    if request.portal == 'admin' and user.role not in ADMIN_PORTAL_ROLES:
         raise PermissionDenied('Administrator account required')
     login(request, user)
     return Response({'username': user.username, 'role': user.role})
@@ -141,8 +144,14 @@ def availability(request):
     return Response([{'id': r.pk, 'number': r.number, 'type': r.type.name, 'rate_minor': r.type.nightly_rate_minor,
                       'currency': r.hotel.currency, 'capacity': r.type.capacity} for r in services.available(arrival, departure, occupants)])
 
+def _require_bookings_open():
+    from . import flags
+    if flags.is_enabled('bookings_paused'):
+        raise ValidationError('Online bookings are temporarily paused. Please try again later or contact the hotel.')
+
 @api_view(['POST'])
 def quotes(request):
+    _require_bookings_open()
     try:
         room = Room.objects.select_related('type', 'hotel').get(pk=request.data['room_id'])
         quote = services.create_quote(room, date.fromisoformat(request.data['arrival']), date.fromisoformat(request.data['departure']), int(request.data.get('occupants', 1)))
@@ -153,6 +162,7 @@ def quotes(request):
 
 @api_view(['POST'])
 def reservations(request):
+    _require_bookings_open()
     try:
         docs = legal.validate_consent(request.data.get('consent_document_ids'), legal.BOOKING_KINDS)
     except ValueError as exc:
@@ -326,7 +336,7 @@ def admin_staff(request):
             raise ValidationError({'username': 'A staff member with this username already exists.'})
         if len(password) < 8 or len(password) > 12:
             raise ValidationError({'password': 'Password must be between 8 and 12 characters.'})
-        if role not in ('ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'ACCOUNTANT'):
+        if role not in ROLES:
             raise ValidationError({'role': 'Invalid role.'})
         user = User.objects.create_user(username=username, password=password, role=role, is_staff=True)
         try:
@@ -352,7 +362,7 @@ def admin_update_staff(request, pk):
         Audit.objects.create(actor=request.user.username, action='STAFF_STATUS_UPDATED', target=f'{target_user.username}:{"active" if new_status else "inactive"}')
     if 'role' in request.data:
         new_role = str(request.data['role']).upper()
-        if new_role not in ('ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'ACCOUNTANT'):
+        if new_role not in ROLES:
             raise ValidationError({'role': 'Invalid role.'})
         if target_user.pk == request.user.pk and new_role != target_user.role:
             raise ValidationError({'role': 'Administrators cannot alter their own role.'})
@@ -1867,4 +1877,8 @@ urlpatterns = [
     path('reports/housekeeping-turnaround', report_housekeeping_turnaround), path('admin/reports/housekeeping-turnaround', report_housekeeping_turnaround), path('staff/reports/housekeeping-turnaround', report_housekeeping_turnaround),
     path('reports/accounts-receivable', report_accounts_receivable), path('admin/reports/accounts-receivable', report_accounts_receivable), path('staff/reports/accounts-receivable', report_accounts_receivable),
 ]
+
+# Admin CMS and Developer Console endpoints live in views_console.py (imported last: it uses staff() above).
+from .views_console import urlpatterns as _console_urlpatterns  # noqa: E402
+urlpatterns += _console_urlpatterns
 
