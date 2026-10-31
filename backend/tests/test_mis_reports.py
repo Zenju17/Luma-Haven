@@ -166,7 +166,7 @@ def test_refund_deduction_from_settled_cash(mis_hotel):
     # A refund of 15000 was approved and settled
     Refund.objects.create(
         payment=payment, amount_minor=15000, reason='Guest cancelled within grace window',
-        status='SETTLED', settled_at=timezone.now() - timedelta(hours=12)
+        status='SETTLED', settled_at=payment.settled_at + timedelta(hours=2)
     )
 
     result = report_values(start, end)

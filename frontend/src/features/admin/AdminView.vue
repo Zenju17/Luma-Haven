@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
+import MediaAssetManager from '../media/MediaAssetManager.vue'
 import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
 
@@ -43,12 +44,14 @@ const confirmPassword = ref('')
 const passwordError = ref('')
 const passwordSuccess = ref('')
 const passwordBusy = ref(false)
-const section = ref<'overview' | 'team' | 'audit' | 'settings' | 'reports'>('overview')
+const section = ref<'overview' | 'team' | 'audit' | 'settings' | 'media' | 'reports'>('overview')
 const sections = [
   { id: 'overview', label: 'Overview' }, { id: 'team', label: 'Staff accounts' },
   { id: 'audit', label: 'Audit history' }, { id: 'settings', label: 'Settings' },
+  { id: 'media', label: 'Media Assets' },
   { id: 'reports', label: 'Reports' },
 ] as const
+
 
 const identity = useQuery({ queryKey: ['auth', 'me', 'admin'], queryFn: () => adminApi<StaffUser>('/auth/me') })
 watch(identity.data, current => {
@@ -318,7 +321,12 @@ function handleManagerNavigate(destination: string) {
         </dl>
       </section>
 
+      <section v-else-if="section === 'media'" aria-label="Media Assets">
+        <MediaAssetManager portal="admin" />
+      </section>
+
       <section v-else aria-label="Reports">
+
         <h2 class="text-2xl mt-8 mb-2 font-serif">Executive Management Reports</h2>
         <p class="text-sm text-[var(--muted)] mb-6">
           Pre-formatted, authorized management information reports with formula-injection-sanitized CSV export for compliance and auditing.

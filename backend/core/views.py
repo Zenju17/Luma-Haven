@@ -1,7 +1,9 @@
 import secrets
 import csv
+import hashlib
 from datetime import date, datetime, time, timedelta
 from io import StringIO
+from PIL import Image
 from zoneinfo import ZoneInfo
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
@@ -19,7 +21,8 @@ from . import services, staff_passwords
 from .decision_support import evaluate_decision_support_alerts
 from .models import (Allocation, Audit, Folio, FolioEntry, Hotel, HousekeepingTask,
                      OTP, Outbox, Payment, PaymentAttempt, PaymentException, Quote, Refund,
-                     Reservation, Room, RoomType, ServiceRequest, Stay, MaintenanceTicket, User)
+                     Reservation, Room, RoomType, ServiceRequest, Stay, MaintenanceTicket, User,
+                     VisualAsset)
 
 def staff(request, *roles):
     if request.portal not in ('staff', 'admin') or not request.user.is_authenticated or request.user.role not in roles:
@@ -1453,10 +1456,194 @@ def report(request):
         return build_csv_response('hotel-report.csv', ['metric', 'value'], rows)
     return Response(values)
 
+
+def serialize_visual_asset(asset):
+    return {
+        'id': asset.id,
+        'title': asset.title,
+        'caption': asset.caption,
+        'alt_text': asset.alt_text,
+        'category': asset.category,
+        'room_type_id': asset.room_type_id,
+        'room_type_name': asset.room_type.name if asset.room_type else None,
+        'image_url': asset.image.url if asset.image else '',
+        'source_type': asset.source_type,
+        'facility_claim': asset.facility_claim,
+        'display_order': asset.display_order,
+        'is_active': asset.is_active,
+        'width': asset.width,
+        'height': asset.height,
+        'file_size_bytes': asset.file_size_bytes,
+        'original_filename': asset.original_filename,
+        'updated_at': asset.updated_at.isoformat() if asset.updated_at else None,
+    }
+
+
+@api_view(['GET'])
+def visual_assets(request):
+    category = request.query_params.get('category')
+    room_type_id = request.query_params.get('room_type_id')
+
+    qs = VisualAsset.objects.filter(is_active=True).select_related('room_type')
+    if category:
+        qs = qs.filter(category=category.upper())
+    if room_type_id:
+        qs = qs.filter(room_type_id=room_type_id)
+
+    assets = list(qs.order_by('category', 'display_order', '-created_at'))
+    serialized = [serialize_visual_asset(a) for a in assets]
+
+    hero_asset = next((a for a in serialized if a['category'] == 'HERO'), None)
+    logo_asset = next((a for a in serialized if a['category'] == 'BRANDING'), None)
+    gallery_assets = [a for a in serialized if a['category'] == 'GALLERY']
+    features_assets = [a for a in serialized if a['category'] == 'EXPERIENCE']
+
+    room_types_map = {}
+    for a in serialized:
+        if a['category'] == 'ROOM_TYPE' and a['room_type_id']:
+            room_types_map.setdefault(a['room_type_id'], []).append(a)
+
+    return Response({
+        'items': serialized,
+        'hero': hero_asset,
+        'logo': logo_asset,
+        'gallery': gallery_assets,
+        'features': features_assets,
+        'room_types': room_types_map,
+    })
+
+
+@api_view(['GET', 'POST'])
+def staff_visual_assets(request):
+    staff(request, 'ADMIN', 'MANAGER')
+
+    if request.method == 'GET':
+        category = request.query_params.get('category')
+        qs = VisualAsset.objects.all().select_related('room_type')
+        if category:
+            qs = qs.filter(category=category.upper())
+        assets = [serialize_visual_asset(a) for a in qs.order_by('category', 'display_order', '-created_at')]
+        return Response(assets)
+
+    elif request.method == 'POST':
+        image_file = request.FILES.get('image')
+        if not image_file:
+            raise ValidationError('An image file is required.')
+
+        if image_file.size > 10 * 1024 * 1024:
+            raise ValidationError('Image file size cannot exceed 10 MB.')
+
+        try:
+            with Image.open(image_file) as img:
+                width, height = img.size
+                img.verify()
+        except Exception:
+            raise ValidationError('Invalid or corrupted image file.')
+
+        image_file.seek(0)
+        hasher = hashlib.sha256()
+        for chunk in image_file.chunks():
+            hasher.update(chunk)
+        content_hash = hasher.hexdigest()
+
+        hotel = Hotel.objects.first()
+        category = request.data.get('category', 'OTHER').upper()
+        room_type_id = request.data.get('room_type_id')
+        room_type = RoomType.objects.filter(pk=room_type_id).first() if room_type_id else None
+
+        asset = VisualAsset.objects.create(
+            hotel=hotel,
+            category=category,
+            room_type=room_type,
+            image=image_file,
+            title=request.data.get('title', image_file.name),
+            caption=request.data.get('caption', ''),
+            alt_text=request.data.get('alt_text', f"Luma Haven {category}"),
+            display_order=int(request.data.get('display_order', 1)),
+            is_active=str(request.data.get('is_active', 'true')).lower() in ('true', '1'),
+            source_type=request.data.get('source_type', 'CONCEPT'),
+            facility_claim=request.data.get('facility_claim', ''),
+            original_filename=image_file.name,
+            content_hash=content_hash,
+            file_size_bytes=image_file.size,
+            width=width,
+            height=height,
+        )
+        return Response(serialize_visual_asset(asset), status=201)
+
+
+@api_view(['GET', 'PATCH', 'DELETE'])
+def staff_visual_asset_detail(request, pk):
+    staff(request, 'ADMIN', 'MANAGER')
+    asset = VisualAsset.objects.select_related('room_type').filter(pk=pk).first()
+    if not asset:
+        raise NotFound('Visual asset not found.')
+
+    if request.method == 'GET':
+        return Response(serialize_visual_asset(asset))
+
+    elif request.method == 'PATCH':
+        if 'title' in request.data:
+            asset.title = request.data['title']
+        if 'caption' in request.data:
+            asset.caption = request.data['caption']
+        if 'alt_text' in request.data:
+            asset.alt_text = request.data['alt_text']
+        if 'category' in request.data:
+            asset.category = request.data['category'].upper()
+        if 'display_order' in request.data:
+            try:
+                asset.display_order = int(request.data['display_order'])
+            except (ValueError, TypeError):
+                pass
+        if 'is_active' in request.data:
+            asset.is_active = str(request.data['is_active']).lower() in ('true', '1')
+        if 'source_type' in request.data:
+            asset.source_type = request.data['source_type']
+        if 'facility_claim' in request.data:
+            asset.facility_claim = request.data['facility_claim']
+        if 'room_type_id' in request.data:
+            rt_id = request.data['room_type_id']
+            asset.room_type = RoomType.objects.filter(pk=rt_id).first() if rt_id else None
+
+        replacement_image = request.FILES.get('image')
+        if replacement_image:
+            if replacement_image.size > 10 * 1024 * 1024:
+                raise ValidationError('Image file size cannot exceed 10 MB.')
+            try:
+                with Image.open(replacement_image) as img:
+                    width, height = img.size
+                    img.verify()
+            except Exception:
+                raise ValidationError('Invalid or corrupted image file.')
+            replacement_image.seek(0)
+            hasher = hashlib.sha256()
+            for chunk in replacement_image.chunks():
+                hasher.update(chunk)
+            asset.content_hash = hasher.hexdigest()
+            asset.width = width
+            asset.height = height
+            asset.file_size_bytes = replacement_image.size
+            asset.original_filename = replacement_image.name
+            asset.image = replacement_image
+
+        asset.save()
+        return Response(serialize_visual_asset(asset))
+
+    elif request.method == 'DELETE':
+        asset.delete()
+        return Response({'deleted': True, 'id': pk})
+
+
 urlpatterns = [
     path('health', lambda r: JsonResponse({'status': 'ok'})),
     path('auth/csrf', csrf), path('auth/login', staff_login), path('auth/logout', staff_logout), path('auth/me', me),
     path('rooms', rooms), path('availability', availability), path('quotes', quotes),
+    path('visual-assets', visual_assets),
+    path('staff/visual-assets', staff_visual_assets),
+    path('staff/visual-assets/<int:pk>', staff_visual_asset_detail),
+    path('admin/visual-assets', staff_visual_assets),
+    path('admin/visual-assets/<int:pk>', staff_visual_asset_detail),
     path('reservations', reservations), path('reservations/<int:pk>', reservation),
     path('reservations/<int:pk>/payment-sessions', payment_session),
     path('development/checkout/<uuid:pk>', development_checkout),

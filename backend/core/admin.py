@@ -13,7 +13,8 @@ from . import services
 from .models import (
     Allocation, Audit, Folio, FolioEntry, Guest, Hotel, HousekeepingTask,
     MaintenanceTicket, OTP, Outbox, Payment, PaymentAttempt, PaymentEvent,
-    PaymentException, Quote, Refund, Reservation, Room, RoomType, ServiceRequest, Stay, User
+    PaymentException, Quote, Refund, Reservation, Room, RoomType, ServiceRequest, Stay, User,
+    VisualAsset
 )
 
 
@@ -526,3 +527,31 @@ luma_admin_site.register(User, UserAdmin)
 luma_admin_site.register(Audit, AuditAdmin)
 luma_admin_site.register(OTP, OTPAdmin)
 luma_admin_site.register(Outbox)
+
+
+class VisualAssetAdmin(admin.ModelAdmin):
+    list_display = ('thumbnail_preview', 'title', 'category', 'room_type', 'source_type', 'display_order', 'is_active', 'updated_at')
+    list_filter = ('category', 'source_type', 'is_active', 'room_type')
+    search_fields = ('title', 'caption', 'alt_text', 'original_filename', 'facility_claim')
+    list_editable = ('display_order', 'is_active')
+    readonly_fields = ('thumbnail_large', 'content_hash', 'file_size_bytes', 'width', 'height', 'created_at', 'updated_at')
+
+    def thumbnail_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="width: 50px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #cbdad4;" />',
+                obj.image.url
+            )
+        return "-"
+    thumbnail_preview.short_description = "Preview"
+
+    def thumbnail_large(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="max-width: 300px; max-height: 200px; object-fit: contain; border-radius: 8px; border: 1px solid #cbdad4;" />',
+                obj.image.url
+            )
+        return "-"
+    thumbnail_large.short_description = "Image Preview"
+
+luma_admin_site.register(VisualAsset, VisualAssetAdmin)

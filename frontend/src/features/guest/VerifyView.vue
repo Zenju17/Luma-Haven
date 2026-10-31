@@ -55,7 +55,10 @@ async function verify() {
         </div>
       </div>
       <form class="card verification-form p-8 space-y-5" @submit.prevent="verify">
-        <h2 class="text-2xl text-[var(--brand-text)]">Verify your booking</h2>
+        <div class="flex items-center gap-3 pb-2 border-b border-[var(--line)]">
+          <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-8 h-8 object-contain" />
+          <h2 class="text-2xl text-[var(--brand-text)] serif">Verify your booking</h2>
+        </div>
         <label class="block"><span class="label">Booking reference</span><input v-model="reference" class="field" required /></label>
         <label class="block"><span class="label">Email address</span><input v-model="email" class="field" type="email" required /></label>
         <Transition name="slide-up">

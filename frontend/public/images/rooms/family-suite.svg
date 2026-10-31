@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="fsBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#163f39" />
+      <stop offset="50%" stop-color="#0f2b27" />
+      <stop offset="100%" stop-color="#081a17" />
+    </linearGradient>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ebd09c" />
+      <stop offset="50%" stop-color="#b89758" />
+      <stop offset="100%" stop-color="#7a5f2a" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="500" fill="url(#fsBg)" />
+
+  <!-- Arched Partition Wall (Suite Living + Bedroom Alcove) -->
+  <path d="M420 500 V160 C420 80 480 30 560 30 C640 30 700 80 700 160 V500 Z" fill="#0b201d" stroke="rgba(184,151,88,0.3)" stroke-width="2" />
+
+  <!-- Bedroom Alcove Inside Arch: King Bed -->
+  <g transform="translate(460, 220)">
+    <rect x="0" y="0" width="200" height="140" rx="4" fill="#1e1611" stroke="rgba(184,151,88,0.2)" stroke-width="1" />
+    <rect x="20" y="50" width="160" height="40" rx="6" fill="#f2f5f4" />
+    <rect x="10" y="80" width="180" height="180" fill="#fbfaf7" />
+    <rect x="10" y="160" width="180" height="80" fill="#1d4740" />
+    <circle cx="100" cy="-20" r="16" fill="url(#brass)" opacity="0.8" />
+  </g>
+
+  <!-- Living / Lounge Area (Left Foreground) -->
+  <!-- Botanical Framed Art on Left Wall -->
+  <rect x="100" y="70" width="110" height="140" rx="2" fill="#0d2420" stroke="url(#brass)" stroke-width="2" />
+  <path d="M155 180 C155 140 135 120 125 100 C155 120 170 140 155 180 Z" fill="#2d6e60" />
+  <path d="M155 160 C165 140 185 130 190 115 C175 135 165 145 155 160 Z" fill="#398575" />
+
+  <!-- Large Lounge Daybed / Sofa -->
+  <g transform="translate(60, 270)">
+    <rect x="0" y="40" width="280" height="120" rx="8" fill="#245950" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+    <!-- Sofa Cushions -->
+    <rect x="10" y="10" width="125" height="40" rx="6" fill="#1b4740" />
+    <rect x="145" y="10" width="125" height="40" rx="6" fill="#1b4740" />
+    <!-- Round Bolster Pillow in Gold / Brass tone -->
+    <rect x="20" y="25" width="40" height="20" rx="10" fill="url(#brass)" />
+    <!-- Low Coffee Table -->
+    <ellipse cx="140" cy="180" rx="80" ry="20" fill="#261b14" stroke="rgba(184,151,88,0.3)" stroke-width="1" />
+  </g>
+
+  <!-- Room Badge (Top Right) -->
+  <g transform="translate(600, 40)">
+    <rect width="150" height="32" rx="16" fill="rgba(22,61,58,0.9)" stroke="url(#brass)" stroke-width="1" />
+    <text x="75" y="20" text-anchor="middle" fill="#d9b87f" font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" letter-spacing="1">FAMILY SUITE</text>
+  </g>
+</svg>

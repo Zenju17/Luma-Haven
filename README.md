@@ -85,6 +85,7 @@ A full-stack Management Information System for managing hotel reservations, room
 - [13. Security Requirements](#13-security-requirements)
 - [14. Proposed Project Structure](#14-proposed-project-structure)
 - [15. Development Setup](#15-development-setup)
+  - [15.1. Visual Assets & Media Management](#151-visual-assets--media-management)
 - [16. Testing Requirements](#16-testing-requirements)
 - [17. Development Roadmap](#17-development-roadmap)
 - [18. Future Improvements](#18-future-improvements)
@@ -1112,6 +1113,54 @@ Use fictional data covering:
 - Housekeeping and service tasks.
 
 Do not include production credentials or real guest documents.
+
+### 15.1. Visual Assets & Media Management
+
+Luma Haven incorporates AI-generated visual concepts for guest atmosphere exploration, with strict truth-in-advertising safeguards and a role-enforced staff management interface.
+
+#### Media Directory Structure & Storage
+
+Visual assets are not stored as database blobs; binary files reside on the managed filesystem with lightweight metadata stored in PostgreSQL:
+
+- **Local media directory:** `backend/media/visual_assets/{branding,hero,gallery,rooms,features}/`
+- **Container media path:** `/app/media/visual_assets/`
+- **URL endpoint:** `/media/visual_assets/...` (served by Django static in development; proxied by Vite dev server).
+
+#### Asset Import Command
+
+An idempotent management command discovers, validates, and registers visual assets:
+
+```bash
+# Host environment (.venv):
+python backend/manage.py import_visual_assets --source Luma-Haven_Visual_Assets/
+
+# Dry-run mode (simulates validation and mapping without writing files or records):
+python backend/manage.py import_visual_assets --source Luma-Haven_Visual_Assets/ --dry-run
+
+# Podman / Docker Compose container execution:
+podman exec luma-haven_backend_1 python manage.py import_visual_assets --source /app/source_assets/
+
+# Force update metadata from asset_mapping.json for existing assets:
+podman exec luma-haven_backend_1 python manage.py import_visual_assets --source /app/source_assets/ --force
+```
+
+#### Declarative Asset Mapping Configuration
+
+Asset categories, room type assignments, and metadata are configured in `backend/core/asset_mapping.json`:
+
+- `room_type_mappings`: Maps source folders (e.g., `suite`) to database room types (`Family Suite`). Folders without verified room-type matches (e.g., `deluxe`, `premier` which both show King beds rather than City Twin's two twin beds) are set to `null` by default.
+- `asset_metadata`: Specifies title, caption, alt text, display order, `source_type` (`CONCEPT` vs `VERIFIED`), and `facility_claim`.
+
+#### Truth-in-Advertising & Concept Imagery Safeguards
+
+- **Unverified Facility Safeguard:** The physical hotel database confirms only Wi-Fi and Air conditioning. Rooftop pool, fitness center, commercial dining, and minibars are unverified concepts. All conceptual imagery displays a clear, honest badge on guest pages: `Design Concept · Facility Unconfirmed`.
+- **Verified Operations Integrity:** Operational workflows (physical brass keys, 14:00 check-in, 12:00 check-out, Wi-Fi, service requests) remain grounded in verified reality.
+- **Photo Replacement Workflow:** When actual architectural photographs are taken:
+  1. Open the **Administrator Console** (`/admin` → **Media Assets**) or **Executive Portal** (`/manager` → **Visual Assets & Media**).
+  2. Click **Upload Asset** or **Edit Details** on an existing card.
+  3. Change the **Source Type** to `Verified Hotel Photograph` and clear the facility claim note.
+  4. Changes immediately reflect across public guest carousels and room selection cards.
+
 
 ---
 

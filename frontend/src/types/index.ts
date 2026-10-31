@@ -215,3 +215,33 @@ export interface AdminHealthDiagnostics {
 
 export const money = (minor: number) => `$${(minor / 100).toFixed(2)}`
 
+export interface VisualAsset {
+  id: number
+  category: 'BRANDING' | 'HERO' | 'GALLERY' | 'ROOM_TYPE' | 'EXPERIENCE' | 'OTHER'
+  room_type_id: number | null
+  room_type_name: string | null
+  image_url: string
+  title: string
+  caption: string
+  alt_text: string
+  display_order: number
+  is_active: boolean
+  source_type: 'CONCEPT' | 'VERIFIED' | 'PLACEHOLDER'
+  facility_claim: string
+  original_filename: string
+  file_size_bytes: number
+  width: number
+  height: number
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicVisualAssetsResponse {
+  items: VisualAsset[]
+  hero: VisualAsset | null
+  logo: VisualAsset | null
+  gallery: VisualAsset[]
+  features: VisualAsset[]
+  room_types: Record<string, VisualAsset[]>
+}
+

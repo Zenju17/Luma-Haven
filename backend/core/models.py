@@ -198,3 +198,44 @@ class Outbox(models.Model):
     target = models.CharField(max_length=80)
     delivered_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
+
+class VisualAsset(models.Model):
+    CATEGORY_CHOICES = [
+        ('BRANDING', 'Branding & Logo'),
+        ('HERO', 'Homepage Hero'),
+        ('GALLERY', 'Homepage Gallery'),
+        ('ROOM_TYPE', 'Room Type Gallery'),
+        ('EXPERIENCE', 'Experience & Feature'),
+        ('OTHER', 'Other / General'),
+    ]
+    SOURCE_CHOICES = [
+        ('CONCEPT', 'AI Concept Visualization'),
+        ('VERIFIED', 'Verified Hotel Photograph'),
+        ('PLACEHOLDER', 'Graphic Placeholder'),
+    ]
+
+    hotel = models.ForeignKey(Hotel, on_delete=models.CASCADE, related_name='visual_assets')
+    category = models.CharField(max_length=24, choices=CATEGORY_CHOICES, db_index=True)
+    room_type = models.ForeignKey(RoomType, null=True, blank=True, on_delete=models.SET_NULL, related_name='visual_assets')
+    image = models.ImageField(upload_to='visual_assets/%Y/%m/')
+    title = models.CharField(max_length=120)
+    caption = models.CharField(max_length=255, blank=True)
+    alt_text = models.CharField(max_length=255)
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True, db_index=True)
+    source_type = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='CONCEPT')
+    facility_claim = models.CharField(max_length=80, blank=True)
+    original_filename = models.CharField(max_length=255, blank=True)
+    content_hash = models.CharField(max_length=64, blank=True, db_index=True)
+    file_size_bytes = models.PositiveIntegerField(default=0)
+    width = models.PositiveIntegerField(default=0)
+    height = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['category', 'display_order', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} ({self.category})"
+

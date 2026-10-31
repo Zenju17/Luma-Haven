@@ -1,0 +1,472 @@
+{
+  "room_type_mappings": {
+    "suite": "Family Suite",
+    "deluxe": null,
+    "premier": null
+  },
+  "category_folders": {
+    "branding": "BRANDING",
+    "hero": "HERO",
+    "gallery": "GALLERY",
+    "features": "EXPERIENCE",
+    "rooms": "ROOM_TYPE"
+  },
+  "asset_metadata": {
+    "branding/logo.png": {
+      "title": "Luma Haven Brand Logo",
+      "caption": "A brighter stay, a calmer you.",
+      "alt_text": "Luma Haven Hotel official brand emblem",
+      "display_order": 1,
+      "source_type": "VERIFIED",
+      "facility_claim": "Official Brand Identity"
+    },
+    "branding/logo_concept.png": {
+      "title": "Luma Haven Logo Concept",
+      "caption": "A brighter stay, a calmer you.",
+      "alt_text": "Luma Haven Hotel arched gold emblem with stylized leaf on cream background",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "branding/logo_concept.jpg": {
+      "title": "Luma Haven Logo Concept",
+      "caption": "A brighter stay, a calmer you.",
+      "alt_text": "Luma Haven Hotel arched gold emblem with stylized leaf on cream background",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "hero/hotel_exterior_concept.png": {
+      "title": "Luma Haven Exterior Evening Concept",
+      "caption": "A place to rest, recharge, and feel at home.",
+      "alt_text": "Evening concept visualization of modern glass facade of Luma Haven boutique hotel with warm lighting",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Architectural exterior"
+    },
+    "hero/hotel_exterior_concept.jpg": {
+      "title": "Luma Haven Exterior Evening Concept",
+      "caption": "A place to rest, recharge, and feel at home.",
+      "alt_text": "Evening concept visualization of modern glass facade of Luma Haven boutique hotel with warm lighting",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Architectural exterior"
+    },
+    "gallery/lobby.png": {
+      "title": "Lobby & Reception Lounge Concept",
+      "caption": "A warm welcome awaits every guest.",
+      "alt_text": "Concept visualization of hotel lobby lounge with comfortable seating and ambient lighting",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Reception Lounge"
+    },
+    "gallery/lobby.jpg": {
+      "title": "Lobby & Reception Lounge Concept",
+      "caption": "A warm welcome awaits every guest.",
+      "alt_text": "Concept visualization of hotel lobby lounge with comfortable seating and ambient lighting",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Reception Lounge"
+    },
+    "gallery/rooftop_pool.png": {
+      "title": "Rooftop Pool Concept",
+      "caption": "Relax above the city.",
+      "alt_text": "Concept visualization of rooftop swimming pool and deck loungers",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Pool (Unverified Facility)"
+    },
+    "gallery/rooftop_pool.jpg": {
+      "title": "Rooftop Pool Concept",
+      "caption": "Relax above the city.",
+      "alt_text": "Concept visualization of rooftop swimming pool and deck loungers",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Pool (Unverified Facility)"
+    },
+    "gallery/restaurant.png": {
+      "title": "Restaurant Dining Concept",
+      "caption": "Enjoy memorable dining moments.",
+      "alt_text": "Concept visualization of boutique restaurant dining space",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Restaurant (Unverified Facility)"
+    },
+    "gallery/restaurant.jpg": {
+      "title": "Restaurant Dining Concept",
+      "caption": "Enjoy memorable dining moments.",
+      "alt_text": "Concept visualization of boutique restaurant dining space",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Restaurant (Unverified Facility)"
+    },
+    "gallery/fitness_center.png": {
+      "title": "Fitness Center Concept",
+      "caption": "Stay active throughout your stay.",
+      "alt_text": "Concept visualization of fitness gym with treadmills and weight equipment",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Fitness Gym (Unverified Facility)"
+    },
+    "gallery/fitness_center.jpg": {
+      "title": "Fitness Center Concept",
+      "caption": "Stay active throughout your stay.",
+      "alt_text": "Concept visualization of fitness gym with treadmills and weight equipment",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Fitness Gym (Unverified Facility)"
+    },
+    "gallery/guest_lounge.png": {
+      "title": "Guest Lounge Concept",
+      "caption": "A peaceful space to unwind.",
+      "alt_text": "Concept visualization of cozy interior guest lounge with sofa and books",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Guest Lounge"
+    },
+    "gallery/guest_lounge.jpg": {
+      "title": "Guest Lounge Concept",
+      "caption": "A peaceful space to unwind.",
+      "alt_text": "Concept visualization of cozy interior guest lounge with sofa and books",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Guest Lounge"
+    },
+    "gallery/city_view.png": {
+      "title": "Sunset City View Concept",
+      "caption": "Experience beautiful skyline views.",
+      "alt_text": "Concept visualization of panoramic city rooftop sunset vista",
+      "display_order": 6,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Vista"
+    },
+    "gallery/city_view.jpg": {
+      "title": "Sunset City View Concept",
+      "caption": "Experience beautiful skyline views.",
+      "alt_text": "Concept visualization of panoramic city rooftop sunset vista",
+      "display_order": 6,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Vista"
+    },
+    "features/details.png": {
+      "title": "Thoughtful Guest Details",
+      "caption": "Little comforts for a better stay.",
+      "alt_text": "Organic guest bath amenities, fresh rolled towel, and wooden tray",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Premium Bath Amenities"
+    },
+    "features/details.jpg": {
+      "title": "Thoughtful Guest Details",
+      "caption": "Little comforts for a better stay.",
+      "alt_text": "Organic guest bath amenities, fresh rolled towel, and wooden tray",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Premium Bath Amenities"
+    },
+    "features/dining.png": {
+      "title": "Dining Atmosphere Concept",
+      "caption": "Delicious food, a cozy atmosphere, and moments to savor.",
+      "alt_text": "Concept visualization of hotel dining tables with warm pendant lamps",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": "Dining (Unverified Facility)"
+    },
+    "features/dining.jpg": {
+      "title": "Dining Atmosphere Concept",
+      "caption": "Delicious food, a cozy atmosphere, and moments to savor.",
+      "alt_text": "Concept visualization of hotel dining tables with warm pendant lamps",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": "Dining (Unverified Facility)"
+    },
+    "features/pool.png": {
+      "title": "Rooftop Pool Atmosphere Concept",
+      "caption": "Relax, refresh, and take in the view.",
+      "alt_text": "Concept visualization of twilight swimming pool deck overlooking city skyline",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Pool (Unverified Facility)"
+    },
+    "features/pool.jpg": {
+      "title": "Rooftop Pool Atmosphere Concept",
+      "caption": "Relax, refresh, and take in the view.",
+      "alt_text": "Concept visualization of twilight swimming pool deck overlooking city skyline",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Rooftop Pool (Unverified Facility)"
+    },
+    "features/gym.png": {
+      "title": "Fitness Gym Concept",
+      "caption": "Stay active, stay energized.",
+      "alt_text": "Concept visualization of fitness equipment by large windows",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Fitness Gym (Unverified Facility)"
+    },
+    "features/gym.jpg": {
+      "title": "Fitness Gym Concept",
+      "caption": "Stay active, stay energized.",
+      "alt_text": "Concept visualization of fitness equipment by large windows",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Fitness Gym (Unverified Facility)"
+    },
+    "features/lounge.png": {
+      "title": "Guest Lounge Concept",
+      "caption": "A peaceful sanctuary for reading, reflection, and quiet conversation.",
+      "alt_text": "Concept visualization of hotel library lounge with bookshelves and deep armchairs",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Guest Lounge"
+    },
+    "features/lounge.jpg": {
+      "title": "Guest Lounge Concept",
+      "caption": "A peaceful sanctuary for reading, reflection, and quiet conversation.",
+      "alt_text": "Concept visualization of hotel library lounge with bookshelves and deep armchairs",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Guest Lounge"
+    },
+    "rooms/suite/main.png": {
+      "title": "Family Suite Master Concept",
+      "caption": "A spacious retreat with extra comfort and style.",
+      "alt_text": "Family Suite concept showing master king bed, lounge ottoman, and living room alcove",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Suite Layout"
+    },
+    "rooms/suite/main.jpg": {
+      "title": "Family Suite Master Concept",
+      "caption": "A spacious retreat with extra comfort and style.",
+      "alt_text": "Family Suite concept showing master king bed, lounge ottoman, and living room alcove",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "Suite Layout"
+    },
+    "rooms/suite/bedroom.png": {
+      "title": "Family Suite Bedroom Alcove",
+      "caption": "Quiet master sleeping area.",
+      "alt_text": "Master bed alcove in Family Suite concept with warm wooden headboard",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/suite/bedroom.jpg": {
+      "title": "Family Suite Bedroom Alcove",
+      "caption": "Quiet master sleeping area.",
+      "alt_text": "Master bed alcove in Family Suite concept with warm wooden headboard",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/suite/living.png": {
+      "title": "Family Suite Living Lounge",
+      "caption": "Spacious adjoining living space.",
+      "alt_text": "Adjoining living lounge in Family Suite concept with comfortable sofa",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Living Alcove"
+    },
+    "rooms/suite/living.jpg": {
+      "title": "Family Suite Living Lounge",
+      "caption": "Spacious adjoining living space.",
+      "alt_text": "Adjoining living lounge in Family Suite concept with comfortable sofa",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": "Living Alcove"
+    },
+    "rooms/suite/bathroom.png": {
+      "title": "Family Suite Bathroom",
+      "caption": "Ensuite bath with soaking tub.",
+      "alt_text": "Modern ensuite bathroom concept with large tub and walk-in shower",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Soaking Tub"
+    },
+    "rooms/suite/bathroom.jpg": {
+      "title": "Family Suite Bathroom",
+      "caption": "Ensuite bath with soaking tub.",
+      "alt_text": "Modern ensuite bathroom concept with large tub and walk-in shower",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Soaking Tub"
+    },
+    "rooms/suite/view.png": {
+      "title": "Family Suite Panoramic View",
+      "caption": "High floor city skyline vista.",
+      "alt_text": "Expansive window view overlooking Phnom Penh cityscape",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "City View"
+    },
+    "rooms/suite/view.jpg": {
+      "title": "Family Suite Panoramic View",
+      "caption": "High floor city skyline vista.",
+      "alt_text": "Expansive window view overlooking Phnom Penh cityscape",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "City View"
+    },
+    "rooms/deluxe/main.png": {
+      "title": "Deluxe Concept Room Main",
+      "caption": "A cozy and elegant space for a relaxing stay.",
+      "alt_text": "Deluxe room concept visualization with King bed, wood paneling, and garden window",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "King Bed"
+    },
+    "rooms/deluxe/main.jpg": {
+      "title": "Deluxe Concept Room Main",
+      "caption": "A cozy and elegant space for a relaxing stay.",
+      "alt_text": "Deluxe room concept visualization with King bed, wood paneling, and garden window",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "King Bed"
+    },
+    "rooms/deluxe/bedroom.png": {
+      "title": "Deluxe Concept Bedroom Detail",
+      "caption": "Restful bedding detail.",
+      "alt_text": "Bed detail with plush pillows and ambient lighting",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/deluxe/bedroom.jpg": {
+      "title": "Deluxe Concept Bedroom Detail",
+      "caption": "Restful bedding detail.",
+      "alt_text": "Bed detail with plush pillows and ambient lighting",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/deluxe/bathroom.png": {
+      "title": "Deluxe Concept Bathroom",
+      "caption": "Clean minimalist bathroom.",
+      "alt_text": "Modern hotel bathroom vanity and mirror",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/deluxe/bathroom.jpg": {
+      "title": "Deluxe Concept Bathroom",
+      "caption": "Clean minimalist bathroom.",
+      "alt_text": "Modern hotel bathroom vanity and mirror",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/deluxe/work_desk.png": {
+      "title": "Deluxe Concept Work Desk",
+      "caption": "Dedicated writing desk corner.",
+      "alt_text": "Solid wood writing desk with lamp and chair",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Work Desk"
+    },
+    "rooms/deluxe/work_desk.jpg": {
+      "title": "Deluxe Concept Work Desk",
+      "caption": "Dedicated writing desk corner.",
+      "alt_text": "Solid wood writing desk with lamp and chair",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Work Desk"
+    },
+    "rooms/deluxe/amenities.png": {
+      "title": "Deluxe Concept Wardrobe",
+      "caption": "Closet and storage amenities.",
+      "alt_text": "Built-in wardrobe with hangers and luggage space",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/deluxe/amenities.jpg": {
+      "title": "Deluxe Concept Wardrobe",
+      "caption": "Closet and storage amenities.",
+      "alt_text": "Built-in wardrobe with hangers and luggage space",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/premier/main.png": {
+      "title": "Premier Concept Room Main",
+      "caption": "More space, more comfort for your stay.",
+      "alt_text": "Premier room concept with King bed, sofa seating, and city window",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "King Bed, Window Seating"
+    },
+    "rooms/premier/main.jpg": {
+      "title": "Premier Concept Room Main",
+      "caption": "More space, more comfort for your stay.",
+      "alt_text": "Premier room concept with King bed, sofa seating, and city window",
+      "display_order": 1,
+      "source_type": "CONCEPT",
+      "facility_claim": "King Bed, Window Seating"
+    },
+    "rooms/premier/bedroom.png": {
+      "title": "Premier Concept Bedroom Detail",
+      "caption": "Comfortable king bedding.",
+      "alt_text": "Premier room king bed with green runner",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/premier/bedroom.jpg": {
+      "title": "Premier Concept Bedroom Detail",
+      "caption": "Comfortable king bedding.",
+      "alt_text": "Premier room king bed with green runner",
+      "display_order": 2,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/premier/bathroom.png": {
+      "title": "Premier Concept Bathroom",
+      "caption": "Marble vanity bathroom.",
+      "alt_text": "Marble vanity and glass shower enclosure",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/premier/bathroom.jpg": {
+      "title": "Premier Concept Bathroom",
+      "caption": "Marble vanity bathroom.",
+      "alt_text": "Marble vanity and glass shower enclosure",
+      "display_order": 3,
+      "source_type": "CONCEPT",
+      "facility_claim": ""
+    },
+    "rooms/premier/seating.png": {
+      "title": "Premier Concept Window Seating",
+      "caption": "Relaxing sofa by city window.",
+      "alt_text": "Comfortable seating sofa facing high-rise city window",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Window Seating"
+    },
+    "rooms/premier/seating.jpg": {
+      "title": "Premier Concept Window Seating",
+      "caption": "Relaxing sofa by city window.",
+      "alt_text": "Comfortable seating sofa facing high-rise city window",
+      "display_order": 4,
+      "source_type": "CONCEPT",
+      "facility_claim": "Window Seating"
+    },
+    "rooms/premier/minibar.png": {
+      "title": "Premier Concept Minibar",
+      "caption": "In-room refreshment corner.",
+      "alt_text": "Minibar shelf with kettle and glassware",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Minibar (Unverified Facility)"
+    },
+    "rooms/premier/minibar.jpg": {
+      "title": "Premier Concept Minibar",
+      "caption": "In-room refreshment corner.",
+      "alt_text": "Minibar shelf with kettle and glassware",
+      "display_order": 5,
+      "source_type": "CONCEPT",
+      "facility_claim": "Minibar (Unverified Facility)"
+    }
+  }
+}

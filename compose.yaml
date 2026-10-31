@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app:z
+      - ./Luma-Haven_Visual_Assets:/app/source_assets:ro,z
   worker:
     build: ./backend
     command: celery -A config worker -l info

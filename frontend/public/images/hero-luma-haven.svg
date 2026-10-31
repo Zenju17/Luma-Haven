@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0c2b26" />
+      <stop offset="45%" stop-color="#163d3a" />
+      <stop offset="100%" stop-color="#071b18" />
+    </linearGradient>
+    <linearGradient id="warmLight" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#faebd7" stop-opacity="0.25" />
+      <stop offset="60%" stop-color="#b89758" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#0c2b26" stop-opacity="0" />
+    </linearGradient>
+    <linearGradient id="brassGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8cca0" />
+      <stop offset="50%" stop-color="#b89758" />
+      <stop offset="100%" stop-color="#80622d" />
+    </linearGradient>
+    <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fdf4dc" stop-opacity="0.75" />
+      <stop offset="40%" stop-color="#d9b87f" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#163d3a" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="linen" width="8" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 0h8v8H0z" fill="none" />
+      <path d="M0 4h8M4 0v8" stroke="rgba(255,255,255,0.02)" stroke-width="0.75" />
+    </pattern>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1200" height="800" fill="url(#bgGrad)" />
+  <rect width="1200" height="800" fill="url(#linen)" />
+
+  <!-- Architectural Background: Large Arched Windows with Courtyard View -->
+  <g opacity="0.85">
+    <!-- Window 1 (Left) -->
+    <path d="M120 700 V320 C120 220 200 140 300 140 C400 140 480 220 480 320 V700 Z" fill="#0f2622" stroke="rgba(184,151,88,0.3)" stroke-width="2" />
+    <!-- Window 2 (Center-Right) -->
+    <path d="M540 700 V280 C540 160 640 60 760 60 C880 60 980 160 980 280 V700 Z" fill="#0e2320" stroke="rgba(184,151,88,0.35)" stroke-width="2.5" />
+    <!-- Botanical Garden Silhouette inside Window 2 -->
+    <path d="M600 700 Q650 480 720 420 Q690 350 780 320 Q860 380 880 490 Q920 540 960 700 Z" fill="#133630" opacity="0.6" />
+    <path d="M680 700 Q740 540 820 460 Q890 530 940 700 Z" fill="#173f38" opacity="0.7" />
+  </g>
+
+  <!-- Sunlight Beams through Windows -->
+  <polygon points="560,60 840,60 1150,800 450,800" fill="url(#warmLight)" />
+
+  <!-- Interior Architectural Floor -->
+  <polygon points="0,620 1200,620 1200,800 0,800" fill="#081715" />
+  <line x1="0" y1="620" x2="1200" y2="620" stroke="rgba(184,151,88,0.2)" stroke-width="1.5" />
+
+  <!-- Pendant Lamp (Hanging from ceiling) -->
+  <line x1="380" y1="0" x2="380" y2="240" stroke="url(#brassGrad)" stroke-width="2" />
+  <!-- Lamp Shade -->
+  <path d="M340 260 C340 245 420 245 420 260 L440 300 H320 Z" fill="url(#brassGrad)" />
+  <!-- Lamp Glow -->
+  <circle cx="380" cy="320" r="140" fill="url(#lampGlow)" />
+  <circle cx="380" cy="305" r="8" fill="#fffbe8" />
+
+  <!-- Mid-century Lounge Chair & Teak Table in Foreground -->
+  <g transform="translate(680, 480)">
+    <!-- Small Teak Low Table -->
+    <ellipse cx="140" cy="180" rx="60" ry="16" fill="rgba(0,0,0,0.4)" />
+    <ellipse cx="140" cy="175" rx="58" ry="14" fill="#2d2218" stroke="rgba(184,151,88,0.4)" stroke-width="1" />
+    <path d="M110 175 L115 220 M170 175 L165 220" stroke="#1d1610" stroke-width="3" />
+    <!-- Brass Vessel & Tea Cup -->
+    <path d="M135 168 h10 v-12 h-10 z" fill="url(#brassGrad)" />
+    <ellipse cx="155" cy="170" rx="6" ry="3" fill="#f4f7f5" opacity="0.8" />
+
+    <!-- Upholstered Armchair in Deep Forest Green / Linen -->
+    <path d="M220 120 C220 80 270 70 310 70 C350 70 400 80 400 120 V200 H220 Z" fill="#1b453f" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+    <!-- Cushioned Seat -->
+    <rect x="210" y="160" width="200" height="40" rx="12" fill="#205049" stroke="rgba(184,151,88,0.3)" stroke-width="1" />
+    <line x1="240" y1="200" x2="230" y2="240" stroke="#122b27" stroke-width="5" stroke-linecap="round" />
+    <line x1="380" y1="200" x2="390" y2="240" stroke="#122b27" stroke-width="5" stroke-linecap="round" />
+  </g>
+
+  <!-- LH Brand Seal & Inscription (Top Right) -->
+  <g transform="translate(1000, 90)">
+    <circle cx="50" cy="50" r="42" fill="none" stroke="url(#brassGrad)" stroke-width="1.5" stroke-dasharray="3,3" />
+    <circle cx="50" cy="50" r="36" fill="#0b2420" stroke="url(#brassGrad)" stroke-width="1" />
+    <text x="50" y="47" text-anchor="middle" fill="#d9b87f" font-family="'Fraunces', serif" font-size="20" font-weight="600" letter-spacing="1">LH</text>
+    <text x="50" y="64" text-anchor="middle" fill="#a4c2b8" font-family="'DM Sans', sans-serif" font-size="7" letter-spacing="2" font-weight="600">SANCTUARY</text>
+  </g>
+
+  <!-- Ambient Title Overlay at bottom-left corner -->
+  <g transform="translate(80, 710)">
+    <text x="0" y="0" fill="#f4f7f5" font-family="'Fraunces', serif" font-size="26" font-weight="500">Luma Haven</text>
+    <text x="0" y="24" fill="#a8c2b8" font-family="'DM Sans', sans-serif" font-size="13" letter-spacing="2">BOUTIQUE HOTEL · PHNOM PENH</text>
+  </g>
+</svg>

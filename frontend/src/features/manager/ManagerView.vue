@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from './ManagerDashboard.vue'
+import MediaAssetManager from '../media/MediaAssetManager.vue'
 import Notice from '../../components/Notice.vue'
 import { staffApi, queryClient } from '../../services/api'
 import type { StaffUser } from '../../types'
@@ -15,6 +16,8 @@ const username = ref('')
 const password = ref('')
 const error = ref('')
 const busy = ref(false)
+const activeTab = ref<'dashboard' | 'media'>('dashboard')
+
 
 const identity = useQuery({ queryKey: ['auth', 'me', 'manager'], queryFn: () => staffApi<StaffUser>('/auth/me') })
 watch(identity.data, current => {
@@ -93,7 +96,36 @@ function handleNavigate(destination: string) {
         </div>
       </div>
 
-      <ManagerDashboard portal="staff" :user="user" @navigate="handleNavigate" />
+      <!-- Section Tabs -->
+      <div class="flex items-center gap-2 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330] pb-2">
+        <button
+          type="button"
+          :class="[
+            'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+            activeTab === 'dashboard'
+              ? 'bg-[var(--brass)] text-stone-900 shadow-xs'
+              : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
+          ]"
+          @click="activeTab = 'dashboard'"
+        >
+          Executive Dashboard &amp; Yield
+        </button>
+        <button
+          type="button"
+          :class="[
+            'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
+            activeTab === 'media'
+              ? 'bg-[var(--brass)] text-stone-900 shadow-xs'
+              : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
+          ]"
+          @click="activeTab = 'media'"
+        >
+          Visual Assets &amp; Media
+        </button>
+      </div>
+
+      <ManagerDashboard v-if="activeTab === 'dashboard'" portal="staff" :user="user" @navigate="handleNavigate" />
+      <MediaAssetManager v-else-if="activeTab === 'media'" portal="staff" />
     </div>
   </PortalLayout>
 </template>

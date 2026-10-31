@@ -2,7 +2,7 @@ from datetime import timedelta
 from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier
 import pytest
-from django.db import IntegrityError, close_old_connections, transaction
+from django.db import IntegrityError, OperationalError, close_old_connections, transaction
 from django.utils import timezone
 from psycopg.types.range import Range
 from core import services
@@ -40,7 +40,7 @@ def test_competing_room_allocations_only_one_commits(inventory):
                 Allocation.objects.create(room_id=inventory.pk,
                     period=Range(tomorrow, tomorrow + timedelta(days=1), '[)'), kind='MAINTENANCE')
             return 'allocated'
-        except IntegrityError:
+        except (IntegrityError, OperationalError):
             return 'conflict'
         finally:
             close_old_connections()

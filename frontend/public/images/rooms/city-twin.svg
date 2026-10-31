@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ctBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#143632" />
+      <stop offset="100%" stop-color="#0a1d1a" />
+    </linearGradient>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ebd09c" />
+      <stop offset="50%" stop-color="#b89758" />
+      <stop offset="100%" stop-color="#7a5f2a" />
+    </linearGradient>
+  </defs>
+
+  <!-- Wall Background -->
+  <rect width="800" height="500" fill="url(#ctBg)" />
+
+  <!-- City Window Silhouette (Right) -->
+  <g transform="translate(560, 40)">
+    <rect x="0" y="0" width="180" height="320" rx="6" fill="#0d2420" stroke="rgba(184,151,88,0.3)" stroke-width="2" />
+    <!-- City Skyline Geometry in Distance -->
+    <rect x="20" y="160" width="35" height="160" fill="#153b34" />
+    <rect x="65" y="120" width="45" height="200" fill="#1b473f" />
+    <rect x="120" y="180" width="30" height="140" fill="#133630" />
+    <!-- Morning Light Rays -->
+    <polygon points="65,120 110,120 0,320 0,260" fill="#faebd7" opacity="0.08" />
+  </g>
+
+  <!-- Twin Bed 1 (Left) -->
+  <g transform="translate(60, 180)">
+    <rect x="0" y="0" width="200" height="140" rx="4" fill="#201712" stroke="rgba(184,151,88,0.2)" stroke-width="1" />
+    <rect x="20" y="60" width="160" height="50" rx="6" fill="#f4f7f5" stroke="#cbdad4" stroke-width="1" />
+    <rect x="10" y="100" width="180" height="170" fill="#ffffff" />
+    <!-- Oatmeal Linen Runner -->
+    <rect x="10" y="190" width="180" height="80" fill="#bfae99" />
+  </g>
+
+  <!-- Center Teak Bedside Table with Brass Reading Lamp -->
+  <g transform="translate(285, 260)">
+    <rect x="0" y="0" width="70" height="120" rx="4" fill="#291e17" stroke="rgba(184,151,88,0.25)" stroke-width="1" />
+    <!-- Brass Lamp -->
+    <line x1="35" y1="0" x2="35" y2="-40" stroke="url(#brass)" stroke-width="2" />
+    <path d="M20 -40 C20 -50 50 -50 50 -40 Z" fill="url(#brass)" />
+    <circle cx="35" cy="-35" r="22" fill="#fff5dc" opacity="0.4" />
+    <!-- Glass Carafe -->
+    <rect x="15" y="-12" width="12" height="12" rx="2" fill="rgba(255,255,255,0.4)" stroke="rgba(255,255,255,0.7)" stroke-width="0.5" />
+  </g>
+
+  <!-- Twin Bed 2 (Right) -->
+  <g transform="translate(375, 180)">
+    <rect x="0" y="0" width="200" height="140" rx="4" fill="#201712" stroke="rgba(184,151,88,0.2)" stroke-width="1" />
+    <rect x="20" y="60" width="160" height="50" rx="6" fill="#f4f7f5" stroke="#cbdad4" stroke-width="1" />
+    <rect x="10" y="100" width="180" height="170" fill="#ffffff" />
+    <rect x="10" y="190" width="180" height="80" fill="#bfae99" />
+  </g>
+
+  <!-- Room Badge (Top Left) -->
+  <g transform="translate(60, 40)">
+    <rect width="130" height="32" rx="16" fill="rgba(22,61,58,0.9)" stroke="url(#brass)" stroke-width="1" />
+    <text x="65" y="20" text-anchor="middle" fill="#d9b87f" font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" letter-spacing="1">CITY TWIN</text>
+  </g>
+</svg>

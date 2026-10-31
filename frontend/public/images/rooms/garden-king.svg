@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="gkBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#12332e" />
+      <stop offset="100%" stop-color="#091c19" />
+    </linearGradient>
+    <linearGradient id="gkBء" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.4" />
+    </linearGradient>
+    <linearGradient id="brass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ebd09c" />
+      <stop offset="50%" stop-color="#b89758" />
+      <stop offset="100%" stop-color="#7a5f2a" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Room Wall -->
+  <rect width="800" height="500" fill="url(#gkBg)" />
+
+  <!-- Back Garden Terrace View (Large Glass French Door) -->
+  <g transform="translate(60, 50)">
+    <rect x="0" y="0" width="280" height="360" rx="8" fill="#0d2621" stroke="rgba(184,151,88,0.35)" stroke-width="2" />
+    <!-- Garden Greenery / Palms -->
+    <path d="M40 360 C50 240 100 180 140 140 C170 180 200 240 220 360 Z" fill="#1b4d42" opacity="0.65" />
+    <path d="M90 360 C110 270 140 210 180 180 C210 220 230 280 250 360 Z" fill="#246154" opacity="0.75" />
+    <path d="M10 360 Q70 200 120 180 Q160 260 170 360 Z" fill="#143c34" opacity="0.8" />
+    <!-- Warm Exterior Sunlight Glow -->
+    <circle cx="140" cy="120" r="80" fill="#fcf6e8" opacity="0.12" />
+    <line x1="140" y1="0" x2="140" y2="360" stroke="rgba(184,151,88,0.3)" stroke-width="2" />
+    <line x1="0" y1="180" x2="280" y2="180" stroke="rgba(184,151,88,0.3)" stroke-width="2" />
+  </g>
+
+  <!-- King Headboard in Solid Teak Wood -->
+  <rect x="360" y="160" width="380" height="250" rx="6" fill="#221913" stroke="rgba(184,151,88,0.25)" stroke-width="1.5" />
+  <line x1="360" y1="190" x2="740" y2="190" stroke="rgba(184,151,88,0.2)" stroke-width="1" />
+
+  <!-- Bed Pillows & Bolsters -->
+  <rect x="390" y="240" width="140" height="60" rx="8" fill="#e8ebe9" stroke="#cbdad4" stroke-width="1" />
+  <rect x="560" y="240" width="140" height="60" rx="8" fill="#e8ebe9" stroke="#cbdad4" stroke-width="1" />
+  <!-- Forest Green Accent Cushion -->
+  <rect x="440" y="270" width="90" height="40" rx="5" fill="#18423c" />
+  <rect x="560" y="270" width="90" height="40" rx="5" fill="#18423c" />
+
+  <!-- King Mattress & Warm Duvet -->
+  <path d="M370 300 H730 V450 H370 Z" fill="#f8faf9" />
+  <!-- Sage Green Throw Folded at Foot of Bed -->
+  <rect x="370" y="380" width="360" height="70" fill="#2e544d" />
+  <line x1="370" y1="380" x2="730" y2="380" stroke="url(#brass)" stroke-width="1.5" />
+
+  <!-- Brass Sconce Lamp on Wall -->
+  <circle cx="550" cy="120" r="14" fill="url(#brass)" />
+  <line x1="550" y1="120" x2="550" y2="150" stroke="url(#brass)" stroke-width="3" />
+  <circle cx="550" cy="155" r="30" fill="#fdf3d8" opacity="0.35" />
+
+  <!-- Room Badge (Top Right) -->
+  <g transform="translate(620, 30)">
+    <rect width="140" height="32" rx="16" fill="rgba(22,61,58,0.9)" stroke="url(#brass)" stroke-width="1" />
+    <text x="70" y="20" text-anchor="middle" fill="#d9b87f" font-family="'DM Sans', sans-serif" font-size="11" font-weight="600" letter-spacing="1">GARDEN KING</text>
+  </g>
+</svg>

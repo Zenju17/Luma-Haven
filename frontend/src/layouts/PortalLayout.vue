@@ -7,7 +7,10 @@ defineProps<{ area: 'staff' | 'admin' }>()
 <template>
   <div class="portal-shell">
     <aside class="portal-rail" aria-label="Private workspace identity">
-      <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="brand-mark serif text-2xl font-semibold">Luma Haven<span class="text-[#d7b683]">.</span></RouterLink>
+      <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="brand-mark serif text-2xl font-semibold flex items-center gap-2.5">
+        <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-8 h-8 object-contain" />
+        <span>Luma Haven<span class="text-[#d7b683]">.</span></span>
+      </RouterLink>
       <div class="portal-rail-rule" aria-hidden="true" />
       <p class="portal-rail-title">{{ area === 'admin' ? 'The hotel, at a glance.' : 'A clearer day at the desk.' }}</p>
       <p class="portal-rail-note mt-5">{{ area === 'admin' ? 'People, performance and the decisions behind every stay.' : 'Arrivals, rooms and requests in one working view.' }}</p>
@@ -21,7 +24,10 @@ defineProps<{ area: 'staff' | 'admin' }>()
     </aside>
     <div class="portal-stage">
       <header class="portal-mobile-header">
-        <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="serif text-xl">Luma Haven<span class="text-[#d7b683]">.</span></RouterLink>
+        <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="serif text-xl flex items-center gap-2">
+          <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-6 h-6 object-contain" />
+          <span>Luma Haven<span class="text-[#d7b683]">.</span></span>
+        </RouterLink>
         <div class="flex items-center gap-3">
           <span class="text-xs">{{ area === 'admin' ? 'Administration' : 'Staff operations' }}</span>
           <ThemeToggle />

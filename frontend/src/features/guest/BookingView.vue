@@ -80,7 +80,10 @@ async function sendRequest() {
     </div>
     <Notice v-else-if="booking.error.value" :message="String(booking.error.value)" />
     <div v-else-if="booking.data.value" class="max-w-3xl mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
-      <p class="label">Your reservation</p>
+      <div class="flex items-center gap-2.5 mb-2">
+        <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
+        <p class="label mb-0">Your reservation</p>
+      </div>
       <h1 class="text-4xl text-[var(--brand-text)]">Welcome, {{ booking.data.value.guest_name }}.</h1>
       <p class="mt-3 text-[var(--muted)]">Booking {{ booking.data.value.reference }} · <span class="badge">{{ booking.data.value.status.replaceAll('_', ' ') }}</span></p>
       <div class="grid md:grid-cols-2 gap-5 mt-8">
