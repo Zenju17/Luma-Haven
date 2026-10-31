@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
@@ -15,6 +16,9 @@ import {
   type StaffUser,
   type Task
 } from '../../types'
+
+const route = useRoute()
+const router = useRouter()
 
 const user = ref<StaffUser | null>(null)
 const username = ref('')
@@ -35,8 +39,34 @@ const canClean = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING'
 const canServe = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION'].includes(role.value || ''))
 const canSeeReservations = computed(() => ['ADMIN', 'MANAGER', 'RECEPTION', 'ACCOUNTANT'].includes(role.value || ''))
 
-// Active Tab
-const tab = ref<'operations' | 'reservations' | 'refunds' | 'rates' | 'manager'>('operations')
+// Active Tab with deep-linking & sync
+const validTabs = ['operations', 'reservations', 'refunds', 'rates', 'manager'] as const
+type TabType = typeof validTabs[number]
+
+const tab = ref<TabType>(
+  (route.query.tab && validTabs.includes(route.query.tab as TabType))
+    ? (route.query.tab as TabType)
+    : 'operations'
+)
+
+watch(() => route.query.tab, newTab => {
+  if (newTab && typeof newTab === 'string' && validTabs.includes(newTab as TabType)) {
+    tab.value = newTab as TabType
+  }
+})
+
+function setTab(nextTab: TabType) {
+  tab.value = nextTab
+  void router.replace({ query: { ...route.query, tab: nextTab } })
+}
+
+function handleManagerNavigate(destination: string) {
+  const targetTab: TabType = (destination === 'reservations' || destination === 'rates' || destination === 'refunds')
+    ? destination
+    : 'operations'
+  setTab(targetTab)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 const summary = useQuery({
   queryKey: computed(() => ['summary', role.value]),
@@ -319,7 +349,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           type="button"
           class="px-4 py-2 rounded-lg text-sm transition"
           :class="tab === 'operations' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="tab = 'operations'"
+          @click="setTab('operations')"
         >
           Daily Operations
         </button>
@@ -329,7 +359,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           type="button"
           class="px-4 py-2 rounded-lg text-sm transition"
           :class="tab === 'reservations' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="tab = 'reservations'"
+          @click="setTab('reservations')"
         >
           Reservations & Amendments
         </button>
@@ -339,7 +369,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           type="button"
           class="px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
           :class="tab === 'refunds' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="tab = 'refunds'"
+          @click="setTab('refunds')"
         >
           Refunds & Reconciliation
           <span v-if="refunds.data.value?.filter(r => r.status === 'PENDING').length" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
@@ -350,7 +380,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           type="button"
           class="px-4 py-2 rounded-lg text-sm transition"
           :class="tab === 'rates' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="tab = 'rates'"
+          @click="setTab('rates')"
         >
           Room Rates & Pricing
         </button>
@@ -360,7 +390,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           type="button"
           class="px-4 py-2 rounded-lg text-sm transition"
           :class="tab === 'manager' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="tab = 'manager'"
+          @click="setTab('manager')"
         >
           Manager Intelligence
         </button>
@@ -785,7 +815,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 
       <!-- TAB 5: MANAGER INTELLIGENCE DASHBOARD -->
       <section v-else-if="tab === 'manager' && isManagerOrAdmin">
-        <ManagerDashboard portal="staff" :user="user" @navigate="d => tab = (d === 'reservations' || d === 'rates' || d === 'refunds' ? d : 'operations')" />
+        <ManagerDashboard portal="staff" :user="user" @navigate="handleManagerNavigate" />
       </section>
     </div>
 

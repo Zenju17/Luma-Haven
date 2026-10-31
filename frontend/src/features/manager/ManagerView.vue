@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from './ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import { staffApi, queryClient } from '../../services/api'
 import type { StaffUser } from '../../types'
+
+const router = useRouter()
 
 const user = ref<StaffUser | null>(null)
 const username = ref('')
@@ -43,6 +46,11 @@ async function signOut() {
   } catch (caught) {
     error.value = String(caught)
   }
+}
+
+function handleNavigate(destination: string) {
+  const targetTab = ['reservations', 'rates', 'refunds'].includes(destination) ? destination : 'operations'
+  void router.push({ path: '/staff', query: { tab: targetTab } })
 }
 </script>
 
@@ -85,7 +93,7 @@ async function signOut() {
         </div>
       </div>
 
-      <ManagerDashboard portal="staff" :user="user" />
+      <ManagerDashboard portal="staff" :user="user" @navigate="handleNavigate" />
     </div>
   </PortalLayout>
 </template>

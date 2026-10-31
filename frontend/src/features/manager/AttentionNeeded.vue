@@ -40,6 +40,26 @@ function actionTarget(alert: DecisionAlert): string {
       return 'overview'
   }
 }
+
+function actionLabel(alert: DecisionAlert): string {
+  switch (alert.id) {
+    case 'low_occupancy_upcoming':
+      return 'Room Rates'
+    case 'unpaid_upcoming_reservations':
+    case 'high_cancellation_rate':
+      return 'Reservations'
+    case 'unresolved_payment_exceptions':
+      return 'Refunds'
+    case 'unready_arrival_rooms':
+      return 'Housekeeping'
+    case 'repeated_maintenance_issues':
+      return 'Maintenance'
+    case 'overdue_service_requests':
+      return 'Service Requests'
+    default:
+      return 'Operations'
+  }
+}
 </script>
 
 <template>
@@ -131,10 +151,13 @@ function actionTarget(alert: DecisionAlert): string {
           </div>
           <button
             type="button"
-            class="text-xs font-semibold text-[#8f6826] dark:text-[#d7b683] hover:underline flex items-center gap-1"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-[#8f6826] bg-[#8f6826]/10 hover:bg-[#8f6826]/20 border border-[#8f6826]/30 dark:text-[#d7b683] dark:bg-[#d7b683]/15 dark:hover:bg-[#d7b683]/25 dark:border-[#d7b683]/30 transition shadow-xs cursor-pointer"
+            :title="`Open ${actionLabel(alert)} in operations workspace`"
             @click="emit('navigate', actionTarget(alert))"
           >
-            Action in Operations →
+            <span>Action in Operations</span>
+            <span class="text-[11px] font-normal opacity-80">({{ actionLabel(alert) }})</span>
+            <span aria-hidden="true">→</span>
           </button>
         </div>
 

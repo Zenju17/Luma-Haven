@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import PortalLayout from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
+
+const router = useRouter()
 
 interface TeamMember { id: number; username: string; role: string; is_active: boolean; date_joined: string }
 interface AuditEntry { id: number; actor: string; action: string; target: string; timestamp: string }
@@ -153,6 +156,11 @@ async function changeStaffPassword() {
     passwordBusy.value = false
   }
 }
+
+function handleManagerNavigate(destination: string) {
+  const targetTab = ['reservations', 'rates', 'refunds'].includes(destination) ? destination : 'operations'
+  void router.push({ path: '/staff', query: { tab: targetTab } })
+}
 </script>
 
 <template>
@@ -186,7 +194,7 @@ async function changeStaffPassword() {
       </nav>
 
       <section v-if="section === 'overview'" aria-label="Executive MIS Intelligence">
-        <ManagerDashboard portal="admin" :user="user" />
+        <ManagerDashboard portal="admin" :user="user" @navigate="handleManagerNavigate" />
       </section>
 
       <section v-else-if="section === 'team'" aria-label="Staff accounts">
