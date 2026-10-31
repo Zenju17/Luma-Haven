@@ -32,6 +32,8 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 
 - P3 admin console (see IMPLEMENTATION_STATUS): code complete; **tests not yet run**. Login to `/admin` now also accepts `DEVELOPER` and `CONTENT_EDITOR`.
 
+- P4 infrastructure (see INFRASTRUCTURE.md): files committed; **never deployed or run on Docker**. Celery broker now follows `REDIS_URL` (it was unset before).
+
 ## Deliberately simulated or missing
 
 - **Payments are fake by default** (KHQR exists but is unverified against Bakong). `/api/v1/development/checkout/<uuid>` is an emulator that writes provider events. No real gateway, signed webhooks, provider refunds, reconciliation with a PSP, or card storage.

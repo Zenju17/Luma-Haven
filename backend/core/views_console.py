@@ -258,6 +258,26 @@ def admin_cms_block_unpublish(request, pk):
 
 # ---------------------------------------------------------------- developer console
 
+def backup_status():
+    """Read the markers written by scripts/backup_db.sh and restore_drill.sh (never the dump itself)."""
+    import json
+    from pathlib import Path
+    marker = Path(settings.BACKUP_STATUS_FILE)
+    try:
+        data = json.loads(marker.read_text())
+        finished = parse_datetime(str(data.get('finished_at', '')))
+        age = int((timezone.now() - finished).total_seconds()) if finished else None
+    except (OSError, ValueError):
+        return {'configured': False, 'ok': False, 'finished_at': None, 'age_seconds': None, 'size_bytes': None, 'last_restore_drill': None}
+    try:
+        drill = json.loads((marker.parent / 'last_restore_drill.json').read_text())
+    except (OSError, ValueError):
+        drill = None
+    return {'configured': True, 'ok': bool(data.get('ok')) and age is not None and age < 26 * 3600,
+            'finished_at': data.get('finished_at'), 'age_seconds': age, 'size_bytes': data.get('size_bytes'),
+            'last_restore_drill': drill}
+
+
 def _pending_migrations():
     executor = MigrationExecutor(connection)
     return len(executor.migration_plan(executor.loader.graph.leaf_nodes()))
@@ -289,6 +309,7 @@ def dev_health(request):
         'database': db, 'cache': {'ok': redis_ok},
         'celery': {'last_beat_task_seconds_ago': beat_age, 'healthy': beat_age is not None and beat_age < 300},
         'pending_migrations': pending,
+        'backup': backup_status(),
         'outbox_pending': Outbox.objects.filter(delivered_at__isnull=True).count(),
         'errors_24h': ErrorEvent.objects.filter(created_at__gte=now - timedelta(hours=24)).count(),
         'versions': {'app': getattr(settings, 'APP_VERSION', 'dev'), 'django': django.get_version(), 'python': platform.python_version()},

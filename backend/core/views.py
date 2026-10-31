@@ -14,7 +14,8 @@ from django.middleware.csrf import get_token
 from django.urls import path
 from django.utils import timezone
 from django.db.models import Sum
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, throttle_classes
+from . import throttling
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from . import legal, services, staff_passwords
@@ -55,14 +56,24 @@ def detail(obj):
             'checked_out_at': stay.checked_out_at if stay else None,
             'requests': list(ServiceRequest.objects.filter(stay=stay).values('id', 'type', 'description', 'status')) if stay else []}
 
+def ready(request):
+    """Readiness probe for load balancers and uptime monitors: 200 only when the database answers."""
+    try:
+        User.objects.exists()
+    except Exception:
+        return JsonResponse({'status': 'unavailable'}, status=503)
+    return JsonResponse({'status': 'ready'})
+
 @api_view(['GET'])
 def csrf(request):
     return Response({'csrfToken': get_token(request)})
 
 @api_view(['POST'])
+@throttle_classes([throttling.LoginThrottle])
 def staff_login(request):
     if request.portal not in ('staff', 'admin'):
         raise PermissionDenied('Sign in through the staff or administrator portal')
+    throttling.check_lockout(str(request.data.get('username', '')), request.portal)
     user = authenticate(request, username=request.data.get('username', ''), password=request.data.get('password', ''))
     if not user or not user.is_active:
         Audit.objects.create(actor=str(request.data.get('username', ''))[:120], action='LOGIN_FAILED', target=request.portal)
@@ -150,6 +161,7 @@ def _require_bookings_open():
         raise ValidationError('Online bookings are temporarily paused. Please try again later or contact the hotel.')
 
 @api_view(['POST'])
+@throttle_classes([throttling.BookingThrottle])
 def quotes(request):
     _require_bookings_open()
     try:
@@ -161,6 +173,7 @@ def quotes(request):
                      'total_minor': quote.total, 'currency': quote.currency, 'expires_at': quote.expires_at})
 
 @api_view(['POST'])
+@throttle_classes([throttling.BookingThrottle])
 def reservations(request):
     _require_bookings_open()
     try:
@@ -210,6 +223,7 @@ def payment_session(request, pk):
     return Response(_attempt_payload(attempt), status=201)
 
 @api_view(['GET'])
+@throttle_classes([throttling.PollThrottle])
 def payment_session_status(request, pk):
     """Booking-scoped status. The browser never reports payment; the server asks the provider."""
     attempt = PaymentAttempt.objects.filter(pk=pk).first()
@@ -236,6 +250,7 @@ def development_checkout(request, pk):
     return Response({'status': event.status, 'simulated': True})
 
 @api_view(['POST'])
+@throttle_classes([throttling.OtpThrottle])
 def request_otp(request):
     reference = str(request.data.get('reference', '')).upper()
     email = str(request.data.get('email', '')).strip().lower()
@@ -249,6 +264,7 @@ def request_otp(request):
     return Response({'message': 'If the details match, a verification message has been sent.'})
 
 @api_view(['POST'])
+@throttle_classes([throttling.OtpThrottle])
 def verify_otp(request):
     obj = Reservation.objects.filter(reference=str(request.data.get('reference', '')).upper(), guest__email__iexact=str(request.data.get('email', '')).strip()).first()
     if not obj:
@@ -1745,6 +1761,7 @@ def _verified_guest_booking(request, pk):
     return obj
 
 @api_view(['POST'])
+@throttle_classes([throttling.PrivacyThrottle])
 def guest_data_request(request, pk):
     obj = _verified_guest_booking(request, pk)
     type_ = str(request.data.get('type', '')).upper()
@@ -1830,7 +1847,7 @@ urlpatterns = [
     path('reservations/<int:pk>/data-requests', guest_data_request), path('reservations/<int:pk>/data-export', guest_data_export),
     path('admin/data-requests', admin_data_requests), path('admin/data-requests/<int:pk>/resolve', admin_resolve_data_request),
     path('admin/legal', admin_legal), path('admin/legal/<int:pk>', admin_legal_detail), path('admin/legal/<int:pk>/publish', admin_legal_publish),
-    path('health', lambda r: JsonResponse({'status': 'ok'})),
+    path('health', lambda r: JsonResponse({'status': 'ok'})), path('ready', ready),
     path('auth/csrf', csrf), path('auth/login', staff_login), path('auth/logout', staff_logout), path('auth/me', me),
     path('rooms', rooms), path('availability', availability), path('quotes', quotes),
     path('visual-assets', visual_assets),

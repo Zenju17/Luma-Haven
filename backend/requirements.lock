@@ -16,6 +16,8 @@ billiard==4.3.1
     # via celery
 celery==5.5.3
     # via -r backend/requirements.txt
+certifi==2026.10.23
+    # via sentry-sdk
 click==8.5.0
     # via
     #   celery
@@ -44,6 +46,8 @@ djangorestframework==3.16.1
     #   -r backend/requirements.txt
     #   drf-spectacular
 drf-spectacular==0.29.0
+    # via -r backend/requirements.txt
+gunicorn==26.2.0
     # via -r backend/requirements.txt
 inflection==0.5.1
     # via drf-spectacular
@@ -89,6 +93,8 @@ rpds-py==2026.9.1
     # via
     #   jsonschema
     #   referencing
+sentry-sdk==2.73.0
+    # via -r backend/requirements.txt
 six==1.17.0
     # via python-dateutil
 sqlparse==0.6.0
@@ -101,6 +107,8 @@ tzdata==2026.5
     #   python-dateutil
 uritemplate==4.2.0
     # via drf-spectacular
+urllib3==2.8.0
+    # via sentry-sdk
 vine==5.1.0
     # via
     #   amqp

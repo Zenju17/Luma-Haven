@@ -15,3 +15,6 @@ backend/media/
 backend/source_assets/
 frontend/playwright-report/
 frontend/test-results/
+.env.production
+.env.*.local
+backups/

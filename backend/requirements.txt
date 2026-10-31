@@ -9,3 +9,5 @@ pytest==8.4.2
 pytest-django==4.11.1
 Pillow==13.0.0
 bakong-khqr==0.6.5
+gunicorn==26.2.0
+sentry-sdk==2.73.0

@@ -74,7 +74,10 @@ frontend/src/
   features/          guest, staff, reception, housekeeping, manager, accountant,
                      admin, media — one folder per portal/domain
   components/ layouts/ services/api.ts types/ data/
-docs/                DEMO, TESTING, MIS_DEMONSTRATION, PERMISSIONS, DECISIONS, status
+docs/                DEMO, TESTING, MIS_DEMONSTRATION, PERMISSIONS, DECISIONS, status,
+                     INFRASTRUCTURE, SECURITY, INCIDENT_RUNBOOK, PROJECT_SPEC
+deploy/ scripts/     Caddy web image, backup + restore-drill scripts, docs generator
+compose.prod.yaml    production topology (see docs/INFRASTRUCTURE.md)
 .github/workflows/   CI
 compose.yaml         redis, backend, worker, beat, frontend (no local database)
 ```

@@ -28,7 +28,8 @@ const errors = useQuery({ queryKey: ['dev', 'errors'], queryFn: () => get<ErrorR
 const security = useQuery({ queryKey: ['dev', 'security'], queryFn: () => get<Security>('security'), enabled: computed(() => tab.value === 'security') })
 
 interface Health { database: { ok: boolean; latency_ms: number | null }; cache: { ok: boolean }; celery: { healthy: boolean; last_beat_task_seconds_ago: number | null }
-  pending_migrations: number | null; outbox_pending: number; errors_24h: number; versions: Record<string, string>; environment: string; debug: boolean }
+  pending_migrations: number | null; backup: { configured: boolean; ok: boolean; finished_at: string | null; age_seconds: number | null; size_bytes: number | null; last_restore_drill: { ok: boolean; at: string } | null }
+  outbox_pending: number; errors_24h: number; versions: Record<string, string>; environment: string; debug: boolean }
 interface Jobs { summary: { task: string; runs: number; failures: number }[]; recent: { id: number; task: string; status: string; started_at: string; duration_ms: number; error: string }[] }
 interface Outbox { pending_count: number; delivered_count: number; note: string; pending: { id: number; kind: string; target: string; created_at: string }[] }
 interface Provider { provider: string; currency: string; configured: Record<string, boolean>; attempts_24h: Record<string, number>; attempt_window_minutes: number; late_window_hours: number
@@ -83,6 +84,10 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
         <div class="card p-4"><p class="label">Cache / Redis</p><p :class="badge(health.data.value.cache.ok)" class="text-xl font-semibold">{{ health.data.value.cache.ok ? 'Online' : 'Degraded' }}</p></div>
         <div class="card p-4"><p class="label">Celery beat + worker</p><p :class="badge(health.data.value.celery.healthy)" class="text-xl font-semibold">{{ health.data.value.celery.healthy ? 'Running' : 'No recent run' }}</p><p class="text-xs text-[var(--muted)]">last task {{ health.data.value.celery.last_beat_task_seconds_ago ?? '—' }} s ago</p></div>
         <div class="card p-4"><p class="label">Pending migrations</p><p :class="badge(health.data.value.pending_migrations === 0)" class="text-xl font-semibold">{{ health.data.value.pending_migrations ?? 'unknown' }}</p></div>
+        <div class="card p-4"><p class="label">Database backup</p>
+          <p :class="badge(health.data.value.backup.ok)" class="text-xl font-semibold">{{ !health.data.value.backup.configured ? 'Not configured' : health.data.value.backup.ok ? 'Healthy' : 'Stale or failed' }}</p>
+          <p class="text-xs text-[var(--muted)]"><template v-if="health.data.value.backup.finished_at">last {{ stamp(health.data.value.backup.finished_at) }} · {{ Math.round((health.data.value.backup.size_bytes ?? 0) / 1024) }} KB</template><template v-else>no marker file found</template></p>
+          <p class="text-xs" :class="health.data.value.backup.last_restore_drill?.ok ? 'text-[var(--muted)]' : 'text-rose-500'">restore drill: {{ health.data.value.backup.last_restore_drill ? (health.data.value.backup.last_restore_drill.ok ? 'passed ' + stamp(health.data.value.backup.last_restore_drill.at) : 'FAILED') : 'never run' }}</p></div>
         <div class="card p-4"><p class="label">Outbox pending</p><p class="text-xl font-semibold">{{ health.data.value.outbox_pending }}</p></div>
         <div class="card p-4"><p class="label">Errors (24 h)</p><p :class="badge(health.data.value.errors_24h === 0)" class="text-xl font-semibold">{{ health.data.value.errors_24h }}</p></div>
         <div class="card p-4 sm:col-span-2 lg:col-span-3 text-sm">

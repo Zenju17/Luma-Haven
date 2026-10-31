@@ -1,0 +1,1 @@
+/* Prevent flash: apply stored theme before first paint */(function(){var t=localStorage.getItem('lh-theme');if(t==='dark'){document.documentElement.classList.remove('auto-theme');document.documentElement.classList.add('dark')}else if(t==='light'){document.documentElement.classList.remove('auto-theme')}})()

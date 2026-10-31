@@ -86,7 +86,12 @@ class RequestIDMiddleware:
 
     def __call__(self, request):
         request.request_id = str(uuid.uuid4())
-        response = self.get_response(request)
+        from .logs import request_id_var
+        token = request_id_var.set(request.request_id)
+        try:
+            response = self.get_response(request)
+        finally:
+            request_id_var.reset(token)
         response['X-Request-ID'] = request.request_id
         return response
 
