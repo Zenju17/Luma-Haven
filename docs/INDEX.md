@@ -25,3 +25,4 @@ Use this page to load only what a task needs. Token estimates are bytes ÷ 4 (pr
 Do not load `README.md` or `MIS_DEMONSTRATION.md` by default; they are long and mostly context, not current implementation instructions.
 - [`ROADMAP_PLAN.md`](ROADMAP_PLAN.md) — proposed phases: legal/consent, KHQR, CMS, infrastructure, Telegram (draft)
 - [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) — approved phased plan: merge, legal, KHQR, admin+dev dashboard, infra
+- [`DATABASE_ARCHITECTURE.md`](DATABASE_ARCHITECTURE.md) and the other `DATABASE_*.md` files — database governance notes (from `main`)

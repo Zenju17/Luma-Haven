@@ -34,13 +34,15 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 - **No PDF export.** CSV only.
 - Other gaps: durable outbox delivery/retries, comprehensive append-only audit, login/OTP rate limiting, provider idempotency, retention policies, Playwright coverage beyond the three core journeys.
 
-## Branch and history warning
+## Branch status
 
-`feat/hotel-management-system` and `main` have **diverged** (at this snapshot: `main` has 3 commits not on `feat`; `feat` has 13 not on `main`).
+`main` was merged into `feat/hotel-management-system` on 31 Oct 2026 (P0 of `docs/IMPLEMENTATION_PLAN.md`).
 
-- `feat` contains the current application: manager dashboard, Vue feature-folder layout, admin console, visual assets, MIS reports.
-- `main` contains separate database-foundation work (`Organization`, memberships, DB governance docs) and an earlier Vue layout, but lacks the 13 recent feature commits.
-- **Do not merge or rebase blindly.** Confirm the target branch with the owner before cross-branch work, and re-run migrations/tests after any merge. The docs under `docs/DATABASE_*` on `main` are not present on `feat`.
+- Kept from `feat`: the whole frontend (`features/` layout, `services/api.ts`, `package.json`/lockfile). `main`'s older Vue files (`src/views`, `src/lib`, `src/router.ts`, `src/types.ts`, `src/App.vue`) were dropped.
+- Kept from `main`: `Organization`, `OrganizationMembership`, `PropertyMembership`, DB check constraints, `test_integrity_constraints.py`, `docs/DATABASE_*`, and the non-discarding `drain_outbox`.
+- Migration `main/0002_organization...` was renumbered to **`0005_organization_organizationmembership_and_more`** (depends on `0004_visualasset`). If any database already applied main's old `0002`, the `django_migrations` row must be reconciled before migrating. Check `showmigrations core` on Supabase first and back it up.
+- **Not yet verified:** the merged backend test suite and Playwright E2E, because no disposable PostgreSQL was available when merging. Run them before opening the PR to `main`.
+- `Organization` is still a single-hotel placeholder; no tenancy is enforced.
 
 ## Environment / infrastructure notes
 

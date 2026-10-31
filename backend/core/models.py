@@ -9,7 +9,14 @@ from django.utils import timezone
 class User(AbstractUser):
     role = models.CharField(max_length=20, choices=[(x, x) for x in ['ADMIN', 'MANAGER', 'RECEPTION', 'HOUSEKEEPING', 'ACCOUNTANT']], default='RECEPTION')
 
+class Organization(models.Model):
+    name = models.CharField(max_length=120)
+
+
 class Hotel(models.Model):
+    # Nullable until an operator has mapped and validated existing properties.
+    organization = models.ForeignKey(Organization, null=True, blank=True, on_delete=models.PROTECT)
+
     name = models.CharField(max_length=120)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=40, blank=True)
@@ -19,6 +26,31 @@ class Hotel(models.Model):
     check_out_time = models.TimeField(default='12:00')
     tax_percent = models.PositiveSmallIntegerField(default=0)
     deposit_percent = models.PositiveSmallIntegerField(default=100)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(tax_percent__lte=100), name='hotel_tax_percent_lte_100'),
+            models.CheckConstraint(condition=Q(deposit_percent__lte=100), name='hotel_deposit_percent_lte_100'),
+        ]
+
+
+class OrganizationMembership(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    role = models.CharField(max_length=40)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['organization', 'user'], name='unique_org_member')]
+
+
+class PropertyMembership(models.Model):
+    hotel = models.ForeignKey(Hotel, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    role = models.CharField(max_length=40)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['hotel', 'user'], name='unique_property_member')]
+
 
 class RoomType(models.Model):
     hotel = models.ForeignKey(Hotel, on_delete=models.PROTECT)
@@ -58,6 +90,13 @@ class Quote(models.Model):
     def total(self):
         return self.room_amount_minor + self.tax_minor
 
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(departure__gt=F('arrival')), name='quote_valid_dates'),
+            models.CheckConstraint(condition=Q(occupants__gt=0), name='quote_positive_occupants'),
+        ]
+
+
 class Reservation(models.Model):
     reference = models.CharField(max_length=18, unique=True)
     guest = models.ForeignKey(Guest, on_delete=models.PROTECT)
@@ -71,6 +110,13 @@ class Reservation(models.Model):
     cancelled_at = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=Q(departure__gt=F('arrival')), name='reservation_valid_dates'),
+            models.CheckConstraint(condition=Q(occupants__gt=0), name='reservation_positive_occupants'),
+        ]
+
 
 class Allocation(models.Model):
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
