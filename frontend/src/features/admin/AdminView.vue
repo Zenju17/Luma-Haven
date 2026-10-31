@@ -228,8 +228,8 @@ async function changeStaffPassword() {
                 <input id="confirm-staff-password" v-model="confirmPassword" class="field w-full" type="password" autocomplete="new-password" minlength="8" maxlength="12" required />
               </div>
 
-              <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted,#eaf1ee)] dark:bg-[var(--surface-muted,#122523)] text-xs text-[var(--muted)] space-y-1">
-                <p class="font-medium text-[var(--brand-text)]">Password requirements:</p>
+              <div class="mt-4 p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-xs text-[#536b66] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#9ab4ac] space-y-1">
+                <p class="font-medium text-[#0c2b26] dark:text-[#f3ede2]">Password requirements:</p>
                 <ul class="list-disc list-inside space-y-0.5">
                   <li>Between 8 and 12 characters</li>
                   <li>Cannot be too similar to the username or email</li>

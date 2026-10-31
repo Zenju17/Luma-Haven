@@ -131,37 +131,37 @@ function actionTarget(alert: DecisionAlert): string {
           </div>
           <button
             type="button"
-            class="text-xs font-medium text-[var(--brand-gold,#d7b683)] hover:underline flex items-center gap-1"
+            class="text-xs font-semibold text-[#8f6826] dark:text-[#d7b683] hover:underline flex items-center gap-1"
             @click="emit('navigate', actionTarget(alert))"
           >
             Action in Operations →
           </button>
         </div>
 
-        <h3 class="text-xl font-serif text-[var(--brand-text,#0c2b26)] dark:text-[#f3ede2]">
+        <h3 class="text-xl font-serif text-[#0c2b26] dark:text-[#f3ede2]">
           {{ alert.title }}
         </h3>
 
         <!-- 4-Part Structure -->
         <div class="grid md:grid-cols-2 gap-4 mt-4 text-sm">
-          <div class="p-3 rounded-lg bg-[var(--surface-muted,#f3f7f5)] dark:bg-[var(--surface-muted,#122523)] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[var(--muted,#5e7470)]">1. What happened</span>
-            <p class="text-[var(--brand-text,#0c2b26)] dark:text-[#e4ded5]">{{ alert.what_happened }}</p>
+          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
+            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">1. What happened</span>
+            <p class="text-[#0c2b26] dark:text-[#e4ded5]">{{ alert.what_happened }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted,#f3f7f5)] dark:bg-[var(--surface-muted,#122523)] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[var(--muted,#5e7470)]">2. Records involved</span>
-            <p class="font-mono text-xs text-[var(--brand-text,#0c2b26)] dark:text-[#e4ded5] break-words">{{ alert.records_involved }}</p>
+          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
+            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">2. Records involved</span>
+            <p class="font-mono text-xs text-[#0c2b26] dark:text-[#e4ded5] break-words">{{ alert.records_involved }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted,#f3f7f5)] dark:bg-[var(--surface-muted,#122523)] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[var(--muted,#5e7470)]">3. Why it matters</span>
-            <p class="text-[var(--brand-text,#0c2b26)] dark:text-[#e4ded5]">{{ alert.why_it_matters }}</p>
+          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
+            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">3. Why it matters</span>
+            <p class="text-[#0c2b26] dark:text-[#e4ded5]">{{ alert.why_it_matters }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted,#f3f7f5)] dark:bg-[var(--surface-muted,#122523)] border border-[var(--brand-gold,#d7b683)]/30 space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[var(--brand-gold,#d7b683)]">4. Recommended action</span>
-            <p class="text-[var(--brand-text,#0c2b26)] dark:text-[#f3ede2] font-medium">{{ alert.recommended_action }}</p>
+          <div class="p-3 rounded-lg bg-[#fbf8f2] border border-[#8f6826]/30 dark:bg-[#122523] dark:border-[#d7b683]/30 space-y-1">
+            <span class="label text-[10px] uppercase font-bold text-[#8f6826] dark:text-[#d7b683]">4. Recommended action</span>
+            <p class="text-[#0c2b26] dark:text-[#f3ede2] font-medium">{{ alert.recommended_action }}</p>
           </div>
         </div>
       </article>

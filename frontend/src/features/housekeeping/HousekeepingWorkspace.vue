@@ -133,14 +133,14 @@ async function submitMaintenance() {
       <div class="flex items-center gap-2">
         <button
           class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-          :class="activeTab === 'queue' ? 'bg-[var(--accent)] text-white' : 'btn-secondary'"
+          :class="activeTab === 'queue' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
           @click="activeTab = 'queue'"
         >
           Cleaning Queue
         </button>
         <button
           class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-          :class="activeTab === 'history' ? 'bg-[var(--accent)] text-white' : 'btn-secondary'"
+          :class="activeTab === 'history' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
           @click="activeTab = 'history'"
         >
           Turnaround History

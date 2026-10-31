@@ -497,7 +497,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm">
             <thead>
-              <tr class="bg-[var(--surface-muted,#f3f7f5)] dark:bg-[#0c1c1a]">
+              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
                 <th class="p-4">Reference</th>
                 <th class="p-4">Guest</th>
                 <th class="p-4">Room</th>
@@ -508,7 +508,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               </tr>
             </thead>
             <tbody>
-              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330] hover:bg-[var(--surface-muted,#f3f7f5)]/50 transition">
+              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
                 <td class="p-4 font-mono font-medium">{{ b.reference }}</td>
                 <td class="p-4">{{ b.guest_name }}</td>
                 <td class="p-4">Room {{ b.room }} <span class="text-xs text-[var(--muted)]">({{ b.room_type }})</span></td>
@@ -569,7 +569,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm">
             <thead>
-              <tr class="bg-[var(--surface-muted,#f3f7f5)] dark:bg-[#0c1c1a]">
+              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
                 <th class="p-4">Refund ID</th>
                 <th class="p-4">Reservation Ref</th>
                 <th class="p-4">Guest</th>
@@ -691,11 +691,11 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <button type="button" class="text-xl" @click="detailBooking = null">✕</button>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[var(--surface-muted,#f3f7f5)] dark:bg-[#122523] text-xs">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4] text-xs">
             <div><span class="label text-[10px]">Arrival</span><p class="font-medium">{{ detailBooking.arrival }}</p></div>
             <div><span class="label text-[10px]">Departure</span><p class="font-medium">{{ detailBooking.departure }}</p></div>
             <div><span class="label text-[10px]">Status</span><p class="font-medium">{{ detailBooking.status }}</p></div>
-            <div><span class="label text-[10px]">Balance</span><p class="font-mono font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-600' : 'text-emerald-600'">{{ money(detailBooking.balance_minor) }}</p></div>
+            <div><span class="label text-[10px]">Balance</span><p class="font-mono font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'">{{ money(detailBooking.balance_minor) }}</p></div>
           </div>
 
           <!-- Folio Entries Immutable Ledger Table -->
@@ -704,7 +704,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div class="card overflow-hidden">
               <table class="data-table w-full text-left text-xs">
                 <thead>
-                  <tr class="bg-[var(--surface-muted,#f3f7f5)] dark:bg-[#0c1c1a]">
+                  <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
                     <th class="p-3">Category</th>
                     <th class="p-3">Description</th>
                     <th class="p-3">Service Date</th>

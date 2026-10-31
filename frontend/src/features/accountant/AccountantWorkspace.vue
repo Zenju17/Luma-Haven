@@ -120,21 +120,21 @@ async function settleRefund(refundId: number) {
     <div class="flex items-center gap-2 border-b border-[var(--line)] pb-4">
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'reconciliation' ? 'bg-[var(--accent)] text-white' : 'btn-secondary'"
+        :class="activeTab === 'reconciliation' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
         @click="activeTab = 'reconciliation'"
       >
         Folio Reconciliation
       </button>
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'ledger' ? 'bg-[var(--accent)] text-white' : 'btn-secondary'"
+        :class="activeTab === 'ledger' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
         @click="activeTab = 'ledger'"
       >
         Payments Audit Ledger
       </button>
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'refunds' ? 'bg-[var(--accent)] text-white' : 'btn-secondary'"
+        :class="activeTab === 'refunds' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
         @click="activeTab = 'refunds'"
       >
         Approved Refunds Settlement ({{ approvedRefunds.length }})

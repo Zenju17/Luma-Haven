@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* ─────────────────────────────────────────────
    Design tokens — Light theme (default)
@@ -20,6 +21,7 @@
 
   /* Semantic UI Tokens */
   --brand-text: #163d3a;
+  --brand-gold: #8f6826;
   --nav-link: #163d3a;
   --nav-link-hover: #0d2826;
   --nav-link-active: #0d2826;
@@ -27,6 +29,8 @@
   /* Surfaces */
   --surface: #ffffff;
   --surface-raised: #ffffff;
+  --surface-muted: #edf4f1;
+  --card-bg: #ffffff;
   --surface-overlay: rgba(255, 255, 255, 0.88);
   --surface-modal-backdrop: rgba(12, 38, 34, 0.55);
 
@@ -97,12 +101,15 @@
 
   /* High-Contrast Semantic UI Tokens for Dark Mode */
   --brand-text: #edf5f1;
+  --brand-gold: #d7b683;
   --nav-link: #d2e4de;
   --nav-link-hover: #ffffff;
   --nav-link-active: #ffffff;
 
   --surface: #152825;
   --surface-raised: #1c3430;
+  --surface-muted: #122523;
+  --card-bg: rgba(26, 48, 45, 0.82);
   --surface-overlay: rgba(21, 40, 37, 0.88);
   --surface-modal-backdrop: rgba(6, 18, 16, 0.75);
 
@@ -148,12 +155,15 @@
     --muted: #9ab4ac;
 
     --brand-text: #edf5f1;
+    --brand-gold: #d7b683;
     --nav-link: #d2e4de;
     --nav-link-hover: #ffffff;
     --nav-link-active: #ffffff;
 
     --surface: #152825;
     --surface-raised: #1c3430;
+    --surface-muted: #122523;
+    --card-bg: rgba(26, 48, 45, 0.82);
     --surface-overlay: rgba(21, 40, 37, 0.88);
     --surface-modal-backdrop: rgba(6, 18, 16, 0.75);
 
