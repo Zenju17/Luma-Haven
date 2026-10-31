@@ -782,6 +782,131 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 .data-table th, .data-table td { padding: 14px 18px; vertical-align: middle; }
 .data-table thead { background: var(--glass-bg); }
 
+/* Table Action Buttons & Toolbars */
+.table-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+  white-space: nowrap;
+}
+
+.table-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 0.65rem;
+  border-radius: var(--radius-sm, 6px);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  border: 1px solid var(--line, #cbdad4);
+  background: #ffffff;
+  color: #1f3330;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all var(--duration-fast, 150ms) ease;
+}
+
+.table-action-btn:hover:not(:disabled) {
+  background: #f0f6f4;
+  border-color: #9ab4ac;
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.table-action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.table-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Primary variant (e.g. Folio, Settle, Audit) */
+.table-action-btn-primary {
+  background: #0c2b26;
+  color: #ffffff;
+  border-color: #0c2b26;
+  box-shadow: 0 1px 2px rgba(12, 43, 38, 0.2);
+}
+
+.table-action-btn-primary:hover:not(:disabled) {
+  background: #16463e;
+  color: #ffffff;
+  border-color: #16463e;
+  box-shadow: 0 2px 5px rgba(12, 43, 38, 0.25);
+}
+
+/* Danger / Destructive variant (e.g. No-Show, Reject) */
+.table-action-btn-danger {
+  background: #fff5f5;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.table-action-btn-danger:hover:not(:disabled) {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fca5a5;
+}
+
+/* Dark mode overrides */
+.dark .table-action-btn {
+  background: #152825;
+  color: #d8ece4;
+  border-color: #26423d;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.dark .table-action-btn:hover:not(:disabled) {
+  background: #1c3632;
+  border-color: #3b635c;
+  color: #ffffff;
+}
+
+.dark .table-action-btn-primary {
+  background: #d7b683;
+  color: #0c2b26;
+  border-color: #d7b683;
+}
+
+.dark .table-action-btn-primary:hover:not(:disabled) {
+  background: #ebd09c;
+  color: #0c2b26;
+  border-color: #ebd09c;
+}
+
+.dark .table-action-btn-danger {
+  background: rgba(185, 28, 28, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.dark .table-action-btn-danger:hover:not(:disabled) {
+  background: rgba(185, 28, 28, 0.25);
+  color: #fecaca;
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* Global safety override for any standard buttons inside data-table */
+.data-table .btn,
+.data-table .btn-secondary {
+  min-height: 28px;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
 /* ─────────────────────────────────────────────
    Admin tabs
    ───────────────────────────────────────────── */

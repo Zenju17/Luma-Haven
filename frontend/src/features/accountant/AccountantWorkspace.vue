@@ -184,14 +184,18 @@ async function settleRefund(refundId: number) {
                   {{ item.is_balanced ? 'Balanced' : 'Discrepancy' }}
                 </span>
               </td>
-              <td class="py-3 px-2 text-right">
-                <button
-                  class="btn-secondary text-[11px] py-1 px-3"
-                  :disabled="busy || !item.is_balanced"
-                  @click="reconcileFolio(item.reservation_id, item.reference)"
-                >
-                  Audit Folio ✓
-                </button>
+              <td class="py-3 px-4 text-right whitespace-nowrap">
+                <div class="table-actions">
+                  <button
+                    type="button"
+                    class="table-action-btn"
+                    :disabled="busy || !item.is_balanced"
+                    @click="reconcileFolio(item.reservation_id, item.reference)"
+                  >
+                    <svg class="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <span>Audit Folio</span>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>

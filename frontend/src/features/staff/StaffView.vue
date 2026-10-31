@@ -479,12 +479,33 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <h2 class="text-2xl font-serif">Reservation Management</h2>
             <p class="text-xs text-[var(--muted)]">Inspect folios, amend dates, reassign rooms, or record cancellations and no-shows.</p>
           </div>
-          <input
-            v-model="searchReservationQuery"
-            type="search"
-            placeholder="Search reference, guest, room…"
-            class="field py-1.5 px-3 text-xs w-64 rounded-lg"
-          />
+          <div class="flex items-center gap-3">
+            <span v-if="searchReservationQuery" class="text-xs text-[var(--muted)]">
+              Showing {{ filteredReservations.length }} of {{ reservations.data.value?.length || 0 }}
+            </span>
+            <div class="relative w-64">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--muted)]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+              <input
+                v-model="searchReservationQuery"
+                type="search"
+                placeholder="Search reference, guest, room…"
+                class="field pl-8 pr-7 py-1.5 text-xs w-full rounded-lg"
+              />
+              <button
+                v-if="searchReservationQuery"
+                type="button"
+                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs text-[var(--muted)] hover:text-inherit"
+                title="Clear search"
+                @click="searchReservationQuery = ''"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
         </div>
 
         <div v-if="reservations.isPending.value" role="status">Loading reservations…</div>
@@ -495,56 +516,123 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         </div>
 
         <div v-else class="card overflow-auto">
-          <table class="data-table w-full text-left text-sm">
+          <table class="data-table w-full text-left text-sm min-w-[980px]">
             <thead>
               <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
-                <th class="p-4">Reference</th>
-                <th class="p-4">Guest</th>
-                <th class="p-4">Room</th>
-                <th class="p-4">Stay Dates</th>
-                <th class="p-4">Status</th>
-                <th class="p-4">Balance</th>
-                <th class="p-4 text-right">Actions</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-28">Reference</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Guest</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Room</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Stay Dates</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right">Balance</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right min-w-[340px]">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
-                <td class="p-4 font-mono font-medium">{{ b.reference }}</td>
-                <td class="p-4">{{ b.guest_name }}</td>
-                <td class="p-4">Room {{ b.room }} <span class="text-xs text-[var(--muted)]">({{ b.room_type }})</span></td>
-                <td class="p-4 text-xs">{{ b.arrival }} → {{ b.departure }}</td>
-                <td class="p-4">
+                <td class="py-3 px-4 font-mono font-bold text-xs text-[#0c2b26] dark:text-[#88e2cb] whitespace-nowrap">{{ b.reference }}</td>
+                <td class="py-3 px-4 font-medium whitespace-nowrap">{{ b.guest_name }}</td>
+                <td class="py-3 px-4 whitespace-nowrap">
+                  <span class="font-medium">Room {{ b.room }}</span>
+                  <span class="text-xs text-[var(--muted)] ml-1">({{ b.room_type }})</span>
+                </td>
+                <td class="py-3 px-4 text-xs font-mono text-[var(--muted)] whitespace-nowrap">
+                  <span>{{ b.arrival }}</span>
+                  <span class="mx-1 text-[#9ab4ac]">→</span>
+                  <span>{{ b.departure }}</span>
+                </td>
+                <td class="py-3 px-4 whitespace-nowrap">
                   <span
-                    class="px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border uppercase"
                     :class="{
-                      'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300': b.status === 'CONFIRMED' || b.status === 'CHECKED_IN',
-                      'bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-300': b.status === 'CHECKED_OUT',
-                      'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
+                      'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50': b.status === 'CONFIRMED',
+                      'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/50': b.status === 'CHECKED_IN',
+                      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700/50': b.status === 'CHECKED_OUT',
+                      'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/50': b.status === 'HOLD',
+                      'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/50': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
                     }"
                   >
-                    {{ b.status }}
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      :class="{
+                        'bg-emerald-500': b.status === 'CONFIRMED',
+                        'bg-teal-500': b.status === 'CHECKED_IN',
+                        'bg-slate-400': b.status === 'CHECKED_OUT',
+                        'bg-amber-500': b.status === 'HOLD',
+                        'bg-rose-500': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
+                      }"
+                    />
+                    {{ b.status.replace('_', ' ') }}
                   </span>
                 </td>
-                <td class="p-4 font-mono" :class="b.balance_minor > 0 ? 'text-amber-600 font-bold' : ''">
+                <td class="py-3 px-4 font-mono text-xs text-right whitespace-nowrap" :class="b.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400 font-bold' : 'text-[var(--muted)]'">
                   {{ money(b.balance_minor) }}
                 </td>
-                <td class="p-4 text-right space-x-2">
-                  <button type="button" class="btn-secondary text-xs py-1 px-2" @click="detailBooking = b">Folio</button>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="table-actions">
+                    <button
+                      type="button"
+                      class="table-action-btn table-action-btn-primary"
+                      title="Inspect Folio & Billing"
+                      @click="detailBooking = b"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      <span>Folio</span>
+                    </button>
 
-                  <template v-if="b.status === 'CONFIRMED' || b.status === 'HOLD'">
-                    <button type="button" class="btn-secondary text-xs py-1 px-2" @click="openAmend(b)">Amend</button>
-                    <button type="button" class="btn-secondary text-xs py-1 px-2" @click="openReassign(b)">Reassign</button>
-                    <button type="button" class="btn-secondary text-xs py-1 px-2 text-rose-600 dark:text-rose-400" @click="handleNoShow(b)">No-Show</button>
-                  </template>
+                    <template v-if="b.status === 'CONFIRMED' || b.status === 'HOLD'">
+                      <button
+                        type="button"
+                        class="table-action-btn"
+                        title="Amend Reservation Dates"
+                        @click="openAmend(b)"
+                      >
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                        <span>Amend</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="table-action-btn"
+                        title="Reassign Room"
+                        @click="openReassign(b)"
+                      >
+                        <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        <span>Reassign</span>
+                      </button>
+                    </template>
 
-                  <button
-                    v-if="isManagerOrAdmin && b.status !== 'HOLD'"
-                    type="button"
-                    class="btn-secondary text-xs py-1 px-2"
-                    @click="openRequestRefund(b)"
-                  >
-                    Refund
-                  </button>
+                    <button
+                      v-if="isManagerOrAdmin && b.status !== 'HOLD'"
+                      type="button"
+                      class="table-action-btn"
+                      title="Request or Issue Refund"
+                      @click="openRequestRefund(b)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z"/>
+                      </svg>
+                      <span>Refund</span>
+                    </button>
+
+                    <button
+                      v-if="b.status === 'CONFIRMED' || b.status === 'HOLD'"
+                      type="button"
+                      class="table-action-btn table-action-btn-danger"
+                      title="Mark as Guest No-Show"
+                      @click="handleNoShow(b)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      </svg>
+                      <span>No-Show</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -567,69 +655,92 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         </div>
 
         <div v-else class="card overflow-auto">
-          <table class="data-table w-full text-left text-sm">
+          <table class="data-table w-full text-left text-sm min-w-[920px]">
             <thead>
               <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
-                <th class="p-4">Refund ID</th>
-                <th class="p-4">Reservation Ref</th>
-                <th class="p-4">Guest</th>
-                <th class="p-4">Amount</th>
-                <th class="p-4">Reason</th>
-                <th class="p-4">Status</th>
-                <th class="p-4">Requested By</th>
-                <th class="p-4 text-right">Review Action</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-24">Refund ID</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-32">Reservation Ref</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Guest</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Amount</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Reason</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Requested By</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right min-w-[260px]">Review Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
-                <td class="p-4 font-mono">#{{ r.id }}</td>
-                <td class="p-4 font-mono font-medium">{{ r.reservation_reference }}</td>
-                <td class="p-4">{{ r.guest_name }}</td>
-                <td class="p-4 font-mono font-bold">{{ money(r.amount_minor) }}</td>
-                <td class="p-4 text-xs max-w-xs">{{ r.reason }}</td>
-                <td class="p-4">
+              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
+                <td class="py-3 px-4 font-mono font-medium whitespace-nowrap">#{{ r.id }}</td>
+                <td class="py-3 px-4 font-mono font-bold text-xs text-[#0c2b26] dark:text-[#88e2cb] whitespace-nowrap">{{ r.reservation_reference }}</td>
+                <td class="py-3 px-4 font-medium whitespace-nowrap">{{ r.guest_name }}</td>
+                <td class="py-3 px-4 font-mono font-bold whitespace-nowrap">{{ money(r.amount_minor) }}</td>
+                <td class="py-3 px-4 text-xs max-w-xs">{{ r.reason }}</td>
+                <td class="py-3 px-4 whitespace-nowrap">
                   <span
-                    class="px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border uppercase"
                     :class="{
-                      'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200': r.status === 'PENDING',
-                      'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200': r.status === 'APPROVED',
-                      'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200': r.status === 'SETTLED',
-                      'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200': r.status === 'REJECTED'
+                      'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800/50': r.status === 'PENDING',
+                      'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800/50': r.status === 'APPROVED',
+                      'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/50': r.status === 'SETTLED',
+                      'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800/50': r.status === 'REJECTED'
                     }"
                   >
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      :class="{
+                        'bg-amber-500': r.status === 'PENDING',
+                        'bg-sky-500': r.status === 'APPROVED',
+                        'bg-emerald-500': r.status === 'SETTLED',
+                        'bg-rose-500': r.status === 'REJECTED'
+                      }"
+                    />
                     {{ r.status }}
                   </span>
                 </td>
-                <td class="p-4 text-xs text-[var(--muted)]">{{ r.requested_by || 'system' }}</td>
-                <td class="p-4 text-right space-x-2">
-                  <button
-                    v-if="r.status === 'PENDING'"
-                    type="button"
-                    class="btn-secondary text-xs py-1 px-2.5"
-                    :disabled="busy"
-                    @click="submitApproveRefund(r)"
-                  >
-                    Approve
-                  </button>
-                  <button
-                    v-if="r.status === 'APPROVED' || r.status === 'PENDING'"
-                    type="button"
-                    class="btn text-xs py-1 px-2.5"
-                    :disabled="busy"
-                    @click="submitSettleRefund(r)"
-                  >
-                    Settle & Credit
-                  </button>
-                  <button
-                    v-if="r.status === 'PENDING' || r.status === 'APPROVED'"
-                    type="button"
-                    class="btn-secondary text-xs py-1 px-2.5 text-rose-600"
-                    :disabled="busy"
-                    @click="submitRejectRefund(r)"
-                  >
-                    Reject
-                  </button>
-                  <span v-if="r.status === 'SETTLED'" class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">✓ Settled</span>
+                <td class="py-3 px-4 text-xs text-[var(--muted)] whitespace-nowrap">{{ r.requested_by || 'system' }}</td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="table-actions">
+                    <button
+                      v-if="r.status === 'PENDING'"
+                      type="button"
+                      class="table-action-btn"
+                      :disabled="busy"
+                      title="Approve refund request"
+                      @click="submitApproveRefund(r)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      <span>Approve</span>
+                    </button>
+                    <button
+                      v-if="r.status === 'APPROVED' || r.status === 'PENDING'"
+                      type="button"
+                      class="table-action-btn table-action-btn-primary"
+                      :disabled="busy"
+                      title="Settle refund and post credit to folio"
+                      @click="submitSettleRefund(r)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                      <span>Settle & Credit</span>
+                    </button>
+                    <button
+                      v-if="r.status === 'PENDING' || r.status === 'APPROVED'"
+                      type="button"
+                      class="table-action-btn table-action-btn-danger"
+                      :disabled="busy"
+                      title="Reject refund request"
+                      @click="submitRejectRefund(r)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      <span>Reject</span>
+                    </button>
+                    <span
+                      v-if="r.status === 'SETTLED'"
+                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50"
+                    >
+                      <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      Settled
+                    </span>
+                  </div>
                 </td>
               </tr>
             </tbody>

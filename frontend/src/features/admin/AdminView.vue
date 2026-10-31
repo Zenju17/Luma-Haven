@@ -196,9 +196,48 @@ async function changeStaffPassword() {
         <Notice :message="team.error.value ? String(team.error.value) : ''" />
         <p v-if="team.data.value?.length === 0">No staff accounts configured.</p>
         <div v-else-if="team.data.value" class="card overflow-auto">
-          <table class="data-table w-full text-left text-sm">
-            <thead><tr><th class="p-4">Username</th><th class="p-4">Role</th><th class="p-4">Status</th><th class="p-4">Action</th></tr></thead>
-            <tbody><tr v-for="member in team.data.value" :key="member.id" class="border-t border-[var(--line)]"><td class="p-4">{{ member.username }}</td><td class="p-4">{{ member.role }}</td><td class="p-4">{{ member.is_active ? 'Active' : 'Inactive' }}</td><td class="p-4"><button v-if="member.username !== user?.username" class="btn-secondary" @click="openPasswordForm(member)">Change password</button><span v-else>Use changepassword for your account</span></td></tr></tbody>
+          <table class="data-table w-full text-left text-sm min-w-[640px]">
+            <thead>
+              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Username</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Role</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="member in team.data.value" :key="member.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
+                <td class="py-3 px-4 font-medium">{{ member.username }}</td>
+                <td class="py-3 px-4">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                    {{ member.role }}
+                  </span>
+                </td>
+                <td class="py-3 px-4">
+                  <span
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                    :class="member.is_active ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50' : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/50'"
+                  >
+                    <span class="w-1.5 h-1.5 rounded-full" :class="member.is_active ? 'bg-emerald-500' : 'bg-slate-400'" />
+                    {{ member.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right whitespace-nowrap">
+                  <div class="table-actions">
+                    <button
+                      v-if="member.username !== user?.username"
+                      type="button"
+                      class="table-action-btn"
+                      @click="openPasswordForm(member)"
+                    >
+                      <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                      <span>Change password</span>
+                    </button>
+                    <span v-else class="text-xs text-[var(--muted)]">Current account</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
           </table>
         </div>
         <Transition name="modal">
