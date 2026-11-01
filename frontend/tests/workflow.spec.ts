@@ -39,7 +39,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
   const { mailDir, staffPassword } = test.info().config.metadata as { mailDir: string; staffPassword: string }
   const email = `visitor-${randomBytes(6).toString('hex')}@example.test`
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'A room to come back to.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Welcome to Luma-Haven.' })).toBeVisible()
   await page.getByLabel('Arrival').fill(hotelDate())
   await page.getByLabel('Departure').fill(hotelDate(1))
   await page.getByLabel('Guests').fill('1')

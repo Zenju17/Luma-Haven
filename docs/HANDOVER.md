@@ -26,11 +26,11 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 - Independent guest/staff/admin HttpOnly sessions; strict CSRF on API writes; role gates and guest booking isolation.
 - Visual asset management (`VisualAsset`, import command, media manager) and the room-key visual system.
 
-- P1 legal/consent/data-rights (see IMPLEMENTATION_STATUS): code complete, **tests not yet run**.
+- P1 legal/consent/data-rights (see IMPLEMENTATION_STATUS): code complete, tests passed 1 Nov 2026.
 
-- P2 Bakong KHQR (see PAYMENTS.md): code complete behind `PAYMENT_PROVIDER=bakong`; **no real Bakong call and no DB test run yet**.
+- P2 Bakong KHQR (see PAYMENTS.md): code complete behind `PAYMENT_PROVIDER=bakong`; tests passed 1 Nov 2026; **no real Bakong call yet**.
 
-- P3 admin console (see IMPLEMENTATION_STATUS): code complete; **tests not yet run**. Login to `/admin` now also accepts `DEVELOPER` and `CONTENT_EDITOR`.
+- P3 admin console (see IMPLEMENTATION_STATUS): code complete; tests passed 1 Nov 2026. Login to `/admin` now also accepts `DEVELOPER` and `CONTENT_EDITOR`.
 
 - P4 infrastructure (see INFRASTRUCTURE.md): files committed; **never deployed or run on Docker**. Celery broker now follows `REDIS_URL` (it was unset before).
 
