@@ -58,14 +58,23 @@ class PollThrottle(IPScopeThrottle):
     scope = 'poll'
 
 
-def check_lockout(username, portal):
-    """Per-account lockout after repeated failed sign-ins (uses the LOGIN_FAILED audit rows)."""
+def failure_target(portal, request):
+    """Audit target for LOGIN_FAILED: '<portal>|<client ip>' so lockout is per account AND source."""
+    return f'{portal}|{client_ip(request)}'[:80]
+
+
+def check_lockout(username, request):
+    """Lock an account for one source IP after repeated failures (any portal).
+
+    Keyed on username + client IP so an attacker cannot lock the real owner out from elsewhere,
+    and alternating portals does not double the guessing budget."""
     if not settings.THROTTLE_ENABLED or not username:
         return
     from datetime import timedelta
     from django.utils import timezone
     from .models import Audit
     since = timezone.now() - timedelta(minutes=LOCKOUT_MINUTES)
-    failures = Audit.objects.filter(actor=username[:120], action='LOGIN_FAILED', target=portal, timestamp__gte=since).count()
+    failures = Audit.objects.filter(actor=username[:120], action='LOGIN_FAILED', target__endswith=f'|{client_ip(request)}',
+                                    timestamp__gte=since).count()
     if failures >= LOCKOUT_FAILURES:
         raise Throttled(wait=LOCKOUT_MINUTES * 60, detail='Too many failed sign-in attempts. Try again in 15 minutes.')

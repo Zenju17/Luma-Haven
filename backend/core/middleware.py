@@ -96,13 +96,10 @@ class RequestIDMiddleware:
         return response
 
 
-_EMAIL = __import__('re').compile(r'[\w.+-]+@[\w-]+\.[\w.-]+')
-_TOKEN = __import__('re').compile(r'[A-Za-z0-9_\-]{24,}')
-
-
 def scrub(text):
-    """Remove emails and long token-like strings from exception text before storing it."""
-    return _TOKEN.sub('[token]', _EMAIL.sub('[email]', str(text)))[:300]
+    """Shared with logging: see core.logs.scrub_text."""
+    from .logs import scrub_text
+    return scrub_text(text)[:300]
 
 
 class ErrorCaptureMiddleware:

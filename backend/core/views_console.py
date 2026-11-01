@@ -12,13 +12,13 @@ from datetime import timedelta
 import django
 from django.conf import settings
 from django.contrib.sessions.models import Session
-from django.db import connection
+from django.db import connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 from django.urls import path
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from rest_framework.decorators import api_view
-from rest_framework.exceptions import NotFound, ValidationError
+from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from . import flags
@@ -110,6 +110,7 @@ def _clean_page_fields(data, page=None):
 
 
 @api_view(['GET', 'POST'])
+@transaction.atomic
 def admin_cms_pages(request):
     staff(request, *CMS_EDIT)
     if request.method == 'POST':
@@ -127,6 +128,7 @@ def admin_cms_pages(request):
 
 
 @api_view(['GET', 'PATCH'])
+@transaction.atomic
 def admin_cms_page(request, pk):
     staff(request, *CMS_EDIT)
     page = CmsPage.objects.filter(pk=pk).first()
@@ -142,6 +144,7 @@ def admin_cms_page(request, pk):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def admin_cms_page_publish(request, pk):
     staff(request, *CMS_PUBLISH)
     page = CmsPage.objects.filter(pk=pk).first()
@@ -156,6 +159,7 @@ def admin_cms_page_publish(request, pk):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def admin_cms_page_unpublish(request, pk):
     staff(request, *CMS_PUBLISH)
     page = CmsPage.objects.filter(pk=pk).first()
@@ -168,6 +172,7 @@ def admin_cms_page_unpublish(request, pk):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def admin_cms_page_restore(request, pk):
     staff(request, *CMS_EDIT)
     page = CmsPage.objects.filter(pk=pk).first()
@@ -214,6 +219,7 @@ def _block_row(b):
 
 
 @api_view(['GET', 'POST'])
+@transaction.atomic
 def admin_cms_blocks(request):
     staff(request, *CMS_EDIT)
     if request.method == 'POST':
@@ -233,6 +239,7 @@ def admin_cms_blocks(request):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def admin_cms_block_publish(request, pk):
     staff(request, *CMS_PUBLISH)
     block = CmsBlock.objects.filter(pk=pk).first()
@@ -245,6 +252,7 @@ def admin_cms_block_publish(request, pk):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def admin_cms_block_unpublish(request, pk):
     staff(request, *CMS_PUBLISH)
     block = CmsBlock.objects.filter(pk=pk).first()
@@ -380,6 +388,7 @@ def _flag_row(f):
 
 
 @api_view(['GET', 'POST'])
+@transaction.atomic
 def dev_flags(request):
     if request.method == 'POST':
         staff(request, *DEV_WRITE)
@@ -396,6 +405,7 @@ def dev_flags(request):
 
 
 @api_view(['PATCH'])
+@transaction.atomic
 def dev_flag(request, key):
     staff(request, *DEV_WRITE)
     if not FeatureFlag.objects.filter(key=key).exists():
@@ -441,7 +451,8 @@ def dev_security(request):
     staff(request, *DEV_READ)
     now = timezone.now()
     failed = {}
-    for actor, portal in Audit.objects.filter(action='LOGIN_FAILED', timestamp__gte=now - timedelta(hours=24)).values_list('actor', 'target'):
+    for actor, target in Audit.objects.filter(action='LOGIN_FAILED', timestamp__gte=now - timedelta(hours=24)).values_list('actor', 'target'):
+        portal = target.split('|', 1)[0]
         row = failed.setdefault((actor, portal), {'username': actor, 'portal': portal, 'count': 0})
         row['count'] += 1
     per_user = {}
@@ -456,6 +467,7 @@ def dev_security(request):
 
 
 @api_view(['POST'])
+@transaction.atomic
 def dev_revoke_sessions(request, user_id):
     staff(request, *DEV_WRITE)
     target = User.objects.filter(pk=user_id).first()
@@ -463,6 +475,8 @@ def dev_revoke_sessions(request, user_id):
         raise NotFound('User not found')
     if target.pk == request.user.pk:
         raise ValidationError('You cannot revoke your own sessions here; sign out instead.')
+    if target.role == 'ADMIN':
+        raise PermissionDenied('Developers cannot sign out administrators.')
     removed = 0
     for session in Session.objects.filter(expire_date__gt=timezone.now()):
         if _session_user_id(session) == target.pk:

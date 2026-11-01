@@ -15,13 +15,21 @@ const docs = useQuery({
   queryFn: () => api<LegalDocSummary[]>(`/legal/documents?lang=${lang.value}`),
 })
 const required = computed(() => (docs.data.value ?? []).filter(d => REQUIRED.includes(d.kind)))
+// Nothing published to accept: the server does not require consent, so do not block booking.
+const nothingToAccept = computed(() => docs.isSuccess.value && required.value.length === 0)
+watch(nothingToAccept, none => { if (none) accepted.value = true }, { immediate: true })
 watch([required, accepted], () => { ids.value = accepted.value ? required.value.map(d => d.id) : [] }, { immediate: true })
 watch(lang, () => { accepted.value = false })
 const label: Record<string, string> = { TERMS: 'Terms and Conditions', PRIVACY: 'Privacy Policy', CANCELLATION: 'Cancellation Policy' }
 </script>
 
 <template>
-  <label class="flex items-start gap-3 mt-5 text-sm text-[var(--muted)] normal-case tracking-normal font-normal">
+  <p v-if="docs.isError.value" class="mt-5 text-sm notice-error" role="alert">
+    We could not load the booking terms.
+    <button type="button" class="underline font-semibold" @click="docs.refetch()">Try again</button>
+  </p>
+  <p v-else-if="docs.isPending.value" class="mt-5 text-sm text-[var(--muted)]" role="status">Loading booking terms…</p>
+  <label v-else-if="!nothingToAccept" class="flex items-start gap-3 mt-5 text-sm text-[var(--muted)] normal-case tracking-normal font-normal">
     <input v-model="accepted" type="checkbox" class="mt-1 h-4 w-4" :disabled="!required.length" />
     <span>
       I have read and accept the

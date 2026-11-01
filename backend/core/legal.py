@@ -66,7 +66,7 @@ def pending_staff_documents(user, language='en'):
     doc = docs.get('STAFF_AGREEMENT')
     if not doc:
         return []
-    accepted = ConsentRecord.objects.filter(user=user, document__kind='STAFF_AGREEMENT', document__version=doc.version).exists()
+    accepted = ConsentRecord.objects.filter(user=user, document=doc).exists()
     return [] if accepted else [doc]
 
 

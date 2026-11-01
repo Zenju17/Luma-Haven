@@ -73,10 +73,10 @@ def csrf(request):
 def staff_login(request):
     if request.portal not in ('staff', 'admin'):
         raise PermissionDenied('Sign in through the staff or administrator portal')
-    throttling.check_lockout(str(request.data.get('username', '')), request.portal)
+    throttling.check_lockout(str(request.data.get('username', '')), request)
     user = authenticate(request, username=request.data.get('username', ''), password=request.data.get('password', ''))
     if not user or not user.is_active:
-        Audit.objects.create(actor=str(request.data.get('username', ''))[:120], action='LOGIN_FAILED', target=request.portal)
+        Audit.objects.create(actor=str(request.data.get('username', ''))[:120], action='LOGIN_FAILED', target=throttling.failure_target(request.portal, request))
         raise ValidationError('Invalid credentials')
     if request.portal == 'admin' and user.role not in ADMIN_PORTAL_ROLES:
         raise PermissionDenied('Administrator account required')
@@ -96,7 +96,7 @@ def me(request):
         return Response({'guest_reservation': request.session.get('guest_reservation')})
     if not request.user.is_authenticated:
         return Response({})
-    pending = legal.pending_staff_documents(request.user, request.query_params.get('lang', 'en') if request.query_params.get('lang') in legal.LANGUAGES else 'en')
+    pending = legal.pending_staff_documents(request.user, _lang(request))
     return Response({'username': request.user.username, 'role': request.user.role,
                      'pending_agreements': [{'id': d.pk, 'kind': d.kind, 'version': d.version, 'title': d.title} for d in pending]})
 
@@ -188,7 +188,7 @@ def reservations(request):
                 raise ValueError('Name and email required')
             reservation = services.reserve(quote, name, email)
             legal.record_consent(docs, guest=reservation.guest, method='BOOKING',
-                                 ip=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT'))
+                                 ip=throttling.client_ip(request), user_agent=request.META.get('HTTP_USER_AGENT'))
     except (KeyError, ValueError, Quote.DoesNotExist, IntegrityError) as exc:
         raise ValidationError('Quote expired, invalid, or room no longer available') from exc
     request.session['guest_reservation'] = reservation.pk
@@ -1751,7 +1751,7 @@ def accept_agreement(request):
         raise ValidationError(str(exc))
     docs = [d for d in docs if d.kind == 'STAFF_AGREEMENT']
     legal.record_consent(docs, user=request.user, method='STAFF_LOGIN',
-                         ip=request.META.get('REMOTE_ADDR'), user_agent=request.META.get('HTTP_USER_AGENT'))
+                         ip=throttling.client_ip(request), user_agent=request.META.get('HTTP_USER_AGENT'))
     return Response({'accepted': [d.pk for d in docs]}, status=201)
 
 def _verified_guest_booking(request, pk):
@@ -1816,6 +1816,7 @@ def admin_legal(request):
     return Response([dict(_legal_public(d), status=d.status, created_by=d.created_by, consent_count=consents.get(d.pk, 0)) for d in rows])
 
 @api_view(['GET', 'PATCH'])
+@transaction.atomic
 def admin_legal_detail(request, pk):
     staff(request, 'ADMIN')
     doc = LegalDocument.objects.filter(pk=pk).first()

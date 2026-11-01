@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import F
 from .. import services
 from ..models import Allocation, Audit, PaymentAttempt, Reservation
 from .base import ProviderError
@@ -20,33 +20,40 @@ class SessionError(Exception):
     pass
 
 
-@transaction.atomic
 def create_session(reservation, amount_minor, currency):
-    """Create (or reuse) a payment attempt for the current server-computed balance."""
+    """Create (or reuse) a payment attempt for the current server-computed balance.
+
+    Three steps so the provider's network call never runs while the reservation row is locked:
+    (1) lock, reuse/rate-limit, insert the attempt; (2) ask the provider for a QR; (3) attach it.
+    """
     provider = get_provider()
     now = timezone.now()
-    reservation = Reservation.objects.select_for_update().get(pk=reservation.pk)
-    if not provider.supports_qr:
-        return PaymentAttempt.objects.create(reservation=reservation, amount_minor=amount_minor, currency=currency,
-                                             provider=provider.name)
-    live = PaymentAttempt.objects.filter(reservation=reservation, provider=provider.name, status='PENDING',
-                                         amount_minor=amount_minor, currency=currency, expires_at__gt=now).first()
-    if live:
-        return live
-    recent = PaymentAttempt.objects.filter(reservation=reservation, created_at__gte=now - timedelta(minutes=10)).count()
-    if recent >= MAX_ATTEMPTS_PER_WINDOW:
-        raise SessionError('Too many payment attempts. Please wait a few minutes.')
-    attempt = PaymentAttempt(reservation=reservation, amount_minor=amount_minor, currency=currency, provider=provider.name,
-                             expires_at=now + timedelta(minutes=settings.PAYMENT_ATTEMPT_MINUTES))
-    attempt.save()  # need the id for a stable bill number
+    with transaction.atomic():
+        locked = Reservation.objects.select_for_update().get(pk=reservation.pk)
+        if not provider.supports_qr:
+            return PaymentAttempt.objects.create(reservation=locked, amount_minor=amount_minor, currency=currency,
+                                                 provider=provider.name)
+        live = (PaymentAttempt.objects.filter(reservation=locked, provider=provider.name, status='PENDING',
+                                              amount_minor=amount_minor, currency=currency, expires_at__gt=now)
+                .exclude(provider_md5='').first())
+        if live:
+            return live
+        if PaymentAttempt.objects.filter(reservation=locked, created_at__gte=now - timedelta(minutes=10)).count() >= MAX_ATTEMPTS_PER_WINDOW:
+            raise SessionError('Too many payment attempts. Please wait a few minutes.')
+        attempt = PaymentAttempt.objects.create(reservation=locked, amount_minor=amount_minor, currency=currency, provider=provider.name,
+                                                expires_at=now + timedelta(minutes=settings.PAYMENT_ATTEMPT_MINUTES))
+        bill = f'{locked.reference}-{str(attempt.pk)[:6]}'
     try:
-        qr = provider.create_qr(amount_minor=amount_minor, currency=currency, bill_number=f'{reservation.reference}-{str(attempt.pk)[:6]}')
+        qr = provider.create_qr(amount_minor=amount_minor, currency=currency, bill_number=bill)
     except ProviderError as exc:
         log.warning('Bakong create_qr failed for reservation %s: %s', reservation.pk, exc)
+        PaymentAttempt.objects.filter(pk=attempt.pk).update(status='FAILED')
         raise SessionError('Payment provider is unavailable. Please try again shortly.') from exc
-    attempt.provider_qr, attempt.provider_md5, attempt.provider_tran_id, attempt.checkout_url = qr.qr, qr.md5, qr.tran_id, qr.checkout_url
-    attempt.save(update_fields=['provider_qr', 'provider_md5', 'provider_tran_id', 'checkout_url'])
-    _extend_hold(reservation, attempt.expires_at)
+    with transaction.atomic():
+        attempt = PaymentAttempt.objects.select_for_update().get(pk=attempt.pk)
+        attempt.provider_qr, attempt.provider_md5, attempt.provider_tran_id, attempt.checkout_url = qr.qr, qr.md5, qr.tran_id, qr.checkout_url
+        attempt.save(update_fields=['provider_qr', 'provider_md5', 'provider_tran_id', 'checkout_url'])
+        _extend_hold(Reservation.objects.select_for_update().get(pk=reservation.pk), attempt.expires_at)
     return attempt
 
 
@@ -109,7 +116,7 @@ def sweep(limit=50):
     now = timezone.now()
     window = now - timedelta(hours=settings.PAYMENT_LATE_WINDOW_HOURS)
     candidates = (PaymentAttempt.objects.filter(status__in=['PENDING', 'EXPIRED'], created_at__gte=window)
-                  .exclude(provider_md5='').order_by('last_checked_at', 'created_at')[:limit * 3])
+                  .exclude(provider_md5='').order_by(F('last_checked_at').asc(nulls_first=True), 'created_at')[:limit * 3])
     checked = settled = expired = 0
     for attempt in candidates:
         if checked >= limit:

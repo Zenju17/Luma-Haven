@@ -32,7 +32,8 @@ const download = () => run(async () => {
   link.href = url
   link.download = 'my-luma-haven-data.json'
   link.click()
-  URL.revokeObjectURL(url)
+  // Revoking immediately can cancel the download in Firefox/Safari.
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
   return 'Your data export has been downloaded.'
 })
 
