@@ -32,7 +32,7 @@ interface Health { database: { ok: boolean; latency_ms: number | null }; cache: 
   outbox_pending: number; errors_24h: number; versions: Record<string, string>; environment: string; debug: boolean }
 interface Jobs { summary: { task: string; runs: number; failures: number }[]; recent: { id: number; task: string; status: string; started_at: string; duration_ms: number; error: string }[] }
 interface Outbox { pending_count: number; delivered_count: number; note: string; pending: { id: number; kind: string; target: string; created_at: string }[] }
-interface Provider { provider: string; currency: string; configured: Record<string, boolean>; attempts_24h: Record<string, number>; attempt_window_minutes: number; late_window_hours: number
+interface Provider { provider: string; env_default: string; bank_ready: boolean; can_use_demo: boolean; currency: string; configured: Record<string, boolean>; attempts_24h: Record<string, number>; attempt_window_minutes: number; late_window_hours: number
   last_sweep: { status: string; started_at: string; duration_ms: number; error: string } | null }
 interface Flag { key: string; enabled: boolean; description: string; updated_by: string; updated_at: string }
 interface ErrorRow { id: number; created_at: string; request_id: string; method: string; path: string; exc_type: string; message: string }
@@ -61,6 +61,8 @@ async function act(action: () => Promise<void>, success: string, refreshKey?: st
 const toggle = (f: Flag) => act(async () => { await adminApi(`/admin/dev/flags/${f.key}`, { enabled: !f.enabled }, 'PATCH') }, `${f.key} is now ${f.enabled ? 'off' : 'on'}.`, 'flags')
 const addFlag = () => act(async () => { await adminApi('/admin/dev/flags', { key: newFlag.value }); newFlag.value = '' }, 'Flag created (off).', 'flags')
 const checkBakong = () => act(async () => { probe.value = await adminApi('/admin/dev/payment-provider/check', {}) }, 'Connectivity check finished.')
+const setMode = (mode: 'demo' | 'bank') => act(async () => { await adminApi('/admin/dev/payment-mode', { mode }) },
+  mode === 'bank' ? 'Bank payments (Bakong KHQR) are now used for new payments.' : 'Demo payments are now used for new payments.', 'provider')
 const revoke = (id: number, name: string) => act(async () => { await adminApi(`/admin/dev/security/revoke/${id}`, {}) }, `Signed out ${name} everywhere.`, 'security')
 const badge = (good: boolean) => (good ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500')
 const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
@@ -114,12 +116,24 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     </div>
 
     <div v-else-if="tab === 'provider'" class="space-y-4">
+      <div v-if="provider.data.value" class="card p-4 space-y-3">
+        <p class="label">Payment mode for new payments</p>
+        <div class="inline-flex rounded-full border border-[var(--glass-border)] overflow-hidden" role="group" aria-label="Payment mode">
+          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'development' ? 'bg-[var(--brass)] text-white' : ''"
+            :aria-pressed="provider.data.value.provider === 'development'" :disabled="busy || !canWrite || !provider.data.value.can_use_demo" @click="setMode('demo')">Demo payment</button>
+          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'bakong' ? 'bg-[var(--brass)] text-white' : ''"
+            :aria-pressed="provider.data.value.provider === 'bakong'" :disabled="busy || !canWrite || !provider.data.value.bank_ready" @click="setMode('bank')">Bank payment (Bakong)</button>
+        </div>
+        <p class="text-xs text-[var(--muted)]">Demo = simulated checkout, no money moves. Bank = real Bakong KHQR. Payments already started keep their original mode and bank payments are still confirmed after switching.
+          <span v-if="!provider.data.value.bank_ready" class="text-rose-500"> Bank mode needs the BAKONG_* values in the server environment.</span>
+          <span v-if="!canWrite"> Only developers can switch.</span></p>
+      </div>
       <div v-if="provider.data.value" class="card p-4 space-y-3 text-sm">
         <p>Active provider: <strong>{{ provider.data.value.provider }}</strong> · currency {{ provider.data.value.currency }} · QR window {{ provider.data.value.attempt_window_minutes }} min · late-payment watch {{ provider.data.value.late_window_hours }} h</p>
         <p>Credentials: <span v-for="(set, name) in provider.data.value.configured" :key="name" class="mr-3" :class="badge(set)">{{ name }}: {{ set ? 'set' : 'MISSING' }}</span></p>
         <p>Attempts (24 h): <span v-for="(n, status) in provider.data.value.attempts_24h" :key="status" class="mr-3">{{ status }} {{ n }}</span><span v-if="!Object.keys(provider.data.value.attempts_24h).length">none</span></p>
         <p v-if="provider.data.value.last_sweep">Last sweep: {{ stamp(provider.data.value.last_sweep.started_at) }} · {{ provider.data.value.last_sweep.status }} · {{ provider.data.value.last_sweep.duration_ms }} ms {{ provider.data.value.last_sweep.error }}</p>
-        <div v-if="canWrite && provider.data.value.provider === 'bakong'">
+        <div v-if="canWrite && provider.data.value.bank_ready">
           <button class="btn" :disabled="busy" @click="checkBakong">Test Bakong connectivity</button>
           <p v-if="probe" class="mt-2" :class="badge(probe.ok)">{{ probe.ok ? `Reachable (${probe.status})` : probe.error }} · {{ probe.latency_ms }} ms</p>
         </div>

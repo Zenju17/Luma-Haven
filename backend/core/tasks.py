@@ -45,8 +45,6 @@ def run_retention():
 
 @shared_task
 def sweep_payment_attempts():
-    from django.conf import settings
-    if settings.PAYMENT_PROVIDER == 'development':
-        return {'skipped': 'development provider'}
+    # Always sweep: bank attempts created before a switch to demo mode must still be settled.
     from .payments.service import sweep
     return sweep()

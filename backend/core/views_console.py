@@ -22,6 +22,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied, ValidationErro
 from rest_framework.response import Response
 
 from . import flags
+from .payments import factory as payment_factory
 from .models import (Audit, CmsBlock, CmsPage, CmsRevision, ErrorEvent, FeatureFlag, JobRun, Outbox,
                      PaymentAttempt, User)
 from .views import staff
@@ -356,7 +357,9 @@ def dev_payment_provider(request):
     by_status = {}
     for status in PaymentAttempt.objects.filter(created_at__gte=since).values_list('status', flat=True):
         by_status[status] = by_status.get(status, 0) + 1
-    return Response({'provider': settings.PAYMENT_PROVIDER, 'currency': settings.BAKONG_CURRENCY,
+    return Response({'provider': payment_factory.active_provider_name(), 'env_default': settings.PAYMENT_PROVIDER,
+                     'bank_ready': payment_factory.bakong_configured(), 'can_use_demo': settings.ENV != 'production',
+                     'currency': settings.BAKONG_CURRENCY,
                      'configured': {'token': bool(settings.BAKONG_TOKEN), 'account_id': bool(settings.BAKONG_ACCOUNT_ID),
                                     'merchant_name': bool(settings.BAKONG_MERCHANT_NAME), 'merchant_city': bool(settings.BAKONG_MERCHANT_CITY)},
                      'attempt_window_minutes': settings.PAYMENT_ATTEMPT_MINUTES, 'late_window_hours': settings.PAYMENT_LATE_WINDOW_HOURS,
@@ -368,8 +371,8 @@ def dev_payment_provider(request):
 def dev_payment_provider_check(request):
     """Connectivity probe: asks Bakong about a random hash. Never creates a payment or returns secrets."""
     staff(request, *DEV_WRITE)
-    if settings.PAYMENT_PROVIDER != 'bakong':
-        raise ValidationError('The Bakong provider is not enabled.')
+    if not payment_factory.bakong_configured():
+        raise ValidationError('Bakong credentials are not configured.')
     from .payments import bakong
     from .payments.base import ProviderError
     started = time.monotonic()
@@ -381,6 +384,23 @@ def dev_payment_provider_check(request):
     result['latency_ms'] = int((time.monotonic() - started) * 1000)
     Audit.objects.create(actor=_actor(request), action='BAKONG_CONNECTIVITY_CHECK', target='ok' if result['ok'] else 'failed')
     return Response(result)
+
+
+@api_view(['POST'])
+@transaction.atomic
+def dev_payment_mode(request):
+    """Switch new payment sessions between demo (simulated) and bank (Bakong KHQR)."""
+    staff(request, *DEV_WRITE)
+    mode = str(request.data.get('mode', ''))
+    if mode not in ('demo', 'bank'):
+        raise ValidationError({'mode': 'Use demo or bank.'})
+    if mode == 'bank' and not payment_factory.bakong_configured():
+        raise ValidationError('Bank payments need BAKONG_TOKEN, BAKONG_ACCOUNT_ID, merchant name/city and USD in the server environment.')
+    if mode == 'demo' and settings.ENV == 'production':
+        raise ValidationError('Demo payments are not allowed in production.')
+    flags.set_flag(payment_factory.MODE_FLAG, mode == 'bank', _actor(request))
+    Audit.objects.create(actor=_actor(request), action='PAYMENT_MODE_CHANGED', target=mode)
+    return Response({'provider': payment_factory.active_provider_name()})
 
 
 def _flag_row(f):
@@ -401,14 +421,14 @@ def dev_flags(request):
         Audit.objects.create(actor=_actor(request), action='FLAG_CREATED', target=key)
         return Response(_flag_row(flag), status=201)
     staff(request, *DEV_READ)
-    return Response([_flag_row(f) for f in FeatureFlag.objects.order_by('key')])
+    return Response([_flag_row(f) for f in FeatureFlag.objects.exclude(key=payment_factory.MODE_FLAG).order_by('key')])
 
 
 @api_view(['PATCH'])
 @transaction.atomic
 def dev_flag(request, key):
     staff(request, *DEV_WRITE)
-    if not FeatureFlag.objects.filter(key=key).exists():
+    if key == payment_factory.MODE_FLAG or not FeatureFlag.objects.filter(key=key).exists():
         raise NotFound('Flag not found')
     flag = flags.set_flag(key, bool(request.data.get('enabled')), _actor(request))
     Audit.objects.create(actor=_actor(request), action='FLAG_CHANGED', target=f'{key}={"on" if flag.enabled else "off"}')
@@ -424,7 +444,7 @@ def dev_config(request):
     return Response({
         'environment': settings.ENV, 'debug': settings.DEBUG, 'time_zone': settings.TIME_ZONE,
         'allowed_hosts': list(settings.ALLOWED_HOSTS), 'frontend_origin': settings.FRONTEND_ORIGIN,
-        'payment': {'provider': settings.PAYMENT_PROVIDER, 'attempt_minutes': settings.PAYMENT_ATTEMPT_MINUTES,
+        'payment': {'provider': payment_factory.active_provider_name(), 'env_default': settings.PAYMENT_PROVIDER, 'attempt_minutes': settings.PAYMENT_ATTEMPT_MINUTES,
                     'late_window_hours': settings.PAYMENT_LATE_WINDOW_HOURS, 'currency': settings.BAKONG_CURRENCY,
                     'merchant_name': settings.BAKONG_MERCHANT_NAME, 'merchant_city': settings.BAKONG_MERCHANT_CITY},
         'retention': {'guest_years': settings.RETENTION_GUEST_YEARS, 'short_lived_hours': settings.RETENTION_SHORT_LIVED_HOURS},
@@ -495,6 +515,7 @@ urlpatterns = [
     path('admin/cms/blocks/<int:pk>/publish', admin_cms_block_publish), path('admin/cms/blocks/<int:pk>/unpublish', admin_cms_block_unpublish),
     path('admin/dev/health', dev_health), path('admin/dev/jobs', dev_jobs), path('admin/dev/outbox', dev_outbox),
     path('admin/dev/payment-provider', dev_payment_provider), path('admin/dev/payment-provider/check', dev_payment_provider_check),
+    path('admin/dev/payment-mode', dev_payment_mode),
     path('admin/dev/flags', dev_flags), path('admin/dev/flags/<slug:key>', dev_flag),
     path('admin/dev/config', dev_config), path('admin/dev/errors', dev_errors),
     path('admin/dev/security', dev_security), path('admin/dev/security/revoke/<int:user_id>', dev_revoke_sessions),

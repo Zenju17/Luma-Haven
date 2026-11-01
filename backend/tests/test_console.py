@@ -202,8 +202,9 @@ def test_failed_logins_are_listed_and_sessions_can_be_revoked(dev):
 
 
 def test_provider_check_requires_bakong_and_developer(dev, admin, settings, monkeypatch):
-    assert post(dev, '/api/v1/admin/dev/payment-provider/check').status_code == 400      # development provider
-    settings.PAYMENT_PROVIDER = 'bakong'
+    settings.BAKONG_TOKEN = ''
+    assert post(dev, '/api/v1/admin/dev/payment-provider/check').status_code == 400      # bank not configured
+    settings.PAYMENT_PROVIDER, settings.BAKONG_TOKEN, settings.BAKONG_ACCOUNT_ID = 'bakong', 't', 'hotel@bank'
     monkeypatch.setattr(bakong, 'check_status', lambda md5: 'UNPAID')
     assert post(admin, '/api/v1/admin/dev/payment-provider/check').status_code == 403
     body = post(dev, '/api/v1/admin/dev/payment-provider/check').json()
@@ -215,3 +216,39 @@ def test_outbox_view_lists_pending(dev):
     Outbox.objects.create(kind='BOOKING_CONFIRMED', target='1')
     body = dev.get('/api/v1/admin/dev/outbox').json()
     assert body['pending_count'] == 1 and body['pending'][0]['kind'] == 'BOOKING_CONFIRMED'
+
+
+def test_payment_mode_switch_between_demo_and_bank(dev, admin, settings):
+    from core.models import FeatureFlag
+    from core.payments import factory
+    settings.PAYMENT_PROVIDER = 'development'
+    settings.BAKONG_TOKEN, settings.BAKONG_ACCOUNT_ID = '', ''
+    url = '/api/v1/admin/dev/payment-mode'
+    assert post(admin, url, {'mode': 'bank'}).status_code == 403                        # developers only
+    assert post(dev, url, {'mode': 'bank'}).status_code == 400                          # credentials missing
+    settings.BAKONG_TOKEN, settings.BAKONG_ACCOUNT_ID = 't', 'hotel@bank'
+    assert post(dev, url, {'mode': 'bank'}).json()['provider'] == 'bakong'
+    assert factory.active_provider_name() == 'bakong'
+    assert dev.get('/api/v1/admin/dev/payment-provider').json()['provider'] == 'bakong'
+    assert post(dev, url, {'mode': 'demo'}).json()['provider'] == 'development'
+    assert Audit.objects.filter(action='PAYMENT_MODE_CHANGED').count() == 2
+    # the mode is not exposed as a generic flag
+    assert 'bank_payments' not in [f['key'] for f in dev.get('/api/v1/admin/dev/flags').json()]
+    assert patch(dev, '/api/v1/admin/dev/flags/bank_payments', {'enabled': True}).status_code == 404
+    assert FeatureFlag.objects.get(key='bank_payments').enabled is False
+    settings.ENV = 'production'
+    assert post(dev, url, {'mode': 'demo'}).status_code == 400                          # never demo in production
+
+
+def test_bank_attempt_cannot_be_simulated(db):
+    from datetime import timedelta
+    from core import services
+    from core.models import PaymentAttempt, Room, RoomType
+    hotel = Hotel.objects.create(name='H')
+    room = Room.objects.create(hotel=hotel, type=RoomType.objects.create(hotel=hotel, name='T', nightly_rate_minor=1000), number='1')
+    start = services.hotel_today(hotel) + timedelta(days=4)
+    res = services.reserve(services.create_quote(room, start, start + timedelta(days=1), 1), 'A', 'a@example.com')
+    bank = PaymentAttempt.objects.create(reservation=res, amount_minor=1000, currency='USD', provider='bakong')
+    assert Client().post(f'/api/v1/development/checkout/{bank.pk}', {'outcome': 'SUCCESS'}, content_type=JSON).status_code == 403
+    demo = PaymentAttempt.objects.create(reservation=res, amount_minor=1000, currency='USD', provider='development')
+    assert Client().post(f'/api/v1/development/checkout/{demo.pk}', {'outcome': 'SUCCESS'}, content_type=JSON).json()['status'] == 'SUCCESS'

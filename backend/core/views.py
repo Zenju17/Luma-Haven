@@ -19,7 +19,7 @@ from . import throttling
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from . import legal, services, staff_passwords
-from .payments import service as payment_service
+from .payments import factory as payment_factory, service as payment_service
 from .payments.base import ProviderError  # noqa: F401
 from .decision_support import evaluate_decision_support_alerts
 from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, LegalDocument, Folio, FolioEntry, Hotel, HousekeepingTask,
@@ -50,7 +50,7 @@ def detail(obj):
             'departure': obj.departure, 'room': obj.room.number, 'room_type': obj.room.type.name,
             'guest_name': obj.guest.full_name, 'verified': obj.verified, 'currency': folio.currency,
             'hotel_today': services.hotel_today(obj.room.hotel), 'hotel_timezone': obj.room.hotel.timezone,
-            'balance_minor': services.balance(folio), 'folio_version': folio.version, 'payment_provider': settings.PAYMENT_PROVIDER,
+            'balance_minor': services.balance(folio), 'folio_version': folio.version, 'payment_provider': payment_factory.active_provider_name(),
             'entries': list(folio.entries.values('category', 'description', 'amount_minor', 'service_date')),
             'stay_id': stay.pk if stay else None, 'checked_in_at': stay.checked_in_at if stay else None,
             'checked_out_at': stay.checked_out_at if stay else None,
@@ -236,9 +236,12 @@ def payment_session_status(request, pk):
 
 @api_view(['GET', 'POST'])
 def development_checkout(request, pk):
-    if settings.ENV != 'development' or __import__('os').getenv('PAYMENT_PROVIDER', 'development') != 'development':
+    if settings.ENV == 'production':
         raise PermissionDenied()
-    attempt = PaymentAttempt.objects.select_related('reservation__guest').get(pk=pk)
+    attempt = PaymentAttempt.objects.select_related('reservation__guest').filter(pk=pk).first()
+    # Only demo attempts can be simulated; a bank (Bakong) attempt settles only via the bank.
+    if not attempt or attempt.provider != 'development':
+        raise PermissionDenied('This payment is not a demo payment')
     if request.method == 'GET':
         return Response({'amount_minor': attempt.amount_minor, 'currency': attempt.currency, 'status': attempt.status, 'reservation_id': attempt.reservation_id, 'simulated': True})
     outcome = request.data.get('outcome')
