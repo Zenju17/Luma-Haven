@@ -1095,9 +1095,59 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 }
 
 @media print {
-  .guest-header, .guest-footer, .portal-rail, .portal-mobile-header, button, nav, .theme-toggle { display: none !important; }
-  body, .site-layout, .portal-shell { background: #fff !important; }
-  .card { break-inside: avoid; backdrop-filter: none; background: #fff; }
+  @page {
+    size: auto;
+    margin: 12mm 15mm;
+  }
+
+  /* Hide all website navigation, interactive buttons, and web chrome */
+  .guest-header,
+  .guest-footer,
+  .portal-rail,
+  .portal-mobile-header,
+  .screen-only,
+  .my-data-panel,
+  .notice,
+  .theme-toggle,
+  button,
+  nav,
+  header,
+  footer {
+    display: none !important;
+  }
+
+  /* Reset document containers for pristine paper presentation */
+  html,
+  body,
+  #app,
+  .site-layout,
+  .portal-shell,
+  main {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Explicitly render the official printable guest folio */
+  .printable-receipt {
+    display: block !important;
+    visibility: visible !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 }
 
 /* ─────────────────────────────────────────────
@@ -1180,3 +1230,4 @@ button:disabled { cursor: not-allowed; opacity: .52; }
     padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)) !important;
   }
 }
+
