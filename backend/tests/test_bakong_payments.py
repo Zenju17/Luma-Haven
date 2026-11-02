@@ -232,3 +232,31 @@ def test_real_sdk_generates_local_qr_with_exact_amount(settings):
         bakong.create_qr(amount_minor=100, currency='KHR', bill_number='X')
     with pytest.raises(ProviderError):
         bakong.create_qr(amount_minor=0, currency='USD', bill_number='X')
+
+
+def test_simulate_payment_session_confirms_reservation(client, room, fake):
+    reservation = make_booking(client, room)
+    data = open_session(client, reservation)
+    attempt_id = data['id']
+    # Call simulate endpoint
+    resp = client.post(f'/api/v1/payment-sessions/{attempt_id}/simulate', {'outcome': 'SUCCESS'}, content_type=JSON)
+    assert resp.status_code == 200, resp.content
+    assert resp.json()['status'] == 'SUCCESS'
+    assert resp.json()['simulated'] is True
+    # Verify reservation is now confirmed
+    reservation.refresh_from_db()
+    assert reservation.status == 'CONFIRMED'
+    assert Payment.objects.filter(attempt__reservation=reservation, amount_minor=20000).exists()
+
+
+
+def test_scan_amount_minor_overrides_qr_amount(client, room, fake, settings):
+    settings.BAKONG_SCAN_AMOUNT_MINOR = 1  # 1 cent scan
+    reservation = make_booking(client, room)
+    data = open_session(client, reservation)
+    assert data['scan_amount_minor'] == 1
+    assert data['qr'].startswith('FAKEQR|1|USD|')
+    # Full room balance is still preserved on the payment attempt
+    attempt = PaymentAttempt.objects.get(pk=data['id'])
+    assert attempt.amount_minor == 20000
+

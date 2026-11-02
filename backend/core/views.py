@@ -233,7 +233,8 @@ def reservation(request, pk):
 def _attempt_payload(attempt, include_qr=True):
     data = {'id': attempt.pk, 'provider': attempt.provider, 'status': attempt.status, 'amount_minor': attempt.amount_minor,
             'currency': attempt.currency, 'reservation_id': attempt.reservation_id, 'expires_at': attempt.expires_at,
-            'simulated': attempt.provider == 'development', 'checkout_url': f'/checkout/{attempt.pk}'}
+            'simulated': attempt.provider == 'development', 'checkout_url': f'/checkout/{attempt.pk}',
+            'scan_amount_minor': getattr(settings, 'BAKONG_SCAN_AMOUNT_MINOR', 1) if attempt.provider == 'bakong' else attempt.amount_minor}
     if include_qr and attempt.provider == 'bakong' and attempt.status == 'PENDING':
         data['qr'] = attempt.provider_qr  # shown only while payable; never logged
     return data
@@ -263,6 +264,20 @@ def payment_session_status(request, pk):
     if attempt.provider != 'development':
         attempt = payment_service.refresh_attempt(attempt.pk)
     return Response(_attempt_payload(attempt))
+
+@api_view(['POST'])
+def simulate_payment_session(request, pk):
+    """Simulate payment completion for testing/demo without paying real cash."""
+    attempt = PaymentAttempt.objects.select_related('reservation__guest').filter(pk=pk).first()
+    if not attempt:
+        raise NotFound('Payment session not found')
+    booking(request, attempt.reservation_id)
+    outcome = str(request.data.get('outcome', 'SUCCESS')).upper()
+    if outcome not in ('SUCCESS', 'FAILED', 'PENDING'):
+        raise ValidationError('Invalid outcome')
+    event = services.process_event(pk, outcome, f'sim_{secrets.token_hex(16)}')
+    return Response({'status': event.status, 'simulated': True, 'reservation_id': attempt.reservation_id})
+
 
 @api_view(['GET', 'POST'])
 def development_checkout(request, pk):
@@ -2186,6 +2201,7 @@ urlpatterns = [
     path('reservations/<int:pk>/demo-verify', presentation_verify),
     path('staff/reservations/<int:pk>/verify', reception_verify),
     path('payment-sessions/<uuid:pk>', payment_session_status),
+    path('payment-sessions/<uuid:pk>/simulate', simulate_payment_session),
     path('development/checkout/<uuid:pk>', development_checkout),
     path('guest-access/request-otp', request_otp), path('guest-access/verify-otp', verify_otp),
     path('reservations/<int:pk>/check-in', check_in), path('reservations/<int:pk>/check-out', check_out),

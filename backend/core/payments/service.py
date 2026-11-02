@@ -46,7 +46,9 @@ def create_session(reservation, amount_minor, currency):
         _ensure_monitoring(live)
         return live
     try:
-        qr = provider.create_qr(amount_minor=amount_minor, currency=currency, bill_number=bill)
+        scan_amount = getattr(settings, 'BAKONG_SCAN_AMOUNT_MINOR', 0)
+        qr_amount_minor = scan_amount if (provider.name == 'bakong' and scan_amount > 0) else amount_minor
+        qr = provider.create_qr(amount_minor=qr_amount_minor, currency=currency, bill_number=bill)
     except ProviderError as exc:
         log.warning('Bakong create_qr failed for reservation %s: %s', reservation.pk, exc)
         PaymentAttempt.objects.filter(pk=attempt.pk).update(status='FAILED')

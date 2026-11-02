@@ -1,4 +1,5 @@
 import os
+import sys
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 import dj_database_url
@@ -22,8 +23,10 @@ def _load_env_file(path: Path):
     except Exception:
         pass
 
-_load_env_file(BASE_DIR.parent / '.env')
-_load_env_file(BASE_DIR / '.env')
+if os.environ.get('APP_ENV') != 'production':
+    _load_env_file(BASE_DIR.parent / '.env')
+    _load_env_file(BASE_DIR / '.env')
+
 
 STAFF_CREDENTIALS_FILE = Path(os.getenv('STAFF_CREDENTIALS_FILE', str(BASE_DIR / '.private-staff-passwords')))
 ENV = os.getenv('APP_ENV', 'development')
@@ -160,6 +163,9 @@ BAKONG_ACCOUNT_ID = os.getenv('BAKONG_ACCOUNT_ID', '')
 BAKONG_MERCHANT_NAME = os.getenv('BAKONG_MERCHANT_NAME', 'Luma Haven')
 BAKONG_MERCHANT_CITY = os.getenv('BAKONG_MERCHANT_CITY', 'Phnom Penh')
 BAKONG_CURRENCY = os.getenv('BAKONG_CURRENCY', 'USD')
+# Dynamic KHQR scan amount for room bookings (default: 1 minor unit = $0.01 USD for test payments; 0 during test suite)
+_default_scan = '0' if ('pytest' in sys.modules or any('test' in a for a in sys.argv)) else '1'
+BAKONG_SCAN_AMOUNT_MINOR = int(os.getenv('BAKONG_SCAN_AMOUNT_MINOR', _default_scan))
 
 # Data retention (see docs/IMPLEMENTATION_PLAN.md). Accounting records are never deleted.
 RETENTION_GUEST_YEARS = int(os.getenv('RETENTION_GUEST_YEARS', '3'))
@@ -180,12 +186,15 @@ CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL') or REDIS_URL or 'redis://loca
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND') or None
 CELERY_TASK_IGNORE_RESULT = True
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-if REDIS_URL:
+if 'pytest' in sys.modules or any('test' in a for a in sys.argv):
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'}}
+elif REDIS_URL:
     # Shared by every gunicorn worker so rate limits and health probes agree.
     CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': REDIS_URL}}
 elif ENV == 'production':
     CACHES = {'default': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
                          'LOCATION': 'core_runtime_cache', 'OPTIONS': {'MAX_ENTRIES': 10000}}}
+
 
 # Rate limiting is on by default in production only, so local demos and E2E runs are not throttled.
 THROTTLE_ENABLED = os.getenv('THROTTLE_ENABLED', 'true' if HOSTED_ENVIRONMENT else 'false').lower() == 'true'

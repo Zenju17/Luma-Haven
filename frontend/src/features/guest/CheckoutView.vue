@@ -10,7 +10,7 @@ import { money } from '../../types'
 
 interface Session {
   id: string; provider: 'development' | 'bakong'; status: string; amount_minor: number; currency: string
-  reservation_id: number; expires_at: string | null; qr?: string; checkout_url: string
+  reservation_id: number; expires_at: string | null; qr?: string; checkout_url: string; scan_amount_minor?: number
 }
 const route = useRoute()
 const router = useRouter()
@@ -70,11 +70,14 @@ async function checkPaymentNow() {
   }
 }
 
-async function simulate(outcome: 'SUCCESS' | 'FAILED' | 'PENDING') {
+async function simulate(outcome: 'SUCCESS' | 'FAILED' | 'PENDING' = 'SUCCESS') {
   pending.value = true
   error.value = ''
   try {
-    const result = await api<{ status: string }>(`/development/checkout/${id.value}`, { outcome })
+    const url = checkout.data.value?.provider === 'development'
+      ? `/development/checkout/${id.value}`
+      : `/payment-sessions/${id.value}/simulate`
+    const result = await api<{ status: string; reservation_id?: number }>(url, { outcome })
     if (outcome === 'SUCCESS' && result.status === 'SUCCESS' && checkout.data.value) {
       await router.push(`/booking/${checkout.data.value.reservation_id}`)
     } else {
@@ -146,10 +149,20 @@ async function newQr() {
             <div class="relative bg-white p-5 rounded-2xl shadow-md border-2 border-rose-600/30 flex flex-col items-center">
               <div class="w-full flex items-center justify-between border-b pb-2 mb-3">
                 <span class="text-[10px] font-bold text-rose-700 tracking-wider uppercase">KHQR Universal</span>
-                <span class="text-[10px] text-slate-500 font-mono">{{ money(checkout.data.value.amount_minor) }} USD</span>
+                <div class="text-right">
+                  <span class="text-[10px] text-slate-500 font-mono block">Room total: {{ money(checkout.data.value.amount_minor) }} USD</span>
+                  <span class="text-[11px] font-bold text-emerald-600 font-mono block">Scan-to-Pay: $0.01 USD</span>
+                </div>
               </div>
               <QrcodeVue :value="checkout.data.value.qr" :size="230" level="M" render-as="svg" />
               <div class="mt-3 text-[11px] text-slate-600 font-medium tracking-wide">LUMA HAVEN BOUTIQUE HOTEL</div>
+            </div>
+
+            <!-- Scan amount callout badge -->
+            <div class="w-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-3 text-center">
+              <p class="text-xs font-medium text-emerald-800 dark:text-emerald-300">
+                💡 <strong>Scan Test:</strong> Scan with ABA Mobile or Bakong to test paying <strong>$0.01 USD</strong>, or click below to simulate for free without real cash.
+              </p>
             </div>
 
             <!-- Supported Banks pill -->
@@ -160,20 +173,32 @@ async function newQr() {
             </div>
 
             <!-- Action buttons -->
-            <div class="w-full flex flex-col gap-2 mt-2">
+            <div class="w-full flex flex-col gap-2.5 mt-2">
               <button
                 type="button"
-                class="btn w-full flex items-center justify-center gap-2"
-                :disabled="checking"
-                @click="checkPaymentNow"
+                class="btn w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-semibold shadow hover:opacity-95"
+                :disabled="pending"
+                @click="simulate('SUCCESS')"
               >
-                <svg v-if="checking" class="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                <span>{{ checking ? 'Checking status…' : "I've completed payment in my bank app" }}</span>
+                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>{{ pending ? 'Confirming booking…' : '⚡ Simulate Payment (Confirm Free)' }}</span>
               </button>
 
               <button
                 type="button"
-                class="btn-secondary w-full text-xs flex items-center justify-center gap-1.5"
+                class="btn-secondary w-full flex items-center justify-center gap-2"
+                :disabled="checking"
+                @click="checkPaymentNow"
+              >
+                <svg v-if="checking" class="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <span>{{ checking ? 'Checking status…' : "I've paid $0.01 in my bank app" }}</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn-secondary w-full text-xs flex items-center justify-center gap-1.5 opacity-80"
                 @click="copyQrString"
               >
                 <span>{{ copied ? 'KHQR payload copied! ✓' : 'Copy KHQR payload' }}</span>
