@@ -177,7 +177,12 @@ def availability(request):
                       'currency': r.hotel.currency, 'capacity': r.type.capacity} for r in services.available(arrival, departure, occupants)])
 
 def _require_bookings_open():
-    if settings.ENV == 'production' and settings.PAYMENT_PROVIDER == 'bakong' and not payment_factory.bakong_configured():
+    if (
+        settings.ENV == 'production'
+        and getattr(settings, 'PAYMENT_QUEUE_ENABLED', False)
+        and settings.PAYMENT_PROVIDER == 'bakong'
+        and not payment_factory.bakong_configured()
+    ):
         raise ServiceUnavailable('Online booking is temporarily unavailable. Please contact reception.')
     from . import flags
     if flags.is_enabled('bookings_paused'):
