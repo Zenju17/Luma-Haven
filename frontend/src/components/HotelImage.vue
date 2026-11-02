@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../utils/responsiveImage'
 import { ref, computed } from 'vue'
 import { PLACEHOLDERS } from '../data/hotelImages'
 
@@ -15,6 +16,8 @@ const props = withDefaults(
     isDemo?: boolean
     facilityClaim?: string
     showBadge?: boolean
+    width?: number
+    sizes?: string
   }>(),
   {
     src: '',
@@ -28,6 +31,8 @@ const props = withDefaults(
     isDemo: false,
     facilityClaim: '',
     showBadge: true,
+    width: 0,
+    sizes: SIZES.card,
   }
 )
 
@@ -40,6 +45,8 @@ const effectiveSrc = computed(() => {
   }
   return props.src
 })
+
+const effectiveSrcset = computed(() => (hasError.value ? undefined : responsiveSrcset(props.src, props.width)))
 
 const aspectStyle = computed(() => ({
   aspectRatio: props.aspectRatio.includes('/') ? props.aspectRatio : '16/10',
@@ -59,6 +66,8 @@ function onLoad() {
     <!-- Image -->
     <img
       :src="effectiveSrc"
+      :srcset="effectiveSrcset"
+      :sizes="effectiveSrcset ? sizes : undefined"
       :alt="alt"
       :loading="loading"
       :class="[

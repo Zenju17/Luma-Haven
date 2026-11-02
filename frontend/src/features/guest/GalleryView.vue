@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../utils/responsiveImage'
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import SiteLayout from '../../layouts/SiteLayout.vue'
 import HotelImage from '../../components/HotelImage.vue'
@@ -245,6 +246,8 @@ function closeTour() {
             <div class="relative grow overflow-hidden bg-black flex items-center justify-center min-h-[360px] sm:min-h-[500px]">
               <img
                 :src="activeLightbox.src"
+                :srcset="responsiveSrcset(activeLightbox.src)"
+                :sizes="SIZES.lightbox"
                 :alt="activeLightbox.alt"
                 class="max-h-[68vh] w-auto max-w-full object-contain mx-auto"
               />

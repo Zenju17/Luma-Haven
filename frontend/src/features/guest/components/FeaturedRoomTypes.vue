@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
@@ -45,6 +46,7 @@ const displayRooms = computed(() => {
       summary: first.description || meta?.summary || '',
       rateMinor: Math.min(...group.map(r => r.rate_minor ?? 0)),
       photo: asset?.image_url ?? fallback.src,
+      photoSrcset: responsiveSrcset(asset?.image_url ?? fallback.src, asset?.width),
       photoAlt: asset?.alt_text || fallback.alt,
     }
   })
@@ -90,7 +92,7 @@ function choose(room: { name: string; capacity: number }) {
       <li v-for="room in rooms" :key="room.id">
         <article class="guest-room">
           <button type="button" class="guest-room-photo" :aria-label="`View ${room.name}`" @click="choose(room)">
-            <img :src="room.photo" :alt="room.photoAlt" width="800" height="600" loading="lazy" />
+            <img :src="room.photo" :srcset="room.photoSrcset" :sizes="SIZES.card" :alt="room.photoAlt" width="800" height="600" loading="lazy" />
           </button>
           <div class="guest-room-body">
             <div class="flex items-baseline justify-between gap-3">

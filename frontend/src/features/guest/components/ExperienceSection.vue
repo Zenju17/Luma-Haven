@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { api } from '../../../services/api'
@@ -197,6 +198,8 @@ const featureCards = computed<FeatureLocationCard[]>(() => {
           <div class="relative aspect-[4/3] overflow-hidden bg-[var(--deep)]">
             <img
               :src="card.asset ? card.asset.image_url : card.fallbackSrc"
+              :srcset="card.asset ? responsiveSrcset(card.asset.image_url, card.asset.width) : responsiveSrcset(card.fallbackSrc)"
+              :sizes="SIZES.card"
               :alt="card.asset?.alt_text || card.title"
               class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
               loading="lazy"

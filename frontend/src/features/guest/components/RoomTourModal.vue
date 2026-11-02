@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getRoomTourImages, type HotelImageRecord } from '../../../data/hotelImages'
@@ -210,6 +211,8 @@ function handleBookNow() {
             <img
               v-if="activeImage"
               :src="activeImage.src"
+              :srcset="responsiveSrcset(activeImage.src)"
+              :sizes="SIZES.lightbox"
               :alt="activeImage.alt"
               :class="[
                 'max-h-[60vh] w-auto max-w-full object-contain mx-auto transition-transform duration-300 cursor-zoom-in',
@@ -335,7 +338,7 @@ function handleBookNow() {
                   :title="img.locationTag"
                   @click="selectSection(idx)"
                 >
-                  <img :src="img.src" :alt="img.alt" class="w-full h-full object-cover" />
+                  <img :src="img.src" :srcset="responsiveSrcset(img.src)" :sizes="SIZES.thumb" :alt="img.alt" class="w-full h-full object-cover" />
                   <span class="absolute bottom-0 inset-x-0 bg-black/80 text-[8px] text-white text-center py-0.5 truncate px-1">
                     {{ img.section || 'view' }}
                   </span>

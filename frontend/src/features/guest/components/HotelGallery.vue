@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useQuery } from '@tanstack/vue-query'
 import { api } from '../../../services/api'
@@ -14,6 +15,7 @@ interface DisplaySlide {
   alt: string
   isConcept: boolean
   facilityClaim: string
+  width?: number
 }
 
 const visualAssets = useQuery({
@@ -72,6 +74,7 @@ const displayPhotos = computed<DisplaySlide[]>(() => {
           location: config?.location || 'Hotel Space',
           caption: config?.caption || match.caption || match.alt_text,
           src: match.image_url,
+          width: match.width,
           alt: match.alt_text,
           isConcept: match.source_type === 'CONCEPT',
           facilityClaim: match.facility_claim,
@@ -235,6 +238,8 @@ onUnmounted(() => {
           >
             <img
               :src="photo.src"
+              :srcset="responsiveSrcset(photo.src, photo.width)"
+              :sizes="SIZES.card"
               :alt="photo.alt"
               class="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-700"
               loading="lazy"
@@ -380,6 +385,8 @@ onUnmounted(() => {
           <div class="relative grow overflow-hidden bg-black flex items-center justify-center min-h-[360px] sm:min-h-[500px]">
             <img
               :src="currentSlide.src"
+              :srcset="responsiveSrcset(currentSlide.src, currentSlide.width)"
+              :sizes="SIZES.lightbox"
               :alt="currentSlide.alt"
               class="max-h-[68vh] w-auto max-w-full object-contain mx-auto"
             />

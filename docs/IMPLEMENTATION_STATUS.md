@@ -82,7 +82,7 @@ Seeded the full catalogue: 10 room types, 17 rooms, 16 in service. A backup was 
 ## Guest images (2 Nov 2026)
 
 Room and lounge photos are now 2400px. The media manager warns on images whose long
-edge is under 1600px. Responsive `srcset` is not implemented.
+edge is under 1600px. Responsive `srcset` (640/1280px WebP variants plus the original) is used for guest images; database variants are rendered on demand.
 
 ## Next concrete steps
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { VisualAsset } from '../../../types'
 
@@ -111,6 +112,8 @@ function getSpaceName(filename: string): string {
           <template v-if="activeAsset">
             <img
               :src="activeAsset.image_url"
+              :srcset="responsiveSrcset(activeAsset.image_url, activeAsset.width)"
+              :sizes="SIZES.lightbox"
               :alt="activeAsset.alt_text"
               class="max-h-[65vh] w-auto max-w-full object-contain mx-auto transition-opacity duration-300"
             />
@@ -174,7 +177,7 @@ function getSpaceName(filename: string): string {
             :class="activeIndex === idx ? 'border-[var(--brass)] scale-105 shadow-md' : 'border-transparent opacity-65 hover:opacity-100'"
             @click="selectAsset(idx)"
           >
-            <img :src="asset.image_url" :alt="asset.alt_text" class="w-full h-full object-cover" />
+            <img :src="asset.image_url" :srcset="responsiveSrcset(asset.image_url, asset.width)" :sizes="SIZES.thumb" :alt="asset.alt_text" class="w-full h-full object-cover" />
             <span class="absolute bottom-0 inset-x-0 bg-black/75 text-[9px] text-white text-center py-0.5 truncate px-1">
               {{ getSpaceName(asset.original_filename) }}
             </span>

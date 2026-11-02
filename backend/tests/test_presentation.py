@@ -98,3 +98,37 @@ def test_database_image_limit_is_enforced_before_storage(db, settings):
     with pytest.raises(ValueError, match='3 MB'):
         DatabaseMediaStorage().save('large.png', ContentFile(b'x' * 11))
     assert not MediaFile.objects.exists()
+
+
+def test_responsive_variants_are_rendered_on_demand_and_bounded(db, settings):
+    from core.media_storage import delete_variants
+    settings.DATABASE_MEDIA = True
+    settings.MEDIA_URL = '/api/v1/media/'
+    image = BytesIO()
+    Image.new('RGB', (2400, 1600), 'teal').save(image, format='JPEG')
+    name = DatabaseMediaStorage().save('visual_assets/wide.jpg', ContentFile(image.getvalue()))
+    client = Client()
+
+    response = client.get(f'/api/v1/media/{name}.w640.webp')
+    assert response.status_code == 200
+    assert response['Content-Type'] == 'image/webp'
+    with Image.open(BytesIO(response.content)) as variant:
+        assert variant.size == (640, 427)
+    assert MediaFile.objects.filter(pk=f'{name}.w640.webp').exists()  # cached after first render
+    assert client.get(f'/api/v1/media/{name}.w640.webp').content == response.content
+
+    # Only whitelisted widths of existing originals can be generated.
+    assert client.get(f'/api/v1/media/{name}.w999.webp').status_code == 404
+    assert client.get('/api/v1/media/visual_assets/missing.jpg.w640.webp').status_code == 404
+
+    delete_variants(name)
+    assert list(MediaFile.objects.values_list('name', flat=True)) == [name]
+
+
+def test_variants_never_upscale_small_images(db, settings):
+    from core.media_storage import render_variant
+    image = BytesIO()
+    Image.new('RGBA', (300, 200)).save(image, format='PNG')
+    with Image.open(BytesIO(render_variant(image.getvalue(), 1280))) as variant:
+        assert variant.size == (300, 200)
+        assert variant.mode == 'RGBA'

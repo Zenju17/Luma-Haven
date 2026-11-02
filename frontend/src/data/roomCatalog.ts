@@ -65,7 +65,7 @@ export const ROOM_CATALOG: RoomCatalogEntry[] = [
     slug: 'connecting-family', name: 'Connecting Family Rooms', beds: '2 rooms, 2 queen beds each', bedKind: 'Family', capacity: 6, fromRate: 190,
     summary: 'Two rooms joined by a private door. Each side has its own beds and bathroom.',
     highlights: ['Two private rooms', 'Connecting door', 'Two bathrooms'],
-    photo: photo('connecting-family'), photoAlt: 'Two bedrooms seen through an open connecting double door',
+    photo: photo('connecting-family'), photoAlt: 'View through open connecting doors into a second bright bedroom',
   },
   {
     slug: 'signature-suite', name: 'Signature Suite', beds: '1 king bed', bedKind: 'King', capacity: 2, fromRate: 210,

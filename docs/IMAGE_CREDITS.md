@@ -13,6 +13,4 @@ JPEG (quality 84).
 | `rooms/city-king/main.jpg` | https://unsplash.com/photos/T6WRDVQBn8M |
 | `rooms/signature-suite/main.jpg` | https://unsplash.com/photos/fQgYAnWVFeo |
 | `facilities/lounge.jpg` | https://unsplash.com/photos/YSSmyqup2Pk |
-
-Still low resolution: `rooms/connecting-family/main.jpg` (712×534). No suitable
-connecting-room photo was found.
+| `rooms/connecting-family/main.jpg` | https://unsplash.com/photos/1Il-Sjtx13g |

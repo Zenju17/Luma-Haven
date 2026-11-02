@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 const emit = defineEmits<{
   (e: 'focusSearch'): void
 }>()
@@ -13,6 +14,8 @@ function scrollToSearch() {
     <div class="hero-photo">
       <img
         src="/images/luma-haven/rooms/riverfront-suite/main.jpg"
+        :srcset="responsiveSrcset('/images/luma-haven/rooms/riverfront-suite/main.jpg')"
+        :sizes="SIZES.wide"
         alt="Riverfront Suite at Luma Haven with a king bed, curved sofa and floor-to-ceiling windows over the river"
         width="1290"
         height="860"

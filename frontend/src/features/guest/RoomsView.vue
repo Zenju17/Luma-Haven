@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../utils/responsiveImage'
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
@@ -114,7 +115,8 @@ const bedChips: { label: string; value: BedKind | '' }[] = [
 
 function cardPhoto(typeName: string) {
   const uploaded = getRoomTypeAsset(typeName)
-  return uploaded ? { src: uploaded.image_url, alt: uploaded.alt_text } : roomPhotoFor(typeName)
+  const photo = uploaded ? { src: uploaded.image_url, alt: uploaded.alt_text } : roomPhotoFor(typeName)
+  return { ...photo, srcset: responsiveSrcset(photo.src, uploaded?.width) }
 }
 
 const displayRooms = computed(() => {
@@ -283,6 +285,8 @@ async function reserve() {
           <div class="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-[var(--surface-muted)]">
             <img
               :src="cardPhoto(room.type).src"
+              :srcset="cardPhoto(room.type).srcset"
+              :sizes="SIZES.card"
               :alt="cardPhoto(room.type).alt"
               width="800"
               height="600"

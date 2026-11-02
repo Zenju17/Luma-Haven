@@ -51,5 +51,10 @@ was 328×175; several room photos were 540–863px wide). Lightboxes on HiDPI an
 screens need about 2400px. The owner has no property photos, so five images were replaced
 with Unsplash-licensed stock at 2400px (see IMAGE_CREDITS.md), with alt text rewritten to
 match. The media manager now warns when an upload, or an existing asset, has a long edge
-under 1600px. Not done yet: generating responsive `srcset` variants on upload.
+under 1600px. Responsive variants were then added without a schema change. Their names follow a
+convention (`<original>.w<width>.webp`), and the database media endpoint renders them
+on first request. This backfills existing uploads with no production migration or
+batch job. Only the widths 640 and 1280 are allowed, so the endpoint cannot be used to
+generate arbitrary sizes. Static photos ship pre-rendered variants plus a width
+manifest.
 

@@ -1,0 +1,260 @@
+{
+ "/images/luma-haven/facilities/details.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/facilities/dining.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/facilities/gym.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/facilities/lounge.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/facilities/pool.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/city_view.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/fitness_center.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/guest_lounge.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/lobby.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/restaurant.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/gallery/rooftop_pool.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/hero/hotel_exterior_concept.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2560
+ },
+ "/images/luma-haven/rooms/city-king/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/rooms/city-twin/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1290
+ },
+ "/images/luma-haven/rooms/classic-queen/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1290
+ },
+ "/images/luma-haven/rooms/connecting-family/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/rooms/deluxe/amenities.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/deluxe/bathroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1585
+ },
+ "/images/luma-haven/rooms/deluxe/bedroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/deluxe/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2560
+ },
+ "/images/luma-haven/rooms/deluxe/work_desk.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/double-queen/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/rooms/family-suite/main.jpg": {
+  "variants": [
+   640
+  ],
+  "width": 1200
+ },
+ "/images/luma-haven/rooms/garden-king/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/rooms/premier/bathroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/premier/bedroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/premier/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2560
+ },
+ "/images/luma-haven/rooms/premier/minibar.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/premier/seating.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/riverfront-suite/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1290
+ },
+ "/images/luma-haven/rooms/signature-suite/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2400
+ },
+ "/images/luma-haven/rooms/suite/bathroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/suite/bedroom.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/suite/living.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/suite/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 2560
+ },
+ "/images/luma-haven/rooms/suite/view.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/rooms/triple-room/main.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1290
+ }
+}

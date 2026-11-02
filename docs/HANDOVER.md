@@ -42,8 +42,17 @@ treats it as an overstay and blocks 103 on every date until staff check the gues
 Replaced 5 low-resolution guest images with 2400px Unsplash stock (docs/IMAGE_CREDITS.md)
 and added a low-resolution warning to the media manager. Production `VisualAsset` #29
 ("Guest Lounge Concept", EXPERIENCE) now points to `visual_assets/features/lounge-2400.jpg`.
-The old 328px `MediaFile` row (`visual_assets/features/lounge.jpg`) is kept for rollback. `rooms/connecting-family/main.jpg` (712px) still
-needs a replacement.
+The old 328px `MediaFile` row (`visual_assets/features/lounge.jpg`) is kept for rollback. `rooms/connecting-family/main.jpg` was replaced as well.
+
+**Responsive images:** guest `<img>` tags now have `srcset`/`sizes` via
+`frontend/src/utils/responsiveImage.ts`. Static photos get `*.w640.webp` and
+`*.w1280.webp` siblings from `scripts/build_static_image_variants.py`; re-run it after
+adding a photo, because it also rewrites `frontend/src/data/imageVariants.json`.
+Database media serves `<name>.w640.webp` and `<name>.w1280.webp`, rendering and caching
+each on first request (`media_storage.get_or_create_variant`). Only these widths and
+existing originals can be requested. `manage.py build_image_variants` pre-renders them.
+Gallery concept images are still 1600px originals, so lightboxes on HiDPI screens
+remain slightly soft until 2400px sources exist.
 
 ## Status at a glance
 

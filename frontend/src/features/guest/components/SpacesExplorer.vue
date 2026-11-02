@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
@@ -415,6 +416,8 @@ function handleBookRoom(roomType?: string) {
         <div class="relative aspect-[16/11] overflow-hidden bg-[var(--deep)]">
           <img
             :src="space.asset.image_url"
+            :srcset="responsiveSrcset(space.asset.image_url, space.asset.width)"
+            :sizes="SIZES.card"
             :alt="space.asset.alt_text"
             class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
@@ -523,6 +526,8 @@ function handleBookRoom(roomType?: string) {
           <div class="relative grow overflow-hidden bg-black flex items-center justify-center min-h-[360px] sm:min-h-[520px]">
             <img
               :src="activeLightboxItem.asset.image_url"
+              :srcset="responsiveSrcset(activeLightboxItem.asset.image_url, activeLightboxItem.asset.width)"
+              :sizes="SIZES.lightbox"
               :alt="activeLightboxItem.asset.alt_text"
               class="max-h-[70vh] w-auto max-w-full object-contain mx-auto"
             />

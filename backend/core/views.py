@@ -23,6 +23,7 @@ from . import emails, legal, services, staff_passwords
 from .payments import factory as payment_factory, service as payment_service
 from .payments.base import ProviderError  # noqa: F401
 from .decision_support import evaluate_decision_support_alerts
+from .media_storage import delete_variants, get_or_create_variant
 from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, LegalDocument, Folio, FolioEntry, Hotel, HousekeepingTask,
                      OTP, Outbox, Payment, ROLES, PaymentAttempt, PaymentException, Quote, Refund,
                      Reservation, Room, RoomType, ServiceRequest, Stay, MaintenanceTicket, User,
@@ -331,6 +332,8 @@ def presentation_media(request, name):
         return HttpResponse(status=404)
     from .models import MediaFile
     obj = MediaFile.objects.filter(pk=name).first()
+    if obj is None:
+        obj = get_or_create_variant(name)
     if obj is None:
         return HttpResponse(status=404)
     response = HttpResponse(bytes(obj.content), content_type=obj.content_type)
@@ -2042,13 +2045,16 @@ def staff_visual_asset_detail(request, pk):
             asset.height = height
             asset.file_size_bytes = replacement_image.size
             asset.original_filename = replacement_image.name
+            delete_variants(asset.image.name if asset.image else '')
             asset.image = replacement_image
 
         asset.save()
         return Response(serialize_visual_asset(asset))
 
     elif request.method == 'DELETE':
+        image_name = asset.image.name if asset.image else ''
         asset.delete()
+        delete_variants(image_name)
         return Response({'deleted': True, 'id': pk})
 
 
