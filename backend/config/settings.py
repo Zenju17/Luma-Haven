@@ -4,6 +4,27 @@ from urllib.parse import parse_qs, urlsplit
 import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+def _load_env_file(path: Path):
+    if not path.is_file():
+        return
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                k, v = line.split('=', 1)
+                k, v = k.strip(), v.strip()
+                if (v.startswith('"') and v.endswith('"')) or (v.startswith("'") and v.endswith("'")):
+                    v = v[1:-1]
+                os.environ.setdefault(k, v)
+    except Exception:
+        pass
+
+_load_env_file(BASE_DIR.parent / '.env')
+_load_env_file(BASE_DIR / '.env')
+
 STAFF_CREDENTIALS_FILE = Path(os.getenv('STAFF_CREDENTIALS_FILE', str(BASE_DIR / '.private-staff-passwords')))
 ENV = os.getenv('APP_ENV', 'development')
 PRESENTATION_DEMO = ENV == 'demo'
@@ -108,10 +129,10 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = HOSTED_ENVIRONMENT
 CSRF_COOKIE_SECURE = HOSTED_ENVIRONMENT
-_gmail_user = os.getenv('GMAIL_USER') or os.getenv('EMAIL_HOST_USER', '')
-_gmail_pass = os.getenv('GMAIL_APP_PASSWORD') or os.getenv('EMAIL_HOST_PASSWORD', '')
+_gmail_user = (os.getenv('GMAIL_USER') or os.getenv('EMAIL_HOST_USER') or '').strip()
+_gmail_pass = (os.getenv('GMAIL_APP_PASSWORD') or os.getenv('EMAIL_HOST_PASSWORD') or '').replace(' ', '').strip()
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
-if not EMAIL_HOST and _gmail_user and ('@gmail.com' in _gmail_user or '@googlemail.com' in _gmail_user):
+if not EMAIL_HOST and (_gmail_user or _gmail_pass):
     EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
 EMAIL_HOST_USER = _gmail_user
