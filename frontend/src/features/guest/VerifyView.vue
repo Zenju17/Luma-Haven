@@ -39,6 +39,22 @@ async function verify() {
     pending.value = false
   }
 }
+
+async function resend() {
+  if (pending.value) return
+  pending.value = true
+  message.value = ''
+  failed.value = false
+  try {
+    await api('/guest-access/request-otp', { reference: reference.value, email: email.value })
+    message.value = 'A fresh verification code has been sent to your email.'
+  } catch (error) {
+    failed.value = true
+    message.value = String(error)
+  } finally {
+    pending.value = false
+  }
+}
 </script>
 
 <template>
@@ -62,9 +78,18 @@ async function verify() {
         <label class="block"><span class="label">Booking reference</span><input v-model="reference" class="field" required /></label>
         <label class="block"><span class="label">Email address</span><input v-model="email" class="field" type="email" required /></label>
         <Transition name="slide-up">
-          <label v-if="sent" class="block"><span class="label">Six-digit code</span><input v-model="code" class="field" inputmode="numeric" maxlength="6" required /></label>
+          <div v-if="sent" class="space-y-2">
+            <label class="block"><span class="label">Six-digit code</span><input v-model="code" class="field" inputmode="numeric" maxlength="6" required /></label>
+            <div class="flex justify-between items-center text-xs text-[var(--muted)]">
+              <span>Didn't receive the email?</span>
+              <button type="button" class="underline hover:text-[var(--brand-text)] font-medium cursor-pointer" :disabled="pending" @click="resend">
+                Resend code
+              </button>
+            </div>
+          </div>
         </Transition>
         <button class="btn w-full" :disabled="pending">{{ sent ? 'Verify and continue' : 'Send verification code' }}</button>
+
         <Notice :message="message" :status="!failed" />
       </form>
     </div>

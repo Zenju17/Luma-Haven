@@ -346,7 +346,7 @@ def request_otp(request):
     reference = str(request.data.get('reference', '')).upper()
     email = str(request.data.get('email', '')).strip().lower()
     obj = Reservation.objects.filter(reference=reference, guest__email__iexact=email).first()
-    if obj and obj.status in ('CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'):
+    if obj and obj.status in ('HOLD', 'CONFIRMED', 'CHECKED_IN', 'CHECKED_OUT'):
         recent = OTP.objects.filter(reservation=obj, issued_at__gt=timezone.now() - timedelta(minutes=1)).exists()
         if not recent:
             code = f'{secrets.randbelow(1000000):06d}'

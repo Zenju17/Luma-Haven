@@ -92,3 +92,20 @@ def test_request_otp_dispatches_email(client, sample_reservation, monkeypatch):
     assert res.status_code == 200
     assert len(mail.outbox) == 1
     assert sample_reservation.reference in mail.outbox[0].body
+
+
+def test_request_otp_dispatches_email_for_hold_reservation(client, sample_reservation):
+    mail.outbox.clear()
+    sample_reservation.status = 'HOLD'
+    sample_reservation.save(update_fields=['status'])
+
+    res = client.post('/api/v1/guest-access/request-otp', {
+        'reference': sample_reservation.reference,
+        'email': sample_reservation.guest.email
+    }, content_type=JSON)
+
+    assert res.status_code == 200
+    assert len(mail.outbox) == 1
+    assert sample_reservation.reference in mail.outbox[0].body
+    assert 'Verification Code' in mail.outbox[0].subject
+
