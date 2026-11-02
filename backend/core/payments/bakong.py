@@ -31,9 +31,10 @@ def create_qr(*, amount_minor, currency, bill_number):
     if raw_account and '@' not in raw_account:
         account_id = f'{raw_account}@abaa'
     else:
-        account_id = raw_account or '010264289@abaa'
-    merchant_name = getattr(settings, 'BAKONG_MERCHANT_NAME', '') or 'DO HOK'
+        account_id = raw_account or 'morm_kimheng@bkrt'
+    merchant_name = getattr(settings, 'BAKONG_MERCHANT_NAME', '') or 'Luma Haven'
     merchant_city = getattr(settings, 'BAKONG_MERCHANT_CITY', '') or 'Phnom Penh'
+
 
     try:
         client = _client(require_token=False)
