@@ -148,7 +148,7 @@ async function saveRoomType() {
 
   try {
     if (editingTypeId.value) {
-      await adminApi(`/admin/room-types/${editingTypeId.value}`, payload)
+      await adminApi(`/admin/room-types/${editingTypeId.value}`, payload, 'PATCH')
       successNotice.value = `Room type "${payload.name}" updated successfully.`
     } else {
       await adminApi('/admin/room-types', payload)
@@ -251,7 +251,7 @@ async function saveRoom() {
 
   try {
     if (editingRoomId.value) {
-      await adminApi(`/admin/rooms/${editingRoomId.value}`, payload)
+      await adminApi(`/admin/rooms/${editingRoomId.value}`, payload, 'PATCH')
       successNotice.value = `Room ${payload.number} updated successfully.`
     } else {
       await adminApi('/admin/rooms', payload)

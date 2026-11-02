@@ -7,9 +7,16 @@ defineProps<{ area: 'staff' | 'admin' }>()
 <template>
   <div class="portal-shell">
     <aside class="portal-rail" aria-label="Private workspace identity">
-      <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="brand-mark serif text-2xl font-semibold flex items-center gap-2.5">
-        <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-8 h-8 object-contain" />
-        <span>Luma Haven<span class="text-[#d7b683]">.</span></span>
+      <RouterLink :to="area === 'admin' ? '/admin' : '/staff'" class="portal-brand-lockup flex items-center gap-3.5 group" aria-label="Luma Haven">
+        <img
+          src="/images/luma-haven/branding/logo.png"
+          alt="Luma Haven Logo"
+          class="w-12 h-12 object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+        />
+        <div class="flex flex-col justify-center leading-none select-none">
+          <span class="serif font-semibold text-[1.4rem] tracking-tight text-white leading-[1.08]">Luma</span>
+          <span class="serif font-semibold text-[1.4rem] tracking-tight text-white leading-[1.08] mt-0.5">Haven<span class="text-[#d7b683]">.</span></span>
+        </div>
       </RouterLink>
       <div class="portal-rail-rule" aria-hidden="true" />
       <p class="portal-rail-title">{{ area === 'admin' ? 'The hotel, at a glance.' : 'A clearer day at the desk.' }}</p>

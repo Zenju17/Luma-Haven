@@ -710,8 +710,11 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   height: 100vh;
   overflow-y: auto;
 }
-.portal-rail .brand-mark { color: #fff; }
-.portal-rail-rule { width: 36px; height: 2px; margin: 56px 0 24px; background: var(--brass); }
+.portal-rail .portal-brand-lockup,
+.portal-rail .brand-mark { color: #fff; text-decoration: none; }
+.portal-rail .brand-mark::before,
+.portal-brand-lockup::before { display: none !important; }
+.portal-rail-rule { width: 36px; height: 2px; margin: 38px 0 24px; background: var(--brass); }
 .portal-rail-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; line-height: 1.1; }
 .portal-rail-note { color: var(--sidebar-text-muted); font-size: .83rem; line-height: 1.6; }
 .portal-rail-bottom { margin-top: auto; padding-top: 40px; color: var(--sidebar-text-muted); font-size: .77rem; }

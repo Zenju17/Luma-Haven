@@ -1450,7 +1450,7 @@ def admin_room_types(request):
     return Response(_serialize_room_type(rt), status=201)
 
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def admin_room_type_detail(request, pk):
     staff(request, 'ADMIN', 'MANAGER')
     rt = RoomType.objects.filter(pk=pk).first()
@@ -1553,7 +1553,7 @@ def admin_rooms(request):
     return Response(_serialize_room(room), status=201)
 
 
-@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+@api_view(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 def admin_room_detail(request, pk):
     staff(request, 'ADMIN', 'MANAGER')
     room = Room.objects.select_related('type').filter(pk=pk).first()

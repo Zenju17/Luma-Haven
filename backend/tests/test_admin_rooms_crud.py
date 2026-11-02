@@ -68,7 +68,7 @@ def test_admin_room_type_crud(admin_client, hotel):
     assert detail_res.status_code == 200
     assert detail_res.json()['name'] == 'Zen Suite'
 
-    # 3. Update Room Type
+    # 3. Update Room Type (supports both PATCH and POST)
     update_res = admin_client.patch(
         f'/api/v1/admin/room-types/{type_id}',
         {'name': 'Zen Master Suite', 'nightly_rate_minor': 22000, 'capacity': 4},
@@ -78,6 +78,15 @@ def test_admin_room_type_crud(admin_client, hotel):
     assert update_res.json()['name'] == 'Zen Master Suite'
     assert update_res.json()['nightly_rate_minor'] == 22000
     assert update_res.json()['capacity'] == 4
+
+    # Also verify POST to detail endpoint updates correctly without 405
+    post_update_res = admin_client.post(
+        f'/api/v1/admin/room-types/{type_id}',
+        {'description': 'Updated via POST method.'},
+        content_type=JSON
+    )
+    assert post_update_res.status_code == 200
+    assert post_update_res.json()['description'] == 'Updated via POST method.'
     assert Audit.objects.filter(action='ROOM_TYPE_UPDATED', target__contains='Zen Master Suite').exists()
 
     # 4. Delete Room Type (when unassigned)
