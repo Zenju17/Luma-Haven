@@ -9,11 +9,13 @@ from django.core.exceptions import ImproperlyConfigured
 from . import bakong, development
 
 MODE_FLAG = 'bank_payments'
-REQUIRED_BAKONG = ('BAKONG_TOKEN', 'BAKONG_ACCOUNT_ID', 'BAKONG_MERCHANT_NAME', 'BAKONG_MERCHANT_CITY')
+REQUIRED_BAKONG = ('BAKONG_TOKEN',)
 
 
 def bakong_configured():
-    return all(getattr(settings, name) for name in REQUIRED_BAKONG) and settings.BAKONG_CURRENCY == 'USD'
+    token = getattr(settings, 'BAKONG_TOKEN', '')
+    currency = getattr(settings, 'BAKONG_CURRENCY', 'USD')
+    return bool(token) and currency == 'USD'
 
 
 def active_provider_name():
