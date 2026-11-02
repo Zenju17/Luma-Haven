@@ -27,9 +27,14 @@ def create_qr(*, amount_minor, currency, bill_number):
     if currency != getattr(settings, 'BAKONG_CURRENCY', 'USD'):
         raise ProviderError('Hotel currency does not match the configured Bakong currency')
     major = float(minor_to_major(amount_minor, currency))  # exactly 2 decimals; SDK formats with %.2f
-    account_id = getattr(settings, 'BAKONG_ACCOUNT_ID', '') or 'lumahaven@bakong'
-    merchant_name = getattr(settings, 'BAKONG_MERCHANT_NAME', '') or 'Luma Haven'
+    raw_account = (getattr(settings, 'BAKONG_ACCOUNT_ID', '') or '').strip().replace(' ', '')
+    if raw_account and '@' not in raw_account:
+        account_id = f'{raw_account}@abaa'
+    else:
+        account_id = raw_account or '010264289@abaa'
+    merchant_name = getattr(settings, 'BAKONG_MERCHANT_NAME', '') or 'DO HOK'
     merchant_city = getattr(settings, 'BAKONG_MERCHANT_CITY', '') or 'Phnom Penh'
+
     try:
         client = _client(require_token=False)
         result = client.create_qr(
