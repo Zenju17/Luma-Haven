@@ -30,6 +30,20 @@ def verify_presentation_booking(reservation):
         Audit.objects.create(actor='presentation guest', action='DEMO_VERIFICATION', target=reservation.reference)
     return reservation
 
+
+@transaction.atomic
+def verify_guest_at_reception(reservation, actor):
+    if not actor.is_authenticated or actor.role not in ('ADMIN', 'RECEPTION'):
+        raise ValueError('Reception or administrator permission required')
+    reservation = Reservation.objects.select_for_update().get(pk=reservation.pk)
+    if reservation.status != 'CONFIRMED':
+        raise ValueError('Only a confirmed booking can be verified at reception')
+    if not reservation.verified:
+        reservation.verified = True
+        reservation.save(update_fields=['verified'])
+        Audit.objects.create(actor=actor.username, action='GUEST_VERIFIED_IN_PERSON', target=reservation.reference)
+    return reservation
+
 def balance(folio):
     charges = folio.entries.aggregate(total=Sum('amount_minor'))['total'] or 0
     paid = Payment.objects.filter(attempt__reservation=folio.reservation).aggregate(total=Sum('amount_minor'))['total'] or 0
@@ -44,8 +58,16 @@ def release_expired():
 
 def available(arrival, departure, occupants):
     release_expired()
+    return _available_rooms(arrival, departure, occupants)
+
+
+def _available_rooms(arrival, departure, occupants):
     occupied = Allocation.objects.filter(active=True, period__overlap=Range(arrival, departure, '[)')).values('room_id')
-    return Room.objects.filter(in_service=True, type__capacity__gte=occupants).exclude(id__in=occupied).select_related('type', 'hotel').order_by('number')
+    today = timezone.localdate(timezone.now(), ZoneInfo(settings.TIME_ZONE))
+    overstayed = Stay.objects.filter(checked_out_at__isnull=True, reservation__departure__lt=today).values('reservation__room_id')
+    return (Room.objects.filter(in_service=True, type__capacity__gte=occupants)
+            .exclude(id__in=occupied).exclude(id__in=overstayed)
+            .select_related('type', 'hotel').order_by('number'))
 
 def create_quote(room, arrival, departure, occupants):
     if arrival >= departure or arrival < hotel_today(room.hotel) or occupants < 1 or occupants > room.type.capacity:
@@ -63,6 +85,10 @@ def reserve(quote, name, email):
     if quote.expires_at <= timezone.now():
         raise ValueError('Quote expired')
     release_expired()
+    room = Room.objects.select_for_update().select_related('hotel', 'type').get(pk=quote.room_id)
+    if (quote.expires_at <= timezone.now() or quote.arrival < hotel_today(room.hotel)
+            or not _available_rooms(quote.arrival, quote.departure, quote.occupants).filter(pk=room.pk).exists()):
+        raise ValueError('Room is no longer available for this quote')
     guest = Guest.objects.create(full_name=name, email=email)
     reservation = Reservation.objects.create(reference=secrets.token_hex(8).upper(), guest=guest,
         room=quote.room, arrival=quote.arrival, departure=quote.departure, occupants=quote.occupants,
@@ -156,7 +182,7 @@ def check_in(reservation, actor=None):
     return stay
 
 @transaction.atomic
-def check_out(reservation, version):
+def check_out(reservation, version, actor=None):
     reservation = Reservation.objects.select_for_update().get(pk=reservation.pk)
     stay = Stay.objects.select_for_update().get(reservation=reservation)
     if stay.checked_out_at:
@@ -174,7 +200,7 @@ def check_out(reservation, version):
     room.cleaning = 'DIRTY'
     room.save(update_fields=['cleaning'])
     HousekeepingTask.objects.get_or_create(stay=stay, defaults={'room': room})
-    Audit.objects.create(actor='verified guest', action='CHECK_OUT', target=reservation.reference)
+    Audit.objects.create(actor=str(actor or 'verified guest'), action='CHECK_OUT', target=reservation.reference)
     Outbox.objects.create(kind='CHECK_OUT', target=str(reservation.pk))
 
     # Early checkout: if checking out before scheduled departure, shorten active allocation so room is sellable

@@ -11,3 +11,4 @@ Pillow==13.0.0
 bakong-khqr==0.6.5
 gunicorn==26.2.0
 sentry-sdk==2.73.0
+vercel-queue[typed]==0.10.0

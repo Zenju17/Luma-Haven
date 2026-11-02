@@ -36,13 +36,15 @@ def create_session(reservation, amount_minor, currency):
         live = (PaymentAttempt.objects.filter(reservation=locked, provider=provider.name, status='PENDING',
                                               amount_minor=amount_minor, currency=currency, expires_at__gt=now)
                 .exclude(provider_md5='').first())
-        if live:
-            return live
-        if PaymentAttempt.objects.filter(reservation=locked, created_at__gte=now - timedelta(minutes=10)).count() >= MAX_ATTEMPTS_PER_WINDOW:
+        if not live and PaymentAttempt.objects.filter(reservation=locked, created_at__gte=now - timedelta(minutes=10)).count() >= MAX_ATTEMPTS_PER_WINDOW:
             raise SessionError('Too many payment attempts. Please wait a few minutes.')
-        attempt = PaymentAttempt.objects.create(reservation=locked, amount_minor=amount_minor, currency=currency, provider=provider.name,
-                                                expires_at=now + timedelta(minutes=settings.PAYMENT_ATTEMPT_MINUTES))
-        bill = f'{locked.reference}-{str(attempt.pk)[:6]}'
+        if not live:
+            attempt = PaymentAttempt.objects.create(reservation=locked, amount_minor=amount_minor, currency=currency, provider=provider.name,
+                                                    expires_at=now + timedelta(minutes=settings.PAYMENT_ATTEMPT_MINUTES))
+            bill = f'{locked.reference}-{str(attempt.pk)[:6]}'
+    if live:
+        _ensure_monitoring(live)
+        return live
     try:
         qr = provider.create_qr(amount_minor=amount_minor, currency=currency, bill_number=bill)
     except ProviderError as exc:
@@ -54,7 +56,18 @@ def create_session(reservation, amount_minor, currency):
         attempt.provider_qr, attempt.provider_md5, attempt.provider_tran_id, attempt.checkout_url = qr.qr, qr.md5, qr.tran_id, qr.checkout_url
         attempt.save(update_fields=['provider_qr', 'provider_md5', 'provider_tran_id', 'checkout_url'])
         _extend_hold(Reservation.objects.select_for_update().get(pk=reservation.pk), attempt.expires_at)
+    _ensure_monitoring(attempt)
     return attempt
+
+
+def _ensure_monitoring(attempt):
+    from .background import start_monitoring
+    try:
+        start_monitoring(attempt)
+    except Exception:
+        # Do not display a payable QR until a durable background job has been accepted.
+        log.error('Unable to enqueue payment monitoring for attempt %s', attempt.pk)
+        raise SessionError('Payment monitoring is unavailable. Please retry before making a payment.')
 
 
 def _extend_hold(reservation, until):

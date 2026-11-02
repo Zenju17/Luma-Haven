@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Notice from '../../../components/Notice.vue'
+import { hotelToday, followingDay } from '../../../services/hotelDates'
 
 const props = withDefaults(
   defineProps<{
@@ -25,29 +26,20 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
-const arrival = ref(props.initialArrival)
-const departure = ref(props.initialDeparture)
+const arrival = ref(props.initialArrival || hotelToday())
+const departure = ref(props.initialDeparture || followingDay(arrival.value))
 const occupants = ref(props.initialOccupants)
 const error = ref('')
 
-// Set sensible default dates if empty
-onMounted(() => {
-  if (!arrival.value) {
-    const today = new Date()
-    arrival.value = today.toISOString().split('T')[0]
-  }
-  if (!departure.value && arrival.value) {
-    const nextDay = new Date(arrival.value)
-    nextDay.setDate(nextDay.getDate() + 1)
-    departure.value = nextDay.toISOString().split('T')[0]
-  }
+watch(() => [props.initialArrival, props.initialDeparture, props.initialOccupants] as const, ([start, end, guests]) => {
+  arrival.value = start || hotelToday()
+  departure.value = end || followingDay(arrival.value)
+  occupants.value = guests
 })
 
 function handleArrivalChange() {
   if (arrival.value && departure.value && departure.value <= arrival.value) {
-    const nextDay = new Date(arrival.value)
-    nextDay.setDate(nextDay.getDate() + 1)
-    departure.value = nextDay.toISOString().split('T')[0]
+    departure.value = followingDay(arrival.value)
   }
 }
 
@@ -59,6 +51,10 @@ function handleSubmit() {
   }
   if (arrival.value >= departure.value) {
     error.value = 'Choose an arrival date before your departure date.'
+    return
+  }
+  if (arrival.value < hotelToday()) {
+    error.value = 'Arrival cannot be before today in Phnom Penh.'
     return
   }
   if (occupants.value < 1 || occupants.value > 8) {
@@ -120,6 +116,7 @@ function handleSubmit() {
             aria-label="Arrival"
             class="field w-full cursor-pointer font-medium text-sm sm:text-base"
             type="date"
+            :min="hotelToday()"
             required
             @change="handleArrivalChange"
           />
@@ -136,7 +133,7 @@ function handleSubmit() {
             aria-label="Departure"
             class="field w-full cursor-pointer font-medium text-sm sm:text-base"
             type="date"
-            :min="arrival"
+            :min="arrival ? followingDay(arrival) : followingDay(hotelToday())"
             required
           />
         </div>

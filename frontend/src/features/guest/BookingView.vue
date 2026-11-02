@@ -106,7 +106,7 @@ async function sendRequest() {
 
       <div v-if="booking.data.value.status === 'CONFIRMED'" class="card stay-action p-6 mt-5">
         <h2 class="text-2xl">Ready to arrive?</h2>
-        <p class="text-sm text-[var(--muted)] mt-2">{{ booking.data.value.presentation_demo ? 'University demo: simulate verification for the booking created in this browser.' : 'Verify your email before check-in.' }}</p>
+        <p class="text-sm text-[var(--muted)] mt-2">{{ booking.data.value.presentation_demo ? 'University demo: simulate verification for the booking created in this browser.' : 'Verify by email or in person at reception before check-in.' }}</p>
         <button v-if="booking.data.value.presentation_demo && !booking.data.value.verified" class="btn mt-4" :disabled="busy" @click="act(() => api(`/reservations/${id}/demo-verify`, {}))">Verify demo booking</button>
         <RouterLink v-else-if="!booking.data.value.presentation_demo" class="btn inline-flex mt-4" to="/verify">Verify booking</RouterLink>
         <button v-if="eligibleToday" class="btn-secondary ml-3" :disabled="busy" @click="act(() => api(`/reservations/${id}/check-in`, {}))">Check in</button>

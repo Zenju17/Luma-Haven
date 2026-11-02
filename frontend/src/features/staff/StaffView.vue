@@ -27,6 +27,7 @@ const password = ref('')
 const error = ref('')
 const successNotice = ref('')
 const busy = ref(false)
+const identityChecked = ref(false)
 
 const identity = useQuery({ queryKey: ['auth', 'me', 'staff'], queryFn: () => staffApi<StaffUser>('/auth/me') })
 watch(identity.data, current => {
@@ -220,6 +221,24 @@ async function act(action: () => Promise<unknown>, successMsg = '') {
 }
 
 // Workflow action handlers
+async function recordStayTransition(action: 'check-in' | 'check-out') {
+  if (!detailBooking.value || busy.value) return
+  const booking = detailBooking.value
+  await act(async () => {
+    detailBooking.value = await staffApi<Booking>(`/reservations/${booking.id}/${action}`,
+      action === 'check-out' ? { folio_version: booking.folio_version } : {})
+  }, action === 'check-out' ? 'Guest checkout recorded. The room is awaiting housekeeping.' : 'Guest check-in recorded.')
+}
+
+async function recordVerification() {
+  if (!detailBooking.value || !identityChecked.value || busy.value) return
+  const id = detailBooking.value.id
+  await act(async () => {
+    detailBooking.value = await staffApi<Booking>(`/staff/reservations/${id}/verify`, { identity_checked: true })
+    identityChecked.value = false
+  }, 'In-person guest verification recorded.')
+}
+
 async function submitAmend() {
   if (!amendBooking.value) return
   const id = amendBooking.value.id
@@ -606,7 +625,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                       type="button"
                       class="table-action-btn table-action-btn-primary"
                       title="Inspect Folio & Billing"
-                      @click="detailBooking = b"
+                      @click="detailBooking = b; identityChecked = false"
                     >
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -841,6 +860,19 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div><span class="label text-[10px]">Balance</span><p class="font-mono font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'">{{ money(detailBooking.balance_minor) }}</p></div>
           </div>
 
+          <section v-if="detailBooking.status === 'CONFIRMED' && ['ADMIN', 'RECEPTION'].includes(role || '')" class="p-4 rounded-lg border border-[var(--line)] space-y-3">
+            <p v-if="detailBooking.verified" class="text-sm" role="status">Guest verification completed.</p>
+            <template v-else>
+              <h4 class="font-semibold text-sm">Verify guest at reception</h4>
+              <label class="flex gap-2 text-sm">
+                <input v-model="identityChecked" type="checkbox" />
+                <span>I checked this guest's identity in person.</span>
+              </label>
+              <button type="button" class="btn-secondary text-xs" :disabled="busy || !identityChecked" @click="recordVerification">Record in-person verification</button>
+              <Notice :message="error" />
+            </template>
+          </section>
+
           <!-- Folio Entries Immutable Ledger Table -->
           <div>
             <h4 class="text-lg font-serif mb-2">Folio Ledger Entries (Immutable)</h4>
@@ -868,7 +900,13 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             </div>
           </div>
 
+          <Notice :message="error" />
           <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <button v-if="canServe && detailBooking.status === 'CONFIRMED'" type="button" class="btn text-xs"
+              :disabled="busy || !detailBooking.verified || detailBooking.balance_minor > 0 || detailBooking.hotel_today < detailBooking.arrival || detailBooking.hotel_today >= detailBooking.departure"
+              @click="recordStayTransition('check-in')">Check in guest</button>
+            <button v-if="canServe && detailBooking.status === 'CHECKED_IN'" type="button" class="btn text-xs"
+              :disabled="busy || detailBooking.balance_minor > 0" @click="recordStayTransition('check-out')">Check out guest</button>
             <button type="button" class="btn-secondary text-xs" @click="detailBooking = null">Close</button>
           </div>
         </div>

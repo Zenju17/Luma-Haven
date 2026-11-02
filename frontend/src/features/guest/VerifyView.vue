@@ -46,7 +46,7 @@ async function verify() {
     <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto items-center animate-[fadeIn_0.4s_ease-out]">
       <div>
         <h1 class="text-4xl text-[var(--brand-text)]">Find your booking.</h1>
-        <p class="mt-4 text-[var(--muted)]">Enter your booking reference and email to request a one-time code. For local development, find the code in the backend container logs.</p>
+        <p class="mt-4 text-[var(--muted)]">Enter your booking reference and email to request a one-time code. You can also verify your identity in person at reception.</p>
         <div class="card qr-frame p-5 mt-8 inline-block text-center shadow-md">
           <div class="p-2 bg-white rounded-lg inline-block">
             <QrcodeVue :value="lobbyUrl" :size="150" level="M" render-as="svg" />

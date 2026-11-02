@@ -1,0 +1,5 @@
+[tool.vercel]
+entrypoint = "config.wsgi:application"
+
+[[tool.vercel.subscribers]]
+entrypoint = "queue_worker"

@@ -108,13 +108,26 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = HOSTED_ENVIRONMENT
 CSRF_COOKIE_SECURE = HOSTED_ENVIRONMENT
-if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false' if EMAIL_USE_SSL else 'true').lower() == 'true'
+EMAIL_TIMEOUT = 10
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@localhost')
+EMAIL_DELIVERY_CONFIGURED = bool(EMAIL_HOST and DEFAULT_FROM_EMAIL != 'noreply@localhost')
+if EMAIL_HOST:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+elif ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Payments. PAYMENT_PROVIDER=development keeps the emulator; bakong enables KHQR (secrets only via env, never VITE_*).
 PAYMENT_PROVIDER = os.getenv('PAYMENT_PROVIDER', 'development')
+PAYMENT_QUEUE_ENABLED = os.getenv('PAYMENT_QUEUE_ENABLED', 'false').lower() == 'true'
+CRON_SECRET = os.getenv('CRON_SECRET', '')
 PAYMENT_ATTEMPT_MINUTES = int(os.getenv('PAYMENT_ATTEMPT_MINUTES', '15'))
 PAYMENT_LATE_WINDOW_HOURS = int(os.getenv('PAYMENT_LATE_WINDOW_HOURS', '24'))
 BAKONG_TOKEN = os.getenv('BAKONG_TOKEN', '')
@@ -145,6 +158,9 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 if REDIS_URL:
     # Shared by every gunicorn worker so rate limits and health probes agree.
     CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': REDIS_URL}}
+elif ENV == 'production':
+    CACHES = {'default': {'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+                         'LOCATION': 'core_runtime_cache', 'OPTIONS': {'MAX_ENTRIES': 10000}}}
 
 # Rate limiting is on by default in production only, so local demos and E2E runs are not throttled.
 THROTTLE_ENABLED = os.getenv('THROTTLE_ENABLED', 'true' if HOSTED_ENVIRONMENT else 'false').lower() == 'true'

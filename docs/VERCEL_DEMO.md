@@ -1,19 +1,25 @@
-# University presentation on Vercel
+# Public app deployment on Vercel
 
-**Deployment:** [Open the university demo](https://luma-haven-itobaxlql-zenju17.vercel.app)
-— Vercel reports **READY**, 2 November 2026. Deployment ID:
-`dpl_7Um2NEBR5d9Eywd8xP4q1ZRrq7Sz`; project `luma-haven` in `zenju17`.
-The REST API uses target `staging` for this preview; secrets are scoped to Preview.
-Build completed in approximately 49 seconds. Readiness here is Vercel's build state;
+**Public production URL:** https://luma-haven-zenju17.vercel.app
+(also https://luma-haven-delta.vercel.app).
+Vercel reports **READY**, 2 November 2026. Production deployment:
+`dpl_6ZTf4wvGpPra1gskD8bQonSSJrwz`, built from Git commit
+`557bd48e426ed2fb2fef7818347a67f745700377`; project `luma-haven` in `zenju17`.
+Hosting target is explicitly `production`; Vercel sign-in protection is disabled.
+Build completed in approximately 50 seconds. Readiness here is Vercel's build state;
 browser journeys were verified locally, not against the deployed URL.
 
 The presentation uses Vercel Services (beta): Vite serves the Vue frontend and
 Django handles `/api/*` on the same origin. The frontend's own rewrite supports
 direct navigation to every SPA route. Singapore (`sin1`) keeps the API near Supabase.
 
-## Demo configuration
+## Runtime configuration
 
-Deploy as a **preview**. Variables are scoped to Preview only:
+The user requested a normal public production deployment after the initial preview.
+Production variables are now configured independently, with a new production signing
+key. Preview configuration remains separate. The hosting environment is Production;
+the runtime's simulated payment/verification behavior remains until real payment
+and email providers are configured. Changing the hosting target does not enable them.
 
 | Variable | Value |
 | --- | --- |
@@ -22,9 +28,9 @@ Deploy as a **preview**. Variables are scoped to Preview only:
 | `PAYMENT_PROVIDER` | `development` |
 | `DATABASE_MEDIA` | `true` |
 | `DATABASE_CONN_MAX_AGE` | `0` |
-| `VITE_PRESENTATION_DEMO` | `true` |
+| `VITE_PRESENTATION_DEMO` | `false` in Production: hides the presentation banner |
 | `DJANGO_ALLOWED_HOSTS` | Explicit project hostname; Vercel deployment hostnames are added from system variables |
-| `FRONTEND_ORIGIN` | HTTPS project origin; exact Vercel deployment origins are also trusted for CSRF |
+| `FRONTEND_ORIGIN` | `https://luma-haven-zenju17.vercel.app`; exact Vercel deployment origins are also trusted for CSRF |
 | `DATABASE_URL` | Existing Supabase demo database; Secret |
 | `DJANGO_SECRET_KEY` | Independent randomly generated deployment key; Secret |
 | `REDIS_URL` | Empty for this serverless demonstration |
@@ -82,8 +88,9 @@ The import command skips existing files and refuses missing referenced images.
   Anyone with the deployment link can open the university demo; application-level
   staff/admin authentication, role checks, and CSRF remain in place.
 - The preparation backup is local, not a scheduled production backup service.
-- The deployment is an uploaded source snapshot; Git pushes do not automatically
-  deploy until a Git integration is configured.
+- The current Production deployment uses the Git source at the commit above.
+  The repository is connected to Vercel. Future production releases must use the
+  intended production branch or an explicitly targeted Production deployment.
 
 ## Verification
 

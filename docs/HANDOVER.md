@@ -17,12 +17,14 @@ applied; 29 image files imported. Existing inventory and accounts were not resee
 All 116 backend tests and four presentation-mode browser journeys pass on disposable
 PostgreSQL; frontend build/typechecks, Django check and migration consistency pass.
 Older snapshots and next steps below predate this deployment work.
-Deployment is now **READY** at https://luma-haven-itobaxlql-zenju17.vercel.app
-(`dpl_7Um2NEBR5d9Eywd8xP4q1ZRrq7Sz`). The root deployment configuration and all
-application changes remain local/uncommitted; Vercel received an uploaded source
-snapshot. Staticfiles was enabled to fix the real Vercel `collectstatic` build.
-Vercel sign-in protection was subsequently disabled at the user's explicit request;
-the demo link is public, while staff/admin logins remain required by the application.
+After the initial preview, the user requested a normal public production deployment.
+It is **READY** at https://luma-haven-zenju17.vercel.app (also
+https://luma-haven-delta.vercel.app), deployment `dpl_6ZTf4wvGpPra1gskD8bQonSSJrwz`,
+from committed Git source `557bd48`. Production has its own signing key and environment
+variables. Vercel protection is disabled and the presentation banner is off; staff/admin
+authentication remains. Payments and verification still use the explicitly simulated
+runtime configuration; this release does not enable real payment/email providers.
+Staticfiles was enabled to fix the real Vercel `collectstatic` build.
 
 ## Status at a glance
 

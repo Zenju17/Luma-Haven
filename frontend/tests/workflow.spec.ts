@@ -35,6 +35,41 @@ async function signIn(page: Page, username: string, password: string) {
   await expect(page.getByRole('heading', { name: `Good to see you, ${username}.` })).toBeVisible()
 }
 
+test('availability errors are distinct from sold-out dates and can be retried', async ({ page }) => {
+  let attempts = 0
+  await page.route('**/api/v1/availability?**', async route => {
+    attempts += 1
+    await route.fulfill({ status: attempts === 1 ? 503 : 200, contentType: 'application/json',
+      body: attempts === 1 ? JSON.stringify({ detail: 'Availability service is temporarily unavailable.' }) : '[]' })
+  })
+  await page.goto(`/rooms?arrival=${hotelDate()}&departure=${hotelDate(1)}&occupants=1`)
+  await expect(page.getByRole('alert')).toContainText("We couldn't load room availability")
+  await expect(page.getByText('No rooms are available for these dates and guest count.')).toBeHidden()
+  await page.getByRole('button', { name: 'Try again', exact: true }).click()
+  await expect(page.getByText('No rooms are available for these dates and guest count.')).toBeVisible()
+  await expect(page.getByRole('alert')).toBeHidden()
+})
+
+test('reception records an explicit in-person identity check on a confirmed booking', async ({ page }) => {
+  const { staffPassword } = test.info().config.metadata as { staffPassword: string }
+  await signIn(page, 'reception', staffPassword)
+  await page.goto('/staff?tab=reservations')
+  const row = page.getByRole('row').filter({ hasText: 'Demo Future Guest' })
+  await row.getByRole('button', { name: 'Folio', exact: true }).click()
+  const dialog = page.getByRole('dialog')
+  const verify = dialog.getByRole('button', { name: 'Record in-person verification' })
+  await expect(verify).toBeDisabled()
+  await dialog.getByLabel("I checked this guest's identity in person.").check()
+  await verify.click()
+  await expect(dialog.getByText('Guest verification completed.')).toBeVisible()
+  await expect(dialog.getByRole('button', { name: 'Check in guest', exact: true })).toBeDisabled()
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click()
+  const activeStay = page.getByRole('row').filter({ hasText: 'Demo Active Guest' })
+  await activeStay.getByRole('button', { name: 'Folio', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Check out guest', exact: true }).click()
+  await expect(dialog.getByText('CHECKED_OUT', { exact: true })).toBeVisible()
+})
+
 test('guest booking, simulated payment, verification, stay, checkout and room inspection', async ({ page, browser }) => {
   const { mailDir, staffPassword, presentationDemo } = test.info().config.metadata as { mailDir: string; staffPassword: string; presentationDemo: boolean }
   const email = `visitor-${randomBytes(6).toString('hex')}@example.test`

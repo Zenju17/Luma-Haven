@@ -8,6 +8,7 @@ import AvailabilitySearch from './components/AvailabilitySearch.vue'
 import RoomSpacesModal from './components/RoomSpacesModal.vue'
 import ConsentCheck from '../legal/ConsentCheck.vue'
 import { api } from '../../services/api'
+import { hotelToday, followingDay } from '../../services/hotelDates'
 import { money, type PublicVisualAssetsResponse, type Quote, type Room } from '../../types'
 
 const route = useRoute()
@@ -84,6 +85,24 @@ const availability = useQuery({
   enabled: hasDates,
 })
 
+const roomTypes = computed(() => [...new Set((rooms.data.value || []).map(room => room.type))])
+const searchError = computed(() => hasDates.value ? availability.error.value : rooms.error.value)
+const searching = computed(() => hasDates.value ? availability.isPending.value : rooms.isPending.value)
+
+function setTypeFilter(type: string) {
+  typeFilter.value = type
+  void router.replace({ query: { ...route.query, type: type || undefined } })
+}
+
+function retrySearch() {
+  void (hasDates.value ? availability.refetch() : rooms.refetch())
+}
+
+watch([arrival, departure, occupants], () => {
+  selected.value = null
+  quote.value = null
+})
+
 const displayRooms = computed(() => {
   const source = hasDates.value ? availability.data.value : rooms.data.value
   if (!source) return []
@@ -95,10 +114,10 @@ const displayRooms = computed(() => {
 watch(
   () => route.query,
   (q) => {
-    if (q.arrival) arrival.value = q.arrival as string
-    if (q.departure) departure.value = q.departure as string
-    if (q.occupants) occupants.value = Number(q.occupants)
-    if (q.type !== undefined) typeFilter.value = q.type as string
+    arrival.value = (q.arrival as string) || ''
+    departure.value = (q.departure as string) || ''
+    occupants.value = Number(q.occupants) || 2
+    typeFilter.value = (q.type as string) || ''
   }
 )
 
@@ -192,6 +211,7 @@ async function reserve() {
       </div>
 
       <!-- Filter status / Active dates notice -->
+      <Notice v-if="!selected" :message="error" />
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--line)] pb-4 pt-2">
         <div>
           <h2 class="text-xl sm:text-2xl font-medium text-[var(--brand-text)] serif">
@@ -216,62 +236,51 @@ async function reserve() {
               'px-3 py-1 rounded-full font-medium transition-colors',
               typeFilter === '' ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
             ]"
-            @click="typeFilter = ''"
+            @click="setTypeFilter('')"
           >
             All
           </button>
           <button
+            v-for="type in roomTypes"
+            :key="type"
             type="button"
+            :aria-pressed="typeFilter === type"
             :class="[
               'px-3 py-1 rounded-full font-medium transition-colors',
-              typeFilter === 'Garden King' ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
+              typeFilter === type ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
             ]"
-            @click="typeFilter = 'Garden King'"
+            @click="setTypeFilter(type)"
           >
-            Garden King
-          </button>
-          <button
-            type="button"
-            :class="[
-              'px-3 py-1 rounded-full font-medium transition-colors',
-              typeFilter === 'City Twin' ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-            ]"
-            @click="typeFilter = 'City Twin'"
-          >
-            City Twin
-          </button>
-          <button
-            type="button"
-            :class="[
-              'px-3 py-1 rounded-full font-medium transition-colors',
-              typeFilter === 'Family Suite' ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-            ]"
-            @click="typeFilter = 'Family Suite'"
-          >
-            Family Suite
+            {{ type }}
           </button>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div v-if="rooms.isPending.value || (hasDates && availability.isFetching.value)" class="space-y-4 py-8" role="status">
+      <div v-if="searching" class="space-y-4 py-8" role="status">
         <p class="text-sm text-[var(--muted)]">Searching available rooms…</p>
         <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="i in 3" :key="i" class="card h-72 skeleton opacity-65 rounded-2xl" />
         </div>
       </div>
 
-      <!-- Empty State -->
+      <div v-else-if="searchError" class="card p-6 space-y-4">
+        <Notice :message="`We couldn't load room availability. ${String(searchError)}`" />
+        <button type="button" class="btn-secondary" @click="retrySearch">Try again</button>
+      </div>
+
+      <!-- Empty State: reached only after a successful response -->
       <div
         v-else-if="displayRooms.length === 0"
         class="card p-10 text-center space-y-3 rounded-2xl border border-[var(--glass-border)]"
       >
         <p class="serif text-xl font-medium text-[var(--brand-text)]">
-          No rooms found matching your criteria.
+          {{ typeFilter ? `No ${typeFilter} rooms match this search.` : 'No rooms are available for these dates and guest count.' }}
         </p>
         <p class="text-sm text-[var(--muted)] max-w-md mx-auto">
-          Try selecting different dates or resetting the room type filter. Our reception team is also available at hello@luma.local.
+          Try different dates or fewer guests, or choose another room type.
         </p>
+        <button v-if="typeFilter" type="button" class="btn-secondary" @click="setTypeFilter('')">Show all room types</button>
       </div>
 
       <!-- Room Cards Grid -->
@@ -361,7 +370,7 @@ async function reserve() {
                 v-else
                 class="btn-secondary text-xs font-semibold px-3 py-2"
                 type="button"
-                @click="onSearch({ arrival: new Date().toISOString().split('T')[0], departure: new Date(Date.now() + 86400000).toISOString().split('T')[0], occupants })"
+                @click="onSearch({ arrival: hotelToday(), departure: followingDay(hotelToday()), occupants })"
               >
                 Select dates
               </button>

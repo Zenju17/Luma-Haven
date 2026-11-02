@@ -14,6 +14,8 @@ backend/.private-staff-passwords*
 backend/media/
 backend/staticfiles/
 .vercel/
+.playwright-cli/
+output/playwright/
 backend/source_assets/
 frontend/playwright-report/
 frontend/test-results/

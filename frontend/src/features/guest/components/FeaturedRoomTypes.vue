@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { api } from '../../../services/api'
-import type { PublicVisualAssetsResponse } from '../../../types'
+import { money, type PublicVisualAssetsResponse, type Room } from '../../../types'
 import RoomSpacesModal from './RoomSpacesModal.vue'
 
 const router = useRouter()
@@ -13,7 +13,7 @@ interface RoomCategory {
   name: string
   tagline: string
   capacity: number
-  startingRate: number
+  startingRateMinor: number
   image: string
   imageAlt: string
   description: string
@@ -26,7 +26,7 @@ const roomCategories: RoomCategory[] = [
     name: 'Garden King',
     tagline: 'Courtyard retreat with lush garden views',
     capacity: 2,
-    startingRate: 85,
+    startingRateMinor: 8500,
     image: '/images/rooms/garden-king.svg',
     imageAlt: 'Garden King room featuring king-sized bed, warm wood headboard, and private garden terrace doors',
     description: 'A serene sanctuary featuring floor-to-ceiling French doors opening toward our tranquil interior courtyard greenery.',
@@ -37,7 +37,7 @@ const roomCategories: RoomCategory[] = [
     name: 'City Twin',
     tagline: 'Morning light & acoustic soundproofing',
     capacity: 2,
-    startingRate: 72,
+    startingRateMinor: 7200,
     image: '/images/rooms/city-twin.svg',
     imageAlt: 'City Twin room with two comfortable twin beds, morning city window light, and handcrafted oak work desk',
     description: 'Crisp morning sunlight, premium acoustic privacy, and a dedicated oak desk for mindful remote work or quiet rest.',
@@ -48,7 +48,7 @@ const roomCategories: RoomCategory[] = [
     name: 'Family Suite',
     tagline: 'Spacious arched living alcove for four',
     capacity: 4,
-    startingRate: 155,
+    startingRateMinor: 15500,
     image: '/images/rooms/family-suite.svg',
     imageAlt: 'Family Suite featuring master bedroom archway, adjoining living lounge with daybeds, and botanical prints',
     description: 'Generous multi-room sanctuary with an arched living lounge, dining alcove, and ample space for up to four guests.',
@@ -61,11 +61,30 @@ const visualAssets = useQuery({
   queryFn: () => api<PublicVisualAssetsResponse>('/visual-assets'),
 })
 
+const inventory = useQuery({ queryKey: ['rooms'], queryFn: () => api<Room[]>('/rooms') })
+
 const displayCategories = computed(() => {
   const rtMap = visualAssets.data.value?.room_types || {}
   const allRtAssets = Object.values(rtMap).flat()
 
-  return roomCategories.map(cat => {
+  const groups = new Map<string, Room[]>()
+  for (const room of inventory.data.value || []) {
+    groups.set(room.type, [...(groups.get(room.type) || []), room])
+  }
+  return [...groups].map(([type, availableRooms]) => {
+    const room = availableRooms[0]!
+    const metadata = roomCategories.find(category => category.name === type)
+    const cat: RoomCategory = {
+      id: type,
+      name: type,
+      tagline: metadata?.tagline || 'A comfortable stay at Luma Haven',
+      capacity: room.capacity,
+      startingRateMinor: Math.min(...availableRooms.map(item => item.rate_minor ?? 0)),
+      image: metadata?.image || '/images/luma-haven/placeholders/room-placeholder.svg',
+      imageAlt: metadata?.imageAlt || type,
+      description: room.description || metadata?.description || '',
+      amenities: room.amenities || [],
+    }
     const match = allRtAssets.find(a =>
       a.room_type_name?.toLowerCase() === cat.name.toLowerCase()
     )
@@ -190,7 +209,7 @@ function handleBookFromModal(name: string) {
           <div class="absolute bottom-4 right-4 bg-[var(--surface-raised)]/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-[var(--glass-border)] text-right shadow-sm">
             <span class="text-[10px] uppercase font-semibold text-[var(--muted)] block tracking-wider">From</span>
             <span class="serif text-lg font-bold text-[var(--brand-text)]">
-              ${{ cat.startingRate }}
+              {{ money(cat.startingRateMinor) }}
               <span class="text-xs font-normal text-[var(--muted)]">/ night</span>
             </span>
           </div>

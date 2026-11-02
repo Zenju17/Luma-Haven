@@ -18,6 +18,7 @@ from rest_framework.decorators import api_view, throttle_classes
 from . import throttling
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 from . import legal, services, staff_passwords
 from .payments import factory as payment_factory, service as payment_service
 from .payments.base import ProviderError  # noqa: F401
@@ -28,6 +29,11 @@ from .models import (Allocation, Audit, ConsentRecord, DataSubjectRequest, Legal
                      VisualAsset)
 
 ADMIN_PORTAL_ROLES = ('ADMIN', 'DEVELOPER', 'CONTENT_EDITOR')
+
+
+class ServiceUnavailable(APIException):
+    status_code = 503
+    default_detail = 'This service is temporarily unavailable. Please contact reception.'
 
 def staff(request, *roles):
     if request.portal not in ('staff', 'admin') or not request.user.is_authenticated or request.user.role not in roles:
@@ -64,6 +70,20 @@ def ready(request):
     except Exception:
         return JsonResponse({'status': 'unavailable'}, status=503)
     return JsonResponse({'status': 'ready'})
+
+
+def daily_maintenance(request):
+    expected = settings.CRON_SECRET
+    supplied = request.headers.get('Authorization', '')
+    if request.method != 'GET' or not expected or not secrets.compare_digest(supplied, f'Bearer {expected}'):
+        return JsonResponse({'detail': 'Not authorized'}, status=403)
+    if settings.ENV != 'production':
+        return JsonResponse({'status': 'disabled'})
+    from .tasks import run_retention, archive_daily_mis_snapshot
+    services.release_expired()
+    run_retention.run()
+    archive_daily_mis_snapshot.run()
+    return JsonResponse({'status': 'completed'})
 
 @api_view(['GET'])
 def csrf(request):
@@ -157,6 +177,9 @@ def availability(request):
                       'currency': r.hotel.currency, 'capacity': r.type.capacity} for r in services.available(arrival, departure, occupants)])
 
 def _require_bookings_open():
+    if settings.ENV == 'production' and settings.PAYMENT_PROVIDER == 'bakong' and (
+            not payment_factory.bakong_configured() or not settings.PAYMENT_QUEUE_ENABLED):
+        raise ServiceUnavailable('Online booking is temporarily unavailable. Please contact reception.')
     from . import flags
     if flags.is_enabled('bookings_paused'):
         raise ValidationError('Online bookings are temporarily paused. Please try again later or contact the hotel.')
@@ -270,6 +293,18 @@ def presentation_verify(request, pk):
     return Response(detail(obj))
 
 
+@api_view(['POST'])
+def reception_verify(request, pk):
+    staff(request, 'ADMIN', 'RECEPTION')
+    if request.data.get('identity_checked') is not True:
+        raise ValidationError('Confirm that you checked the guest identity in person')
+    try:
+        obj = services.verify_guest_at_reception(booking(request, pk), request.user)
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from exc
+    return Response(detail(obj))
+
+
 def presentation_media(request, name):
     if not settings.DATABASE_MEDIA:
         return HttpResponse(status=404)
@@ -285,6 +320,8 @@ def presentation_media(request, name):
 @api_view(['POST'])
 @throttle_classes([throttling.OtpThrottle])
 def request_otp(request):
+    if settings.HOSTED_ENVIRONMENT and not settings.EMAIL_DELIVERY_CONFIGURED:
+        raise ServiceUnavailable('Email verification is not available yet. Please contact reception.')
     reference = str(request.data.get('reference', '')).upper()
     email = str(request.data.get('email', '')).strip().lower()
     obj = Reservation.objects.filter(reference=reference, guest__email__iexact=email).first()
@@ -292,8 +329,14 @@ def request_otp(request):
         recent = OTP.objects.filter(reservation=obj, issued_at__gt=timezone.now() - timedelta(minutes=1)).exists()
         if not recent:
             code = f'{secrets.randbelow(1000000):06d}'
-            OTP.objects.create(reservation=obj, digest=services.otp_digest(code), expires_at=timezone.now() + timedelta(minutes=5))
-            send_mail('Luma Haven verification code', f'Your verification code is {code}. It expires in 5 minutes.', 'noreply@localhost', [obj.guest.email])
+            otp = OTP.objects.create(reservation=obj, digest=services.otp_digest(code), expires_at=timezone.now() + timedelta(minutes=5))
+            try:
+                send_mail('Luma Haven verification code', f'Your verification code is {code}. It expires in 5 minutes.',
+                          settings.DEFAULT_FROM_EMAIL, [obj.guest.email])
+            except Exception:
+                # A failed delivery must not prevent the guest from retrying with a fresh code.
+                OTP.objects.filter(pk=otp.pk).delete()
+                raise ServiceUnavailable('Verification email could not be delivered. Please retry or contact reception.')
     return Response({'message': 'If the details match, a verification message has been sent.'})
 
 @api_view(['POST'])
@@ -321,6 +364,8 @@ def verify_otp(request):
 
 @api_view(['POST'])
 def check_in(request, pk):
+    if request.portal != 'guest':
+        staff(request, 'ADMIN', 'MANAGER', 'RECEPTION')
     obj = booking(request, pk)
     try:
         services.check_in(obj, request.user if request.user.is_authenticated else None)
@@ -330,9 +375,11 @@ def check_in(request, pk):
 
 @api_view(['POST'])
 def check_out(request, pk):
+    if request.portal != 'guest':
+        staff(request, 'ADMIN', 'MANAGER', 'RECEPTION')
     obj = booking(request, pk)
     try:
-        services.check_out(obj, int(request.data['folio_version']))
+        services.check_out(obj, int(request.data['folio_version']), request.user if request.user.is_authenticated else None)
     except (ValueError, KeyError, Stay.DoesNotExist) as exc:
         raise ValidationError(str(exc))
     return Response(detail(obj.__class__.objects.get(pk=pk)))
@@ -1235,7 +1282,7 @@ def reception_diagnostics(request, pk):
     if res.status != 'CONFIRMED':
         check_in_issues.append(f'Status is {res.status}; only CONFIRMED bookings can check in.')
     if not res.verified:
-        check_in_issues.append('Guest has not verified identity/email with OTP.')
+        check_in_issues.append('Guest verification is pending: verify by email or at reception.')
     if today < res.arrival:
         check_in_issues.append(f'Scheduled arrival date is {res.arrival} (hotel date is {today}).')
     if today >= res.departure:
@@ -1882,6 +1929,7 @@ urlpatterns = [
     path('admin/data-requests', admin_data_requests), path('admin/data-requests/<int:pk>/resolve', admin_resolve_data_request),
     path('admin/legal', admin_legal), path('admin/legal/<int:pk>', admin_legal_detail), path('admin/legal/<int:pk>/publish', admin_legal_publish),
     path('health', lambda r: JsonResponse({'status': 'ok'})), path('ready', ready),
+    path('system/daily-maintenance', daily_maintenance),
     path('media/<path:name>', presentation_media),
     path('auth/csrf', csrf), path('auth/login', staff_login), path('auth/logout', staff_logout), path('auth/me', me),
     path('rooms', rooms), path('availability', availability), path('quotes', quotes),
@@ -1893,6 +1941,7 @@ urlpatterns = [
     path('reservations', reservations), path('reservations/<int:pk>', reservation),
     path('reservations/<int:pk>/payment-sessions', payment_session),
     path('reservations/<int:pk>/demo-verify', presentation_verify),
+    path('staff/reservations/<int:pk>/verify', reception_verify),
     path('payment-sessions/<uuid:pk>', payment_session_status),
     path('development/checkout/<uuid:pk>', development_checkout),
     path('guest-access/request-otp', request_otp), path('guest-access/verify-otp', verify_otp),

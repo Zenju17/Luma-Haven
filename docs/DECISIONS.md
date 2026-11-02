@@ -1,5 +1,12 @@
 # Implementation decisions
 
+- **Public hosting follow-up (2 Nov 2026):** the user explicitly requested public
+  Production rather than Preview. Deploy the committed app to Vercel Production,
+  attach a stable `.vercel.app` domain, disable Vercel sign-in protection, and keep
+  application roles/authentication. Hide the presentation banner. Production hosting
+  does not constitute real payment/email activation: the existing simulated runtime
+  remains explicit until provider credentials and integration verification are available.
+
 - **University hosting (2 Nov 2026):** Vercel Services (beta) keeps the Vue frontend
   and Django API on one origin. Explicit `APP_ENV=demo` retains hosted HTTPS/security
   settings while forcing simulated payments. Verification may be simulated only

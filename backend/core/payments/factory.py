@@ -20,11 +20,11 @@ def active_provider_name():
     """'bakong' or 'development' for NEW payment sessions."""
     if settings.PRESENTATION_DEMO:
         return 'development'
+    if settings.ENV == 'production':
+        return settings.PAYMENT_PROVIDER
     from ..models import FeatureFlag
     flag = FeatureFlag.objects.filter(key=MODE_FLAG).only('enabled').first()
     if flag is None:
-        return settings.PAYMENT_PROVIDER
-    if settings.ENV == 'production' and not flag.enabled:
         return settings.PAYMENT_PROVIDER
     return 'bakong' if flag.enabled else 'development'
 

@@ -9,6 +9,9 @@
   116 backend tests and four demo browser journeys passed. See [VERCEL_DEMO.md](VERCEL_DEMO.md).
   Vercel reports deployment `dpl_7Um2NEBR5d9Eywd8xP4q1ZRrq7Sz` **READY**;
   staticfiles/automatic collection was fixed during the deployment build.
+  Subsequently published as public **Production** deployment `dpl_6ZTf4wvGpPra1gskD8bQonSSJrwz`
+  at https://luma-haven-zenju17.vercel.app from Git commit `557bd48`, with Vercel
+  protection disabled and the presentation banner off. Simulated payment behavior remains.
 
 - Feature branch, Django/DRF/Vite/Vue 3/Tailwind foundation and Compose configuration.
 - Hotel, rooms, server quotes, short-lived holds, half-open PostgreSQL inventory exclusion, payment attempts and locally simulated settlement events, expired-hold release and late-payment conflict exceptions.
