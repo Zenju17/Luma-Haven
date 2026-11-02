@@ -12,6 +12,7 @@ import LegalManager from './LegalManager.vue'
 import PrivacyQueue from './PrivacyQueue.vue'
 import PaymentsPanel from './PaymentsPanel.vue'
 import DevConsole from '../dev/DevConsole.vue'
+import RoomsManager from './RoomsManager.vue'
 import { adminApi, queryClient } from '../../services/api'
 import { money, type StaffUser } from '../../types'
 
@@ -50,12 +51,13 @@ const confirmPassword = ref('')
 const passwordError = ref('')
 const passwordSuccess = ref('')
 const passwordBusy = ref(false)
-type Section = 'overview' | 'team' | 'audit' | 'settings' | 'media' | 'reports' | 'cms' | 'legal' | 'privacy' | 'payments' | 'dev'
+type Section = 'overview' | 'rooms' | 'team' | 'audit' | 'settings' | 'media' | 'reports' | 'cms' | 'legal' | 'privacy' | 'payments' | 'dev'
 const section = ref<Section>('overview')
 // Navigation is grouped; the server enforces every role again on each endpoint.
 const NAV: { group: string; roles: string[]; items: { id: Section; label: string; roles: string[] }[] }[] = [
   { group: 'Company', roles: ['ADMIN', 'CONTENT_EDITOR'], items: [
     { id: 'overview', label: 'Overview', roles: ['ADMIN'] },
+    { id: 'rooms', label: 'Rooms & Inventory', roles: ['ADMIN'] },
     { id: 'cms', label: 'Content (CMS)', roles: ['ADMIN', 'CONTENT_EDITOR'] },
     { id: 'legal', label: 'Legal', roles: ['ADMIN'] },
     { id: 'privacy', label: 'Privacy requests', roles: ['ADMIN'] },
@@ -228,6 +230,7 @@ function handleManagerNavigate(destination: string) {
         <ManagerDashboard portal="admin" :user="user" @navigate="handleManagerNavigate" />
       </section>
 
+      <RoomsManager v-else-if="section === 'rooms'" />
       <CmsManager v-else-if="section === 'cms'" :role="user.role" />
       <LegalManager v-else-if="section === 'legal'" />
       <PrivacyQueue v-else-if="section === 'privacy'" />

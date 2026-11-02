@@ -148,6 +148,12 @@ def process_event(attempt_id, outcome, event_id):
                 attempt.status = 'SUCCESS'
                 Outbox.objects.create(kind='BOOKING_CONFIRMED', target=str(reservation.pk))
     attempt.save(update_fields=['status'])
+    if attempt.status == 'SUCCESS':
+        try:
+            from . import emails
+            emails.send_payment_confirmed_email(attempt.reservation, attempt.amount_minor)
+        except Exception:
+            pass
     return attempt
 
 def otp_digest(code):

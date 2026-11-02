@@ -108,15 +108,19 @@ SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 SESSION_COOKIE_SECURE = HOSTED_ENVIRONMENT
 CSRF_COOKIE_SECURE = HOSTED_ENVIRONMENT
+_gmail_user = os.getenv('GMAIL_USER') or os.getenv('EMAIL_HOST_USER', '')
+_gmail_pass = os.getenv('GMAIL_APP_PASSWORD') or os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+if not EMAIL_HOST and _gmail_user and ('@gmail.com' in _gmail_user or '@googlemail.com' in _gmail_user):
+    EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_HOST_USER = _gmail_user
+EMAIL_HOST_PASSWORD = _gmail_pass
 EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'false').lower() == 'true'
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'false' if EMAIL_USE_SSL else 'true').lower() == 'true'
 EMAIL_TIMEOUT = 10
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@localhost')
-EMAIL_DELIVERY_CONFIGURED = bool(EMAIL_HOST and DEFAULT_FROM_EMAIL != 'noreply@localhost')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or EMAIL_HOST_USER or 'noreply@lumahaven.com'
+EMAIL_DELIVERY_CONFIGURED = bool(EMAIL_HOST and (EMAIL_HOST_USER or not HOSTED_ENVIRONMENT))
 if EMAIL_HOST:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 elif ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':

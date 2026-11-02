@@ -19,7 +19,7 @@ from . import throttling
 from rest_framework.exceptions import NotFound, PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
-from . import legal, services, staff_passwords
+from . import emails, legal, services, staff_passwords
 from .payments import factory as payment_factory, service as payment_service
 from .payments.base import ProviderError  # noqa: F401
 from .decision_support import evaluate_decision_support_alerts
@@ -177,8 +177,7 @@ def availability(request):
                       'currency': r.hotel.currency, 'capacity': r.type.capacity} for r in services.available(arrival, departure, occupants)])
 
 def _require_bookings_open():
-    if settings.ENV == 'production' and settings.PAYMENT_PROVIDER == 'bakong' and (
-            not payment_factory.bakong_configured() or not settings.PAYMENT_QUEUE_ENABLED):
+    if settings.ENV == 'production' and settings.PAYMENT_PROVIDER == 'bakong' and not payment_factory.bakong_configured():
         raise ServiceUnavailable('Online booking is temporarily unavailable. Please contact reception.')
     from . import flags
     if flags.is_enabled('bookings_paused'):
@@ -217,6 +216,8 @@ def reservations(request):
         raise ValidationError('Quote expired, invalid, or room no longer available') from exc
     request.session['guest_reservation'] = reservation.pk
     request.session.set_expiry(3600)
+    # Dispatch reservation confirmation with booking info & reference to guest email
+    emails.send_booking_confirmation_email(reservation)
     return Response({'id': reservation.pk, 'reference': reservation.reference, 'status': reservation.status,
                      'hold_expires_at': reservation.hold_expires_at}, status=201)
 
@@ -331,8 +332,18 @@ def request_otp(request):
             code = f'{secrets.randbelow(1000000):06d}'
             otp = OTP.objects.create(reservation=obj, digest=services.otp_digest(code), expires_at=timezone.now() + timedelta(minutes=5))
             try:
-                send_mail('Luma Haven verification code', f'Your verification code is {code}. It expires in 5 minutes.',
-                          settings.DEFAULT_FROM_EMAIL, [obj.guest.email])
+                subject, text_content, html_content = emails.build_otp_email_content(
+                    obj.guest.email, obj.guest.full_name, obj.reference, code
+                )
+                from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or 'noreply@lumahaven.com'
+                send_mail(
+                    subject,
+                    text_content,
+                    from_email,
+                    [obj.guest.email],
+                    html_message=html_content,
+                    fail_silently=False,
+                )
             except Exception:
                 # A failed delivery must not prevent the guest from retrying with a fresh code.
                 OTP.objects.filter(pk=otp.pk).delete()
@@ -1361,6 +1372,233 @@ def staff_update_rate(request, pk):
         raise ValidationError(str(exc)) from exc
     return Response({'id': room_type.pk, 'nightly_rate_minor': room_type.nightly_rate_minor})
 
+
+# ─────────────────────────────────────────────────────────────
+# Admin Room Information & Inventory CRUD
+# ─────────────────────────────────────────────────────────────
+
+def _serialize_room_type(rt):
+    return {
+        'id': rt.pk,
+        'name': rt.name,
+        'description': rt.description,
+        'capacity': rt.capacity,
+        'amenities': rt.amenities if isinstance(rt.amenities, list) else [],
+        'nightly_rate_minor': rt.nightly_rate_minor,
+        'total_rooms': rt.room_set.count(),
+    }
+
+def _serialize_room(r):
+    return {
+        'id': r.pk,
+        'number': r.number,
+        'type_id': r.type_id,
+        'type_name': r.type.name,
+        'capacity': r.type.capacity,
+        'nightly_rate_minor': r.type.nightly_rate_minor,
+        'cleaning': r.cleaning,
+        'in_service': r.in_service,
+        'active_stay': Stay.objects.filter(reservation__room=r, checked_out_at__isnull=True).exists(),
+    }
+
+@api_view(['GET', 'POST'])
+def admin_room_types(request):
+    staff(request, 'ADMIN', 'MANAGER')
+    if request.method == 'GET':
+        return Response([_serialize_room_type(rt) for rt in RoomType.objects.all().order_by('name')])
+
+    name = str(request.data.get('name', '')).strip()
+    if not name:
+        raise ValidationError('Room type name is required.')
+    try:
+        rate = int(request.data['nightly_rate_minor'])
+        if rate <= 0:
+            raise ValueError()
+    except (KeyError, ValueError, TypeError):
+        raise ValidationError('A valid positive nightly rate (minor units) is required.')
+
+    try:
+        capacity = int(request.data.get('capacity', 2))
+        if capacity < 1 or capacity > 20:
+            raise ValueError()
+    except (ValueError, TypeError):
+        raise ValidationError('Capacity must be between 1 and 20 guests.')
+
+    description = str(request.data.get('description', '')).strip()
+    amenities = request.data.get('amenities', [])
+    if isinstance(amenities, str):
+        amenities = [a.strip() for a in amenities.split(',') if a.strip()]
+    elif not isinstance(amenities, list):
+        amenities = []
+
+    hotel = Hotel.objects.first()
+    if not hotel:
+        raise ValidationError('Hotel configuration is missing.')
+
+    if RoomType.objects.filter(hotel=hotel, name__iexact=name).exists():
+        raise ValidationError(f'A room type named "{name}" already exists.')
+
+    rt = RoomType.objects.create(
+        hotel=hotel,
+        name=name,
+        description=description,
+        capacity=capacity,
+        amenities=amenities,
+        nightly_rate_minor=rate,
+    )
+    Audit.objects.create(actor=request.user.username, action='ROOM_TYPE_CREATED', target=f'{rt.name} (#{rt.pk})')
+    return Response(_serialize_room_type(rt), status=201)
+
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def admin_room_type_detail(request, pk):
+    staff(request, 'ADMIN', 'MANAGER')
+    rt = RoomType.objects.filter(pk=pk).first()
+    if not rt:
+        raise NotFound('Room type not found')
+
+    if request.method == 'GET':
+        return Response(_serialize_room_type(rt))
+
+    if request.method == 'DELETE':
+        assigned_count = rt.room_set.count()
+        if assigned_count > 0:
+            raise ValidationError(
+                f'Cannot delete "{rt.name}" because {assigned_count} room(s) are currently assigned to it. '
+                f'Please reassign or delete those rooms first.'
+            )
+        name = rt.name
+        rt.delete()
+        Audit.objects.create(actor=request.user.username, action='ROOM_TYPE_DELETED', target=f'{name} (#{pk})')
+        return Response({'deleted': True, 'id': pk})
+
+    if 'name' in request.data:
+        new_name = str(request.data['name']).strip()
+        if not new_name:
+            raise ValidationError('Room type name cannot be empty.')
+        if RoomType.objects.filter(hotel=rt.hotel, name__iexact=new_name).exclude(pk=rt.pk).exists():
+            raise ValidationError(f'Another room type named "{new_name}" already exists.')
+        rt.name = new_name
+
+    if 'nightly_rate_minor' in request.data:
+        try:
+            rate = int(request.data['nightly_rate_minor'])
+            if rate <= 0:
+                raise ValueError()
+            rt.nightly_rate_minor = rate
+        except (ValueError, TypeError):
+            raise ValidationError('A valid positive nightly rate (minor units) is required.')
+
+    if 'capacity' in request.data:
+        try:
+            cap = int(request.data['capacity'])
+            if cap < 1 or cap > 20:
+                raise ValueError()
+            rt.capacity = cap
+        except (ValueError, TypeError):
+            raise ValidationError('Capacity must be between 1 and 20 guests.')
+
+    if 'description' in request.data:
+        rt.description = str(request.data['description']).strip()
+
+    if 'amenities' in request.data:
+        amenities = request.data['amenities']
+        if isinstance(amenities, str):
+            amenities = [a.strip() for a in amenities.split(',') if a.strip()]
+        elif not isinstance(amenities, list):
+            amenities = []
+        rt.amenities = amenities
+
+    rt.save()
+    Audit.objects.create(actor=request.user.username, action='ROOM_TYPE_UPDATED', target=f'{rt.name} (#{rt.pk})')
+    return Response(_serialize_room_type(rt))
+
+
+@api_view(['GET', 'POST'])
+def admin_rooms(request):
+    staff(request, 'ADMIN', 'MANAGER')
+    if request.method == 'GET':
+        return Response([_serialize_room(r) for r in Room.objects.select_related('type').all().order_by('number')])
+
+    number = str(request.data.get('number', '')).strip()
+    if not number:
+        raise ValidationError('Room number is required.')
+
+    hotel = Hotel.objects.first()
+    if not hotel:
+        raise ValidationError('Hotel configuration is missing.')
+
+    if Room.objects.filter(hotel=hotel, number=number).exists():
+        raise ValidationError(f'Room "{number}" already exists.')
+
+    type_id = request.data.get('type_id')
+    rt = RoomType.objects.filter(pk=type_id).first()
+    if not rt:
+        raise ValidationError('Selected room type does not exist.')
+
+    cleaning = str(request.data.get('cleaning', 'READY')).upper()
+    if cleaning not in ('READY', 'CLEANING', 'INSPECTION', 'DIRTY'):
+        cleaning = 'READY'
+
+    in_service = bool(request.data.get('in_service', True))
+
+    room = Room.objects.create(
+        hotel=hotel,
+        number=number,
+        type=rt,
+        cleaning=cleaning,
+        in_service=in_service,
+    )
+    Audit.objects.create(actor=request.user.username, action='ROOM_CREATED', target=f'Room {room.number} ({rt.name})')
+    return Response(_serialize_room(room), status=201)
+
+
+@api_view(['GET', 'PUT', 'PATCH', 'DELETE'])
+def admin_room_detail(request, pk):
+    staff(request, 'ADMIN', 'MANAGER')
+    room = Room.objects.select_related('type').filter(pk=pk).first()
+    if not room:
+        raise NotFound('Room not found')
+
+    if request.method == 'GET':
+        return Response(_serialize_room(room))
+
+    if request.method == 'DELETE':
+        if room.allocation_set.filter(active=True).exists():
+            raise ValidationError(f'Cannot delete Room {room.number} because it has active reservations or allocations.')
+        if Stay.objects.filter(reservation__room=room, checked_out_at__isnull=True).exists():
+            raise ValidationError(f'Cannot delete Room {room.number} because a guest is currently checked in.')
+        num = room.number
+        room.delete()
+        Audit.objects.create(actor=request.user.username, action='ROOM_DELETED', target=f'Room {num} (#{pk})')
+        return Response({'deleted': True, 'id': pk})
+
+    if 'number' in request.data:
+        new_number = str(request.data['number']).strip()
+        if not new_number:
+            raise ValidationError('Room number cannot be empty.')
+        if Room.objects.filter(hotel=room.hotel, number=new_number).exclude(pk=room.pk).exists():
+            raise ValidationError(f'Room "{new_number}" already exists.')
+        room.number = new_number
+
+    if 'type_id' in request.data:
+        rt = RoomType.objects.filter(pk=request.data['type_id']).first()
+        if not rt:
+            raise ValidationError('Selected room type does not exist.')
+        room.type = rt
+
+    if 'cleaning' in request.data:
+        c = str(request.data['cleaning']).upper()
+        if c in ('READY', 'CLEANING', 'INSPECTION', 'DIRTY'):
+            room.cleaning = c
+
+    if 'in_service' in request.data:
+        room.in_service = bool(request.data['in_service'])
+
+    room.save()
+    Audit.objects.create(actor=request.user.username, action='ROOM_UPDATED', target=f'Room {room.number} (#{room.pk})')
+    return Response(_serialize_room(room))
+
 @api_view(['GET'])
 def report_daily_summary(request):
     staff(request, 'ADMIN', 'MANAGER', 'ACCOUNTANT')
@@ -1970,6 +2208,10 @@ urlpatterns = [
     path('accountant/folios/<int:pk>/reconcile', accountant_reconcile_folio),
     path('staff/rates', staff_rates),
     path('staff/rates/<int:pk>', staff_update_rate),
+    path('admin/room-types', admin_room_types),
+    path('admin/room-types/<int:pk>', admin_room_type_detail),
+    path('admin/rooms', admin_rooms),
+    path('admin/rooms/<int:pk>', admin_room_detail),
     path('maintenance/tickets', maintenance), path('maintenance/tickets/<int:pk>/resolve', resolve_maintenance),
     path('reports/summary', report), path('staff/reports/summary', report), path('admin/reports/summary', report),
     path('manager/dashboard', manager_dashboard), path('staff/manager/dashboard', manager_dashboard), path('admin/manager/dashboard', manager_dashboard),

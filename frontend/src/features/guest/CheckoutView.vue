@@ -41,6 +41,35 @@ watch(() => checkout.data.value?.status, status => {
   if (status === 'SUCCESS' && checkout.data.value) void router.push(`/booking/${checkout.data.value.reservation_id}`)
 })
 
+const copied = ref(false)
+const checking = ref(false)
+
+async function copyQrString() {
+  if (!checkout.data.value?.qr) return
+  try {
+    await navigator.clipboard.writeText(checkout.data.value.qr)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2500)
+  } catch {
+    // fallback if clipboard unavailable
+  }
+}
+
+async function checkPaymentNow() {
+  checking.value = true
+  error.value = ''
+  try {
+    const result = await checkout.refetch()
+    if (result.data?.status === 'SUCCESS' && checkout.data.value) {
+      await router.push(`/booking/${checkout.data.value.reservation_id}`)
+    }
+  } catch (caught) {
+    error.value = String(caught)
+  } finally {
+    checking.value = false
+  }
+}
+
 async function simulate(outcome: 'SUCCESS' | 'FAILED' | 'PENDING') {
   pending.value = true
   error.value = ''
@@ -76,12 +105,25 @@ async function newQr() {
 <template>
   <SiteLayout>
     <div class="card payment-panel p-8 max-w-lg mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
-      <div class="flex items-center gap-2.5 mb-3">
-        <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
-        <span v-if="checkout.data.value?.provider === 'bakong'" class="badge">Bakong KHQR</span>
-        <span v-else class="badge">Simulated payment · development only</span>
+      <div class="flex items-center justify-between gap-2.5 mb-3">
+        <div class="flex items-center gap-2.5">
+          <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
+          <span v-if="checkout.data.value?.provider === 'bakong'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
+            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span>
+            Bakong KHQR
+          </span>
+          <span v-else class="badge">Simulated payment · development only</span>
+        </div>
+        <span v-if="checkout.data.value?.status === 'PENDING'" class="text-xs font-mono text-[var(--muted)]">
+          {{ countdown }}
+        </span>
       </div>
-      <h1 class="text-3xl text-[var(--brand-text)]">{{ checkout.data.value?.provider === 'bakong' ? 'Pay with Bakong' : 'Simulated checkout' }}</h1>
+
+      <h1 class="text-3xl text-[var(--brand-text)]">{{ checkout.data.value?.provider === 'bakong' ? 'Scan to Pay' : 'Simulated checkout' }}</h1>
+      <p v-if="checkout.data.value?.provider === 'bakong'" class="text-xs text-[var(--muted)] mt-1">
+        Pay in USD with any Cambodian banking app that supports the National Bank of Cambodia KHQR standard.
+      </p>
+
       <div v-if="checkout.isPending.value" class="mt-6 space-y-4" role="status">
         <p>Loading payment session…</p>
         <div class="skeleton h-8 w-48 rounded-md"></div>
@@ -89,24 +131,64 @@ async function newQr() {
       </div>
       <Notice v-else-if="checkout.error.value" :message="String(checkout.error.value)" />
       <template v-else-if="checkout.data.value">
-        <p class="mt-4">Amount: <strong>{{ money(checkout.data.value.amount_minor) }} {{ checkout.data.value.currency }}</strong></p>
-        <p class="mt-2 text-[var(--muted)]">Status: <span class="font-semibold text-[var(--ink)]">{{ checkout.data.value.status }}</span></p>
+        <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted)] flex items-center justify-between">
+          <span class="text-sm text-[var(--muted)]">Total payable</span>
+          <span class="text-xl font-bold font-mono text-[var(--brand-text)]">
+            {{ money(checkout.data.value.amount_minor) }} {{ checkout.data.value.currency }}
+          </span>
+        </div>
+        <p class="mt-2 text-xs text-[var(--muted)]">Status: <span class="font-semibold text-[var(--ink)]">{{ checkout.data.value.status }}</span></p>
         <Notice :message="error" />
 
         <template v-if="checkout.data.value.provider === 'bakong'">
           <div v-if="checkout.data.value.status === 'PENDING' && checkout.data.value.qr" class="mt-6 flex flex-col items-center gap-3">
-            <div class="bg-white p-4 rounded-xl">
-              <QrcodeVue :value="checkout.data.value.qr" :size="240" level="M" render-as="svg" />
+            <!-- KHQR Display Card -->
+            <div class="relative bg-white p-5 rounded-2xl shadow-md border-2 border-rose-600/30 flex flex-col items-center">
+              <div class="w-full flex items-center justify-between border-b pb-2 mb-3">
+                <span class="text-[10px] font-bold text-rose-700 tracking-wider uppercase">KHQR Universal</span>
+                <span class="text-[10px] text-slate-500 font-mono">{{ money(checkout.data.value.amount_minor) }} USD</span>
+              </div>
+              <QrcodeVue :value="checkout.data.value.qr" :size="230" level="M" render-as="svg" />
+              <div class="mt-3 text-[11px] text-slate-600 font-medium tracking-wide">LUMA HAVEN BOUTIQUE HOTEL</div>
             </div>
-            <p class="text-sm text-[var(--muted)]">Scan with any Cambodian banking app that supports KHQR.</p>
-            <p class="font-mono text-lg" role="timer" aria-live="off">Expires in {{ countdown }}</p>
-            <p class="text-xs text-[var(--muted)]" role="status">Waiting for payment confirmation… this page updates automatically.</p>
+
+            <!-- Supported Banks pill -->
+            <div class="w-full text-center mt-1">
+              <p class="text-[11px] text-[var(--muted)]">
+                Accepted by <strong>Bakong · ABA Mobile · ACLEDA · Wing · Canadia · Sathapana</strong> & 40+ members
+              </p>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="w-full flex flex-col gap-2 mt-2">
+              <button
+                type="button"
+                class="btn w-full flex items-center justify-center gap-2"
+                :disabled="checking"
+                @click="checkPaymentNow"
+              >
+                <svg v-if="checking" class="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <span>{{ checking ? 'Checking status…' : "I've completed payment in my bank app" }}</span>
+              </button>
+
+              <button
+                type="button"
+                class="btn-secondary w-full text-xs flex items-center justify-center gap-1.5"
+                @click="copyQrString"
+              >
+                <span>{{ copied ? 'KHQR payload copied! ✓' : 'Copy KHQR payload' }}</span>
+              </button>
+            </div>
+
+            <p class="text-[11px] text-[var(--muted)] mt-1" role="status">
+              Auto-checking for payment confirmation every 4 seconds…
+            </p>
           </div>
           <div v-else-if="checkout.data.value.status === 'EXPIRED' || checkout.data.value.status === 'FAILED'" class="mt-6">
-            <p class="text-sm">This QR code is no longer valid. Do not pay it. If you already paid, the hotel will confirm your booking automatically or contact you.</p>
-            <button class="btn mt-4" :disabled="pending" @click="newQr">Create a new QR code</button>
+            <p class="text-sm">This QR code has expired. If you have already paid, the hotel front desk will confirm your stay automatically.</p>
+            <button class="btn mt-4 w-full" :disabled="pending" @click="newQr">Generate new KHQR</button>
           </div>
-          <p v-else-if="checkout.data.value.status === 'EXCEPTION'" class="mt-6 text-sm">We received your payment but need to review it. The hotel will contact you shortly.</p>
+          <p v-else-if="checkout.data.value.status === 'EXCEPTION'" class="mt-6 text-sm">We received your payment and our reception team is reviewing it. Your booking is safe.</p>
         </template>
 
         <div v-else class="flex flex-wrap gap-3 mt-8">
@@ -114,7 +196,7 @@ async function newQr() {
           <button class="btn-secondary" :disabled="pending" @click="simulate('FAILED')">Simulate failure</button>
           <button class="btn-secondary" :disabled="pending" @click="simulate('PENDING')">Simulate pending</button>
         </div>
-        <RouterLink to="/verify" class="block mt-6 text-sm text-[var(--muted)] hover:text-[var(--ink)] underline">Verify booking after payment</RouterLink>
+        <RouterLink to="/verify" class="block mt-6 text-sm text-[var(--muted)] hover:text-[var(--ink)] underline text-center">Verify booking or enter OTP</RouterLink>
       </template>
     </div>
   </SiteLayout>

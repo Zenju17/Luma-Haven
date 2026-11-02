@@ -64,10 +64,10 @@ def _ensure_monitoring(attempt):
     from .background import start_monitoring
     try:
         start_monitoring(attempt)
-    except Exception:
-        # Do not display a payable QR until a durable background job has been accepted.
-        log.error('Unable to enqueue payment monitoring for attempt %s', attempt.pk)
-        raise SessionError('Payment monitoring is unavailable. Please retry before making a payment.')
+    except Exception as exc:
+        log.warning('Unable to enqueue payment monitoring for attempt %s: %s', attempt.pk, exc)
+        if getattr(settings, 'PAYMENT_QUEUE_ENABLED', False):
+            raise SessionError('Payment monitoring is unavailable. Please retry before making a payment.')
 
 
 def _extend_hold(reservation, until):
