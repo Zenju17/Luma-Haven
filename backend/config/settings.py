@@ -6,18 +6,27 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 STAFF_CREDENTIALS_FILE = Path(os.getenv('STAFF_CREDENTIALS_FILE', str(BASE_DIR / '.private-staff-passwords')))
 ENV = os.getenv('APP_ENV', 'development')
+PRESENTATION_DEMO = ENV == 'demo'
+HOSTED_ENVIRONMENT = ENV in ('production', 'demo')
+if PRESENTATION_DEMO and os.getenv('PAYMENT_PROVIDER', 'development') != 'development':
+    raise RuntimeError('Presentation demos must use simulated payments')
 if ENV == 'production' and os.getenv('PAYMENT_PROVIDER', 'development') == 'development':
     raise RuntimeError('Development payment provider is forbidden in production')
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'local-only-insecure-secret')
-if ENV == 'production' and (len(SECRET_KEY) < 32 or SECRET_KEY == 'local-only-insecure-secret'):
+if HOSTED_ENVIRONMENT and (len(SECRET_KEY) < 32 or SECRET_KEY == 'local-only-insecure-secret'):
     raise RuntimeError('Set a strong DJANGO_SECRET_KEY')
-DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true' and ENV != 'production'
+DEBUG = os.getenv('DJANGO_DEBUG', 'false').lower() == 'true' and not HOSTED_ENVIRONMENT
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Vercel generates a distinct hostname for each preview. Trust only this deployment's hosts.
+VERCEL_HOSTS = [os.environ[key] for key in ('VERCEL_URL', 'VERCEL_BRANCH_URL', 'VERCEL_PROJECT_PRODUCTION_URL')
+                if os.getenv('VERCEL') and os.getenv(key)]
+ALLOWED_HOSTS += VERCEL_HOSTS
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.staticfiles',
     'django.contrib.admin',
     'django.contrib.postgres',
     'rest_framework',
@@ -56,6 +65,15 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+DATABASE_MEDIA = os.getenv('DATABASE_MEDIA', 'false').lower() == 'true'
+MAX_IMAGE_UPLOAD_BYTES = 3 * 1024 * 1024 if DATABASE_MEDIA else 10 * 1024 * 1024
+if DATABASE_MEDIA:
+    # Small presentation assets remain durable without a paid disk/object-storage service.
+    MEDIA_URL = '/api/v1/media/'
+    STORAGES = {
+        'default': {'BACKEND': 'core.media_storage.DatabaseMediaStorage'},
+        'staticfiles': {'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage'},
+    }
 WSGI_APPLICATION = 'config.wsgi.application'
 database_url = os.getenv('DATABASE_URL', '')
 if not database_url or any(placeholder in database_url for placeholder in ('PROJECT_REF', 'YOUR_ENCODED_PASSWORD', 'YOUR_POOLER_HOST')):
@@ -84,12 +102,12 @@ SPECTACULAR_SETTINGS = {'TITLE': 'Luma Haven API', 'VERSION': '1.0.0'}
 FRONTEND_ORIGIN = os.getenv('FRONTEND_ORIGIN', 'http://localhost:5173')
 CORS_ALLOWED_ORIGINS = [FRONTEND_ORIGIN]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = [FRONTEND_ORIGIN]
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys([FRONTEND_ORIGIN] + ['https://' + host for host in VERCEL_HOSTS]))
 CSRF_FAILURE_VIEW = 'core.middleware.csrf_failure'
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = ENV == 'production'
-CSRF_COOKIE_SECURE = ENV == 'production'
+SESSION_COOKIE_SECURE = HOSTED_ENVIRONMENT
+CSRF_COOKIE_SECURE = HOSTED_ENVIRONMENT
 if ENV == 'development' and os.getenv('NOTIFICATION_MODE') == 'file':
     EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
     EMAIL_FILE_PATH = os.environ['EMAIL_FILE_PATH']
@@ -129,14 +147,14 @@ if REDIS_URL:
     CACHES = {'default': {'BACKEND': 'django.core.cache.backends.redis.RedisCache', 'LOCATION': REDIS_URL}}
 
 # Rate limiting is on by default in production only, so local demos and E2E runs are not throttled.
-THROTTLE_ENABLED = os.getenv('THROTTLE_ENABLED', 'true' if ENV == 'production' else 'false').lower() == 'true'
+THROTTLE_ENABLED = os.getenv('THROTTLE_ENABLED', 'true' if HOSTED_ENVIRONMENT else 'false').lower() == 'true'
 THROTTLE_RATES = {'login': '20/min', 'otp': '10/min', 'booking': '30/min', 'privacy': '10/hour', 'poll': '120/min'}
 # Number of reverse proxies in front of Django (Caddy = 1). Never trust X-Forwarded-For beyond this.
-TRUSTED_PROXY_COUNT = int(os.getenv('TRUSTED_PROXY_COUNT', '1' if ENV == 'production' else '0'))
+TRUSTED_PROXY_COUNT = int(os.getenv('TRUSTED_PROXY_COUNT', '1' if HOSTED_ENVIRONMENT else '0'))
 # Marker file written by scripts/backup_db.sh; shown (read-only) in the Developer Console.
 BACKUP_STATUS_FILE = os.getenv('BACKUP_STATUS_FILE', '/backups/last_backup.json')
 
-if ENV == 'production':
+if HOSTED_ENVIRONMENT:
     if not os.getenv('DJANGO_ALLOWED_HOSTS') or '*' in ALLOWED_HOSTS:
         raise RuntimeError('Set DJANGO_ALLOWED_HOSTS to the real hostnames (no wildcard) in production')
     if not FRONTEND_ORIGIN.startswith('https://'):
@@ -165,7 +183,7 @@ LOGGING = {
         'plain': {'format': '%(asctime)s %(levelname)s %(name)s %(message)s'},
     },
     'handlers': {'console': {'class': 'logging.StreamHandler', 'filters': ['request_id'],
-                             'formatter': 'json' if ENV == 'production' else 'plain'}},
+                             'formatter': 'json' if HOSTED_ENVIRONMENT else 'plain'}},
     'root': {'handlers': ['console'], 'level': os.getenv('LOG_LEVEL', 'INFO')},
 }
 

@@ -423,6 +423,13 @@ class JobRun(models.Model):
     error = models.CharField(max_length=300, blank=True)
 
 
+class MediaFile(models.Model):
+    """Bounded hotel image storage for diskless university presentations."""
+    name = models.CharField(max_length=255, primary_key=True)
+    content = models.BinaryField()
+    content_type = models.CharField(max_length=80)
+
+
 class ErrorEvent(models.Model):
     """Scrubbed server exception record (no query strings, bodies, emails or tokens)."""
     created_at = models.DateTimeField(default=timezone.now, db_index=True)

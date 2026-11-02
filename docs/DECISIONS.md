@@ -1,5 +1,15 @@
 # Implementation decisions
 
+- **University hosting (2 Nov 2026):** Vercel Services (beta) keeps the Vue frontend
+  and Django API on one origin. Explicit `APP_ENV=demo` retains hosted HTTPS/security
+  settings while forcing simulated payments. Verification may be simulated only
+  for a paid booking owned by the current guest browser session, with a distinct
+  audit event; production and the normal OTP flow do not gain that shortcut. Small
+  hotel images use bounded database storage to avoid ephemeral disks and extra paid
+  services; use object storage for production scale. No persistent Celery daemons
+  run on Hobby: live reports and request-time hold release support the presentation,
+  while scheduled tasks remain an explicit limitation. See [VERCEL_DEMO.md](VERCEL_DEMO.md).
+
 - The initial property is a single hotel in `Asia/Phnom_Penh`, billing in USD minor units. The hotel row stores configurable contact details, tax, deposit percentage and arrival/departure times. Policy enforcement beyond full settlement is still pending.
 - One room is selected per booking. PostgreSQL `daterange` allocations are half-open and an exclusion constraint is the final arbiter of inventory collisions. A `btree_gist` extension is installed in the initial migration.
 - Booking immediately creates a short-lived guest browser session to access its hold and simulated checkout. Subsequent access from another browser requires email OTP; the OTP is hashed and sent to the console email backend. A confirmed booking must be verified before check-in.

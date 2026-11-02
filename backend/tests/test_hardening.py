@@ -162,6 +162,21 @@ def test_production_settings_are_hardened():
     assert s['proxy_hdr'] == ['HTTP_X_FORWARDED_PROTO', 'https'] or s['proxy_hdr'] == ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
+def test_hosted_demo_retains_https_security_and_exact_preview_hosts():
+    result = run_python('import config.settings as s; import json; print(json.dumps({'
+                        '"demo":s.PRESENTATION_DEMO,"debug":s.DEBUG,"secure":s.SESSION_COOKIE_SECURE,'
+                        '"csrf_secure":s.CSRF_COOKIE_SECURE,"redirect":s.SECURE_SSL_REDIRECT,'
+                        '"throttle":s.THROTTLE_ENABLED,"hosts":s.ALLOWED_HOSTS,"origins":s.CSRF_TRUSTED_ORIGINS}))',
+                        APP_ENV='demo', PAYMENT_PROVIDER='development', VERCEL='1', VERCEL_URL='demo-123.vercel.app')
+    assert result.returncode == 0, result.stderr
+    value = json.loads(result.stdout.strip().splitlines()[-1])
+    assert value['demo'] and not value['debug']
+    assert all(value[k] for k in ('secure','csrf_secure','redirect','throttle'))
+    assert 'demo-123.vercel.app' in value['hosts'] and '*' not in value['hosts']
+    assert 'https://demo-123.vercel.app' in value['origins']
+    assert run_python('import config.settings', APP_ENV='demo', PAYMENT_PROVIDER='bakong').returncode != 0
+
+
 @pytest.mark.parametrize('override', [
     {'DJANGO_ALLOWED_HOSTS': None},                       # missing hosts
     {'DJANGO_ALLOWED_HOSTS': '*'},                        # wildcard

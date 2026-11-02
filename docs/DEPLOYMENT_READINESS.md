@@ -1,5 +1,9 @@
 # Deployment readiness review — 2 November 2026
 
+**Follow-up:** the university-demo changes and deployment are documented in
+[VERCEL_DEMO.md](VERCEL_DEMO.md). The assessment below records the original project
+state before those changes; production limitations still apply.
+
 Reviewed commit: `7db03b0`. Scope: repository deployment architecture, production settings,
 frontend build, backend checks, automated journeys, and current Vercel documentation.
 This is a readiness assessment, not a production release or a complete security audit.

@@ -47,6 +47,7 @@ def detail(obj):
     folio = obj.folio
     stay = Stay.objects.filter(reservation=obj).first()
     return {'id': obj.pk, 'reference': obj.reference, 'status': obj.status, 'arrival': obj.arrival,
+            'presentation_demo': settings.PRESENTATION_DEMO,
             'departure': obj.departure, 'room': obj.room.number, 'room_type': obj.room.type.name,
             'guest_name': obj.guest.full_name, 'verified': obj.verified, 'currency': folio.currency,
             'hotel_today': services.hotel_today(obj.room.hotel), 'hotel_timezone': obj.room.hotel.timezone,
@@ -242,6 +243,8 @@ def development_checkout(request, pk):
     # Only demo attempts can be simulated; a bank (Bakong) attempt settles only via the bank.
     if not attempt or attempt.provider != 'development':
         raise PermissionDenied('This payment is not a demo payment')
+    if settings.PRESENTATION_DEMO:
+        booking(request, attempt.reservation_id)
     if request.method == 'GET':
         return Response({'amount_minor': attempt.amount_minor, 'currency': attempt.currency, 'status': attempt.status, 'reservation_id': attempt.reservation_id, 'simulated': True})
     outcome = request.data.get('outcome')
@@ -251,6 +254,33 @@ def development_checkout(request, pk):
     # Never accept event IDs or amounts from a browser as evidence of settlement.
     event = services.process_event(pk, outcome, secrets.token_hex(20))
     return Response({'status': event.status, 'simulated': True})
+
+
+@api_view(['POST'])
+@throttle_classes([throttling.OtpThrottle])
+def presentation_verify(request, pk):
+    if not settings.PRESENTATION_DEMO:
+        raise NotFound()
+    if request.portal != 'guest' or request.session.get('guest_reservation') != pk:
+        raise PermissionDenied('Use the browser that created this demo booking')
+    try:
+        obj = services.verify_presentation_booking(booking(request, pk))
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from exc
+    return Response(detail(obj))
+
+
+def presentation_media(request, name):
+    if not settings.DATABASE_MEDIA:
+        return HttpResponse(status=404)
+    from .models import MediaFile
+    obj = MediaFile.objects.filter(pk=name).first()
+    if obj is None:
+        return HttpResponse(status=404)
+    response = HttpResponse(bytes(obj.content), content_type=obj.content_type)
+    response['Cache-Control'] = 'public, max-age=3600'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 @api_view(['POST'])
 @throttle_classes([throttling.OtpThrottle])
@@ -1612,8 +1642,8 @@ def staff_visual_assets(request):
         if not image_file:
             raise ValidationError('An image file is required.')
 
-        if image_file.size > 10 * 1024 * 1024:
-            raise ValidationError('Image file size cannot exceed 10 MB.')
+        if image_file.size > settings.MAX_IMAGE_UPLOAD_BYTES:
+            raise ValidationError(f'Image file size cannot exceed {settings.MAX_IMAGE_UPLOAD_BYTES // (1024 * 1024)} MB.')
 
         try:
             with Image.open(image_file) as img:
@@ -1690,8 +1720,8 @@ def staff_visual_asset_detail(request, pk):
 
         replacement_image = request.FILES.get('image')
         if replacement_image:
-            if replacement_image.size > 10 * 1024 * 1024:
-                raise ValidationError('Image file size cannot exceed 10 MB.')
+            if replacement_image.size > settings.MAX_IMAGE_UPLOAD_BYTES:
+                raise ValidationError(f'Image file size cannot exceed {settings.MAX_IMAGE_UPLOAD_BYTES // (1024 * 1024)} MB.')
             try:
                 with Image.open(replacement_image) as img:
                     width, height = img.size
@@ -1852,6 +1882,7 @@ urlpatterns = [
     path('admin/data-requests', admin_data_requests), path('admin/data-requests/<int:pk>/resolve', admin_resolve_data_request),
     path('admin/legal', admin_legal), path('admin/legal/<int:pk>', admin_legal_detail), path('admin/legal/<int:pk>/publish', admin_legal_publish),
     path('health', lambda r: JsonResponse({'status': 'ok'})), path('ready', ready),
+    path('media/<path:name>', presentation_media),
     path('auth/csrf', csrf), path('auth/login', staff_login), path('auth/logout', staff_logout), path('auth/me', me),
     path('rooms', rooms), path('availability', availability), path('quotes', quotes),
     path('visual-assets', visual_assets),
@@ -1861,6 +1892,7 @@ urlpatterns = [
     path('admin/visual-assets/<int:pk>', staff_visual_asset_detail),
     path('reservations', reservations), path('reservations/<int:pk>', reservation),
     path('reservations/<int:pk>/payment-sessions', payment_session),
+    path('reservations/<int:pk>/demo-verify', presentation_verify),
     path('payment-sessions/<uuid:pk>', payment_session_status),
     path('development/checkout/<uuid:pk>', development_checkout),
     path('guest-access/request-otp', request_otp), path('guest-access/verify-otp', verify_otp),

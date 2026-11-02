@@ -18,7 +18,16 @@ execFileSync(python, ['backend/manage.py', 'seed_demo'], {
   cwd: root, env: { ...env, SEED_PASSWORD: process.env.E2E_STAFF_PASSWORD }, stdio: 'pipe',
 })
 
-const backend = spawn(python, ['backend/manage.py', 'runserver', '127.0.0.1:8001', '--noreload'], {
+// The HTTP-only local harness exercises the demo interaction without weakening hosted settings.
+const demoArgs = ['-c', `import os, sys
+sys.path.insert(0, 'backend')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+from django.conf import settings
+settings.PRESENTATION_DEMO = True
+from django.core.management import execute_from_command_line
+execute_from_command_line(['manage.py', 'runserver', '127.0.0.1:8001', '--noreload'])`]
+const serverArgs = process.env.E2E_PRESENTATION_DEMO === 'true' ? demoArgs : ['backend/manage.py', 'runserver', '127.0.0.1:8001', '--noreload']
+const backend = spawn(python, serverArgs, {
   cwd: root, env, stdio: 'inherit',
 })
 process.on('SIGINT', () => backend.kill('SIGINT'))

@@ -12,6 +12,8 @@ backend/db.sqlite3
 backend/celerybeat-schedule*
 backend/.private-staff-passwords*
 backend/media/
+backend/staticfiles/
+.vercel/
 backend/source_assets/
 frontend/playwright-report/
 frontend/test-results/

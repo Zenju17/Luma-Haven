@@ -15,6 +15,21 @@ from .models import (Allocation, Audit, Folio, FolioEntry, Guest, Hotel, Houseke
 def hotel_today(hotel):
     return timezone.localtime(timezone.now(), ZoneInfo(hotel.timezone)).date()
 
+
+@transaction.atomic
+def verify_presentation_booking(reservation):
+    """Simulate verification only after the caller proves browser-session ownership."""
+    if not settings.PRESENTATION_DEMO:
+        raise ValueError('Presentation verification is disabled')
+    reservation = Reservation.objects.select_for_update().get(pk=reservation.pk)
+    if reservation.status != 'CONFIRMED':
+        raise ValueError('Complete the simulated payment before demo verification')
+    if not reservation.verified:
+        reservation.verified = True
+        reservation.save(update_fields=['verified'])
+        Audit.objects.create(actor='presentation guest', action='DEMO_VERIFICATION', target=reservation.reference)
+    return reservation
+
 def balance(folio):
     charges = folio.entries.aggregate(total=Sum('amount_minor'))['total'] or 0
     paid = Payment.objects.filter(attempt__reservation=folio.reservation).aggregate(total=Sum('amount_minor'))['total'] or 0

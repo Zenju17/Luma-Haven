@@ -2,6 +2,14 @@
 
 ## Completed
 
+- **Vercel university demo (2 Nov 2026):** Services routing for Vue and Django;
+  hardened `APP_ENV=demo`, forced simulated payments, browser-owned demo verification,
+  and 3 MiB database image storage with migration `0009`. The existing demo DB was
+  backed up and migrated without reseeding; all 29 images imported. Verification:
+  116 backend tests and four demo browser journeys passed. See [VERCEL_DEMO.md](VERCEL_DEMO.md).
+  Vercel reports deployment `dpl_7Um2NEBR5d9Eywd8xP4q1ZRrq7Sz` **READY**;
+  staticfiles/automatic collection was fixed during the deployment build.
+
 - Feature branch, Django/DRF/Vite/Vue 3/Tailwind foundation and Compose configuration.
 - Hotel, rooms, server quotes, short-lived holds, half-open PostgreSQL inventory exclusion, payment attempts and locally simulated settlement events, expired-hold release and late-payment conflict exceptions.
 - Session login, role gates on staff operations, guest booking isolation, OTP email verification, transactional stay transitions, service requests, dirty-room checkout and inspection workflow.

@@ -29,7 +29,7 @@ export default defineConfig({
   expect: { timeout: 12_000 },
   retries: 0,
   reporter: [['list']],
-  metadata: { mailDir: process.env.E2E_MAIL_DIR, staffPassword: process.env.E2E_STAFF_PASSWORD },
+  metadata: { mailDir: process.env.E2E_MAIL_DIR, staffPassword: process.env.E2E_STAFF_PASSWORD, presentationDemo: process.env.E2E_PRESENTATION_DEMO === 'true' },
   use: { baseURL: 'http://127.0.0.1:5174', trace: 'retain-on-failure', ...devices['Desktop Chrome'] },
   globalTeardown: './tests/teardown.ts',
   webServer: [
@@ -45,6 +45,7 @@ export default defineConfig({
         E2E_TEST_DATABASE_NAME: process.env.E2E_TEST_DATABASE_NAME,
         E2E_STAFF_PASSWORD: process.env.E2E_STAFF_PASSWORD,
         E2E_PYTHON: python,
+        E2E_PRESENTATION_DEMO: process.env.E2E_PRESENTATION_DEMO || 'false',
         DJANGO_SECRET_KEY: randomBytes(32).toString('hex'),
         DJANGO_DEBUG: 'false',
         DJANGO_ALLOWED_HOSTS: '127.0.0.1,localhost',
@@ -61,7 +62,7 @@ export default defineConfig({
       cwd: frontend,
       reuseExistingServer: false,
       timeout: 30_000,
-      env: { API_PROXY_TARGET: 'http://127.0.0.1:8001' },
+      env: { API_PROXY_TARGET: 'http://127.0.0.1:8001', VITE_PRESENTATION_DEMO: process.env.E2E_PRESENTATION_DEMO || 'false' },
     },
   ],
 })

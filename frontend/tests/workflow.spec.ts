@@ -36,7 +36,7 @@ async function signIn(page: Page, username: string, password: string) {
 }
 
 test('guest booking, simulated payment, verification, stay, checkout and room inspection', async ({ page, browser }) => {
-  const { mailDir, staffPassword } = test.info().config.metadata as { mailDir: string; staffPassword: string }
+  const { mailDir, staffPassword, presentationDemo } = test.info().config.metadata as { mailDir: string; staffPassword: string; presentationDemo: boolean }
   const email = `visitor-${randomBytes(6).toString('hex')}@example.test`
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Welcome to Luma-Haven.' })).toBeVisible()
@@ -59,18 +59,24 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
   await page.getByRole('button', { name: 'Simulate success' }).click()
   await expect(page.getByText('CONFIRMED', { exact: true })).toBeVisible()
 
-  await page.goto('/verify')
-  await page.getByLabel('Booking reference').fill(reference)
-  await page.getByLabel('Email address').fill(email)
-  const before = new Set(readdirSync(mailDir))
-  await page.getByRole('button', { name: 'Send verification code' }).click()
-  await expect.poll(() => readdirSync(mailDir).filter(name => !before.has(name)).length).toBe(1)
-  const message = readFileSync(join(mailDir, readdirSync(mailDir).find(name => !before.has(name))!), 'utf8')
-  const code = message.match(/Your verification code is (\d{6})/)?.[1]
-  expect(code).toMatch(/^\d{6}$/)
-  await page.getByLabel('Six-digit code').fill(code!)
-  await page.getByRole('button', { name: 'Verify and continue' }).click()
-  await expect(page).toHaveURL(new RegExp(`/booking/${bookingId}$`))
+  if (presentationDemo) {
+    await expect(page.getByLabel('University demonstration')).toBeVisible()
+    await page.getByRole('button', { name: 'Verify demo booking' }).click()
+    await expect(page.getByRole('button', { name: 'Check in', exact: true })).toBeVisible()
+  } else {
+    await page.goto('/verify')
+    await page.getByLabel('Booking reference').fill(reference)
+    await page.getByLabel('Email address').fill(email)
+    const before = new Set(readdirSync(mailDir))
+    await page.getByRole('button', { name: 'Send verification code' }).click()
+    await expect.poll(() => readdirSync(mailDir).filter(name => !before.has(name)).length).toBe(1)
+    const message = readFileSync(join(mailDir, readdirSync(mailDir).find(name => !before.has(name))!), 'utf8')
+    const code = message.match(/Your verification code is (\d{6})/)?.[1]
+    expect(code).toMatch(/^\d{6}$/)
+    await page.getByLabel('Six-digit code').fill(code!)
+    await page.getByRole('button', { name: 'Verify and continue' }).click()
+    await expect(page).toHaveURL(new RegExp(`/booking/${bookingId}$`))
+  }
 
   const unauthorised = await browser.newContext()
   try {

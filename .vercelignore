@@ -1,0 +1,17 @@
+.git
+.venv
+.env*
+.agents
+.codex
+**/node_modules
+**/__pycache__
+**/.pytest_cache
+**/*.pyc
+**/.private-staff-passwords*
+backend/media
+backend/source_assets
+backend/staticfiles
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+backups

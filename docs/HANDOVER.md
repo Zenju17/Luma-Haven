@@ -6,6 +6,24 @@
 
 Read [`AGENTS.md`](../AGENTS.md) first for stack, commands and invariants. This file answers: what works, what is fake, what is risky, and what to do next.
 
+## University deployment update — 2 November 2026
+
+Vercel preview deployment preparation now uses Services for Vue/Django, hardened
+`APP_ENV=demo`, simulated payments/verification, and durable bounded database images
+(migration `0009`). See [VERCEL_DEMO.md](VERCEL_DEMO.md) for the deployment result,
+presentation steps and hosting limits. The Supabase demo DB was backed up, its legacy
+organization migration reconciled after schema verification, and `0006`–`0009`
+applied; 29 image files imported. Existing inventory and accounts were not reseeded.
+All 116 backend tests and four presentation-mode browser journeys pass on disposable
+PostgreSQL; frontend build/typechecks, Django check and migration consistency pass.
+Older snapshots and next steps below predate this deployment work.
+Deployment is now **READY** at https://luma-haven-itobaxlql-zenju17.vercel.app
+(`dpl_7Um2NEBR5d9Eywd8xP4q1ZRrq7Sz`). The root deployment configuration and all
+application changes remain local/uncommitted; Vercel received an uploaded source
+snapshot. Staticfiles was enabled to fix the real Vercel `collectstatic` build.
+Vercel sign-in protection was subsequently disabled at the user's explicit request;
+the demo link is public, while staff/admin logins remain required by the application.
+
 ## Status at a glance
 
 Luma Haven is a **working development/demo checkpoint**, not production software. The full guest-to-housekeeping journey and the MIS management loop run end to end against PostgreSQL, with simulated payments.

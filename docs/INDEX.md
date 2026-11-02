@@ -8,6 +8,7 @@ Use this page to load only what a task needs. Token estimates are bytes ÷ 4 (pr
 | [`HANDOVER.md`](HANDOVER.md) | Starting a new session; need current state, risks, branch divergence, next steps. | 82 lines · ~1.7k |
 | [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) | Need the detailed completed/pending list and executed-test log. | 64 lines · ~3.3k |
 | [`DEMO.md`](DEMO.md) | Presenting the app; start/stop Podman, accounts, OTP retrieval, walkthrough. | 97 lines · ~2.6k |
+| [`VERCEL_DEMO.md`](VERCEL_DEMO.md) | University presentation deployment, preview configuration, simulated verification and hosting limits. | ~90 lines |
 | [`TESTING.md`](TESTING.md) | Running pytest/Playwright safely on disposable PostgreSQL. | 68 lines · ~0.9k |
 | [`MIS_DEMONSTRATION.md`](MIS_DEMONSTRATION.md) | Explaining the MIS loop, KPI formulas, DSS rules, governance story. | 219 lines · ~3.9k |
 | [`PAYMENTS.md`](PAYMENTS.md) | Planning the Bakong KHQR payment integration (not implemented yet). | 119 lines · ~2.1k |

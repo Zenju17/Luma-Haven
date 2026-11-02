@@ -106,8 +106,9 @@ async function sendRequest() {
 
       <div v-if="booking.data.value.status === 'CONFIRMED'" class="card stay-action p-6 mt-5">
         <h2 class="text-2xl">Ready to arrive?</h2>
-        <p class="text-sm text-[var(--muted)] mt-2">Verify your email before check-in.</p>
-        <RouterLink class="btn inline-flex mt-4" to="/verify">Verify booking</RouterLink>
+        <p class="text-sm text-[var(--muted)] mt-2">{{ booking.data.value.presentation_demo ? 'University demo: simulate verification for the booking created in this browser.' : 'Verify your email before check-in.' }}</p>
+        <button v-if="booking.data.value.presentation_demo && !booking.data.value.verified" class="btn mt-4" :disabled="busy" @click="act(() => api(`/reservations/${id}/demo-verify`, {}))">Verify demo booking</button>
+        <RouterLink v-else-if="!booking.data.value.presentation_demo" class="btn inline-flex mt-4" to="/verify">Verify booking</RouterLink>
         <button v-if="eligibleToday" class="btn-secondary ml-3" :disabled="busy" @click="act(() => api(`/reservations/${id}/check-in`, {}))">Check in</button>
         <p v-else-if="booking.data.value.verified && booking.data.value.hotel_today < booking.data.value.arrival" class="text-sm mt-4 text-[var(--muted)]">Check-in opens on {{ booking.data.value.arrival }} ({{ booking.data.value.hotel_timezone }}).</p>
         <p v-else-if="booking.data.value.verified && booking.data.value.hotel_today >= booking.data.value.departure" class="text-sm mt-4 text-[var(--muted)]">Your arrival window has passed. Please contact reception.</p>
