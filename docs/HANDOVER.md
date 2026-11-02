@@ -26,6 +26,25 @@ authentication remains. Payments and verification still use the explicitly simul
 runtime configuration; this release does not enable real payment/email providers.
 Staticfiles was enabled to fix the real Vercel `collectstatic` build.
 
+## Production inventory seed — 2 November 2026
+
+Production was missing 7 of the 10 guest-facing room types: they were in
+`roomCatalog.ts` and `seed_demo.py` but never seeded, so they showed names without
+availability. After a private dump (`backups/before-room-seed-20261102T124513Z.dump`),
+`seed_demo` was run against the Supabase demo DB. It is idempotent, so no users,
+reservations or maintenance blocks were added. Production now has 10 types and 17 rooms,
+16 in service (202 is under maintenance). Open issue: room 103 holds a seeded demo stay
+that was never checked out. Once that stay is past its departure date, `_available_rooms`
+treats it as an overstay and blocks 103 on every date until staff check the guest out.
+
+## Image sharpness — 2 November 2026
+
+Replaced 5 low-resolution guest images with 2400px Unsplash stock (docs/IMAGE_CREDITS.md)
+and added a low-resolution warning to the media manager. Production `VisualAsset` #29
+("Guest Lounge Concept", EXPERIENCE) now points to `visual_assets/features/lounge-2400.jpg`.
+The old 328px `MediaFile` row (`visual_assets/features/lounge.jpg`) is kept for rollback. `rooms/connecting-family/main.jpg` (712px) still
+needs a replacement.
+
 ## Status at a glance
 
 Luma Haven is a **working development/demo checkpoint**, not production software. The full guest-to-housekeeping journey and the MIS management loop run end to end against PostgreSQL, with simulated payments.

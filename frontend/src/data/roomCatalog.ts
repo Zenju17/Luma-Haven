@@ -35,19 +35,19 @@ export const ROOM_CATALOG: RoomCatalogEntry[] = [
     slug: 'city-king', name: 'City King', beds: '1 king bed', bedKind: 'King', capacity: 2, fromRate: 80,
     summary: 'A king bed and a long sofa by full-height sheer curtains. Room to stretch out after a busy day.',
     highlights: ['King bed', 'Window sofa', 'Soft wall lighting'],
-    photo: photo('city-king'), photoAlt: 'King bed with orange cushion beside a long sofa under full-height sheer curtains',
+    photo: photo('city-king'), photoAlt: 'King bed with a blue throw beside an armchair and full-height sheer curtains',
   },
   {
     slug: 'garden-king', name: 'Garden King', beds: '1 king bed', bedKind: 'King', capacity: 2, fromRate: 85,
     summary: 'Warm oak walls, paper lanterns and a corner sofa. Our quietest king room.',
     highlights: ['King bed', 'Oak-panelled walls', 'Coffee corner'],
-    photo: photo('garden-king'), photoAlt: 'King bed against oak-panelled wall with paper lantern lights and a sofa by the window',
+    photo: photo('garden-king'), photoAlt: 'King bed against an oak-slat wall beside floor-to-ceiling windows onto a garden',
   },
   {
     slug: 'double-queen', name: 'Double Queen', beds: '2 queen beds', bedKind: 'Queen', capacity: 4, fromRate: 95,
     summary: 'Two queen beds, a work desk and a TV. Fits a small family or four friends.',
     highlights: ['Two queen beds', 'Work desk', 'Smart TV'],
-    photo: photo('double-queen'), photoAlt: 'Two queen beds facing a wall-mounted TV and wooden work desk',
+    photo: photo('double-queen'), photoAlt: 'Two large beds with teal cushions beside warm curtains and a window seat',
   },
   {
     slug: 'triple-room', name: 'Triple Room', beds: '3 single beds', bedKind: 'Twin', capacity: 3, fromRate: 105,
@@ -71,7 +71,7 @@ export const ROOM_CATALOG: RoomCatalogEntry[] = [
     slug: 'signature-suite', name: 'Signature Suite', beds: '1 king bed', bedKind: 'King', capacity: 2, fromRate: 210,
     summary: 'A separate lounge with armchairs and sofa, divided from the bedroom by a walnut screen.',
     highlights: ['Separate lounge', 'King bed', 'Walnut divider'],
-    photo: photo('signature-suite'), photoAlt: 'Suite with walnut divider separating the bedroom from a lounge with armchairs',
+    photo: photo('signature-suite'), photoAlt: 'Suite lounge with leather armchairs, a round black coffee table and a double-height ceiling',
   },
   {
     slug: 'riverfront-suite', name: 'Riverfront Suite', beds: '1 king bed', bedKind: 'King', capacity: 2, fromRate: 240,

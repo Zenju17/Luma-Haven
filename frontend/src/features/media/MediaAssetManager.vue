@@ -31,6 +31,11 @@ const editForm = ref({
   facility_claim: '',
 })
 
+// Images whose long edge is below this look soft in lightboxes on HiDPI/phone screens.
+const MIN_SHARP_EDGE_PX = 1600
+const uploadDims = ref<{ width: number; height: number } | null>(null)
+const isLowRes = (width: number, height: number) => width > 0 && Math.max(width, height) < MIN_SHARP_EDGE_PX
+
 // Upload form state
 const uploadForm = ref({
   file: null as File | null,
@@ -141,6 +146,10 @@ function onFileSelect(e: Event) {
     const file = input.files[0]
     uploadForm.value.file = file
     uploadForm.value.previewUrl = URL.createObjectURL(file)
+    uploadDims.value = null
+    const probe = new Image()
+    probe.onload = () => { uploadDims.value = { width: probe.naturalWidth, height: probe.naturalHeight } }
+    probe.src = uploadForm.value.previewUrl
     if (!uploadForm.value.title) {
       uploadForm.value.title = file.name.replace(/\.[^/.]+$/, '').replace(/[_-]/g, ' ')
     }
@@ -405,6 +414,9 @@ async function submitUpload() {
               <p v-if="asset.facility_claim" class="text-amber-600 dark:text-amber-400 flex items-center gap-1">
                 <span>⚠️</span> Claim: {{ asset.facility_claim }}
               </p>
+              <p v-if="isLowRes(asset.width, asset.height)" class="text-amber-600 dark:text-amber-400 font-semibold">
+                ⚠️ Low resolution: will look blurry when enlarged
+              </p>
               <p class="font-mono text-[10px] text-[var(--muted)] truncate">
                 {{ asset.original_filename }} ({{ asset.width }}×{{ asset.height }} · {{ Math.round(asset.file_size_bytes / 1024) }} KB)
               </p>
@@ -570,6 +582,14 @@ async function submitUpload() {
           <div v-if="uploadForm.previewUrl" class="aspect-[16/9] w-full rounded-xl overflow-hidden bg-black/30 border border-[var(--glass-border)] relative">
             <img :src="uploadForm.previewUrl" alt="Upload preview" class="w-full h-full object-cover" />
           </div>
+          <p
+            v-if="uploadForm.previewUrl && uploadDims && isLowRes(uploadDims.width, uploadDims.height)"
+            role="alert"
+            class="text-xs rounded-lg px-3 py-2 bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-700/50"
+          >
+            ⚠️ This image is only {{ uploadDims.width }}×{{ uploadDims.height }} px and will look blurry when enlarged.
+            Use at least {{ MIN_SHARP_EDGE_PX }} px on the long edge (2400 px recommended).
+          </p>
 
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Title</label>

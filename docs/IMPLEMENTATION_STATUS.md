@@ -75,6 +75,15 @@ Production deployment readiness, payment provider gateway integration, and guest
 - Development payment simulator is clearly labeled as an emulator and does not execute real credit card transactions.
 - Future work: PDF export generation, guest SMS notification channels, and webhook verification for live payment gateways (e.g., Stripe).
 
+## Production inventory (2 Nov 2026)
+
+Seeded the full catalogue: 10 room types, 17 rooms, 16 in service. A backup was taken first (see HANDOVER).
+
+## Guest images (2 Nov 2026)
+
+Room and lounge photos are now 2400px. The media manager warns on images whose long
+edge is under 1600px. Responsive `srcset` is not implemented.
+
 ## Next concrete steps
 
 1. Production payment provider integration with cryptographically signed webhook handlers.

@@ -43,3 +43,13 @@
 ## 2026-11-02 — Bakong failures recorded as ErrorEvent rows
 
 Bakong `create_qr`, status-poll and Developer Console connectivity failures (rate limit, 403, network) are now stored as `ErrorEvent` rows (`method=PAY`, `path=payments/bakong/<stage>/<attempt>`), so they appear in the Developer Console error list instead of only in Vercel logs. Identical failures within 5 minutes are collapsed to avoid flooding from 30 s polling. Messages come from `ProviderError` (capped at 300 chars, no token). No model change, so no migration. The new test (`test_bakong_failures_are_recorded_once_for_the_developer_console`) was not run: the disposable Postgres on :55432 was unavailable (no podman/docker here).
+
+## 2026-11-02 — High-resolution stock images and a low-resolution warning
+
+Some guest images looked blurry because their source files were small (the lounge image
+was 328×175; several room photos were 540–863px wide). Lightboxes on HiDPI and phone
+screens need about 2400px. The owner has no property photos, so five images were replaced
+with Unsplash-licensed stock at 2400px (see IMAGE_CREDITS.md), with alt text rewritten to
+match. The media manager now warns when an upload, or an existing asset, has a long edge
+under 1600px. Not done yet: generating responsive `srcset` variants on upload.
+
