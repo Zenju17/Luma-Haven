@@ -9,6 +9,7 @@ import RoomSpacesModal from './components/RoomSpacesModal.vue'
 import ConsentCheck from '../legal/ConsentCheck.vue'
 import { api } from '../../services/api'
 import { hotelToday, followingDay } from '../../services/hotelDates'
+import { roomCatalogFor, roomPhotoFor, type BedKind } from '../../data/roomCatalog'
 import { money, type PublicVisualAssetsResponse, type Quote, type Room } from '../../types'
 
 const route = useRoute()
@@ -85,7 +86,6 @@ const availability = useQuery({
   enabled: hasDates,
 })
 
-const roomTypes = computed(() => [...new Set((rooms.data.value || []).map(room => room.type))])
 const searchError = computed(() => hasDates.value ? availability.error.value : rooms.error.value)
 const searching = computed(() => hasDates.value ? availability.isPending.value : rooms.isPending.value)
 
@@ -103,11 +103,28 @@ watch([arrival, departure, occupants], () => {
   quote.value = null
 })
 
+const bedFilter = ref<BedKind | ''>('')
+const bedChips: { label: string; value: BedKind | '' }[] = [
+  { label: 'All rooms', value: '' },
+  { label: 'King bed', value: 'King' },
+  { label: 'Queen bed', value: 'Queen' },
+  { label: 'Single beds', value: 'Twin' },
+  { label: 'Family', value: 'Family' },
+]
+
+function cardPhoto(typeName: string) {
+  const uploaded = getRoomTypeAsset(typeName)
+  return uploaded ? { src: uploaded.image_url, alt: uploaded.alt_text } : roomPhotoFor(typeName)
+}
+
 const displayRooms = computed(() => {
   const source = hasDates.value ? availability.data.value : rooms.data.value
   if (!source) return []
-  if (!typeFilter.value) return source
-  return source.filter((r) => r.type.toLowerCase().includes(typeFilter.value.toLowerCase()))
+  return source.filter((r) => {
+    if (typeFilter.value && !r.type.toLowerCase().includes(typeFilter.value.toLowerCase())) return false
+    if (bedFilter.value && roomCatalogFor(r.type)?.bedKind !== bedFilter.value) return false
+    return true
+  })
 })
 
 // Sync query params when route changes
@@ -180,14 +197,11 @@ async function reserve() {
     <div class="py-6 sm:py-10 space-y-8">
       <!-- Page Header -->
       <div class="space-y-2">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[var(--glass-border)] bg-[var(--surface-muted)] text-[var(--brass)] text-xs font-semibold tracking-wider uppercase">
-          Luma Haven · Room Inventory
-        </div>
         <h1 class="serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[var(--brand-text)]">
-          Rooms &amp; Availability<span class="text-[var(--brass)]">.</span>
+          Find your room
         </h1>
         <p class="text-sm sm:text-base text-[var(--muted)] max-w-2xl">
-          Enter your dates below to see verified available rooms, live rates, and instant quotes. Physical brass keys await at reception.
+          Pick your dates and number of guests. We only show rooms that are free for your whole stay.
         </p>
       </div>
 
@@ -199,16 +213,6 @@ async function reserve() {
         :navigate-on-submit="false"
         @search="onSearch"
       />
-
-      <!-- Banner linking to Spaces Explorer -->
-      <div class="mb-6 p-4 rounded-xl bg-[var(--surface-raised)] border border-[var(--glass-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm shadow-sm">
-        <span class="text-[var(--muted)]">
-          Looking to review all hotel architecture, rooftop pool, and interior design concepts?
-        </span>
-        <RouterLink to="/spaces" class="font-semibold text-[var(--brass)] hover:underline inline-flex items-center gap-1 shrink-0">
-          Review all 28 hotel locations &rarr;
-        </RouterLink>
-      </div>
 
       <!-- Filter status / Active dates notice -->
       <Notice v-if="!selected" :message="error" />
@@ -227,31 +231,17 @@ async function reserve() {
           </p>
         </div>
 
-        <!-- Room Type quick filters -->
-        <div class="flex items-center gap-2 text-xs">
-          <span class="text-[var(--muted)]">Filter:</span>
+        <!-- Bed type filters -->
+        <div class="filter-chips" role="group" aria-label="Filter by bed type">
           <button
+            v-for="chip in bedChips"
+            :key="chip.value"
             type="button"
-            :class="[
-              'px-3 py-1 rounded-full font-medium transition-colors',
-              typeFilter === '' ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-            ]"
-            @click="setTypeFilter('')"
+            class="chip"
+            :aria-pressed="bedFilter === chip.value"
+            @click="bedFilter = chip.value"
           >
-            All
-          </button>
-          <button
-            v-for="type in roomTypes"
-            :key="type"
-            type="button"
-            :aria-pressed="typeFilter === type"
-            :class="[
-              'px-3 py-1 rounded-full font-medium transition-colors',
-              typeFilter === type ? 'bg-[var(--brass)] text-white' : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-            ]"
-            @click="setTypeFilter(type)"
-          >
-            {{ type }}
+            {{ chip.label }}
           </button>
         </div>
       </div>
@@ -290,43 +280,32 @@ async function reserve() {
           :key="room.id"
           class="room-card card flex flex-col justify-between rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-raised)] shadow-sm hover:shadow-lg transition-all"
         >
-          <!-- Room Image Thumbnail (if assigned) -->
-          <div v-if="getRoomTypeAsset(room.type)" class="relative aspect-[16/10] overflow-hidden rounded-t-2xl bg-[var(--deep)] border-b border-[var(--glass-border)]">
+          <div class="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-[var(--surface-muted)]">
             <img
-              :src="getRoomTypeAsset(room.type)!.image_url"
-              :alt="getRoomTypeAsset(room.type)!.alt_text"
+              :src="cardPhoto(room.type).src"
+              :alt="cardPhoto(room.type).alt"
+              width="800"
+              height="600"
               class="w-full h-full object-cover object-center"
               loading="lazy"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-[var(--deep)]/40 to-transparent pointer-events-none" />
-            <div
-              v-if="getRoomTypeAsset(room.type)!.source_type === 'CONCEPT'"
-              class="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-medium tracking-wide bg-black/60 text-[#d9b87f] border border-[#d9b87f]/30 backdrop-blur-md"
-            >
-              Design Concept
-            </div>
+            <span class="absolute bottom-3 left-3 photo-tag">Representative photo</span>
           </div>
-          <!-- Room Key Graphic Badge (fallback if no photo assigned) -->
-          <div v-else class="room-key" aria-hidden="true">
-            <span class="room-key-number">{{ room.number }}</span>
-            <span class="room-key-aside">Luma Haven<br />Physical key</span>
-          </div>
-
 
           <div class="room-card-body p-6 flex flex-col grow justify-between space-y-4">
             <div class="space-y-2">
-              <div class="flex items-center justify-between gap-2">
-                <span class="badge">
-                  Room {{ room.number }} · Up to {{ room.capacity }} {{ room.capacity === 1 ? 'guest' : 'guests' }}
-                </span>
-              </div>
+              <ul class="room-facts">
+                <li v-if="roomCatalogFor(room.type)">{{ roomCatalogFor(room.type)!.beds }}</li>
+                <li>Sleeps {{ room.capacity }}</li>
+                <li>Room {{ room.number }}</li>
+              </ul>
 
               <h3 class="text-2xl font-medium text-[var(--brand-text)] serif">
                 {{ room.type }}
               </h3>
 
               <p class="text-[var(--muted)] text-sm line-clamp-2">
-                {{ room.description || 'A restful retreat, made for your next getaway in Phnom Penh.' }}
+                {{ roomCatalogFor(room.type)?.summary || room.description || 'A restful room for your stay in Phnom Penh.' }}
               </p>
 
               <p v-if="room.amenities?.length" class="amenity-list text-xs text-[var(--muted)] pt-2 border-t border-[var(--line)]">
@@ -351,7 +330,7 @@ async function reserve() {
             <div class="room-card-footer pt-4 border-t border-[var(--line)] flex items-center justify-between gap-4">
               <div v-if="room.rate_minor !== undefined" class="flex flex-col">
                 <span class="text-xs text-[var(--muted)]">From</span>
-                <span class="font-bold text-xl text-[var(--brand-text)]">
+                <span class="font-bold text-xl price">
                   {{ money(room.rate_minor) }}
                   <span class="font-normal text-xs text-[var(--muted)]">/ night</span>
                 </span>
@@ -360,19 +339,19 @@ async function reserve() {
               <!-- View Quote Button: active when dates exist -->
               <button
                 v-if="hasDates"
-                class="btn-secondary text-sm font-semibold px-4 py-2"
+                class="btn-cta text-sm px-5"
                 type="button"
                 @click="selectRoom(room)"
               >
-                View quote
+                See price
               </button>
               <button
                 v-else
-                class="btn-secondary text-xs font-semibold px-3 py-2"
+                class="btn-secondary text-sm font-semibold px-4"
                 type="button"
                 @click="onSearch({ arrival: hotelToday(), departure: followingDay(hotelToday()), occupants })"
               >
-                Select dates
+                Pick dates
               </button>
             </div>
           </div>

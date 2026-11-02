@@ -5,31 +5,39 @@
    Design tokens — Light theme (default)
    ───────────────────────────────────────────── */
 :root {
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Figtree', 'Kantumruy Pro', sans-serif;
   font-synthesis: none;
   color-scheme: light;
 
+  /* Brand palette — exactly three colours: Mekong Teal, Saffron, Celadon */
+  --brand-teal: #0e4a4c;
+  --brand-saffron: #eba742;
+  --brand-celadon: #e4ede6;
+  --cta-bg: var(--brand-saffron);
+  --cta-hover: #f3bd66;
+  --cta-text: #0b3133;
+
   /* Palette */
-  --deep: #163d3a;
-  --ink: #1f3330;
-  --mist: #f2f7f5;
-  --sea-glass: #dce9e5;
-  --line: #cbdad4;
-  --brass: #9b7945;
-  --brass-hover: #866635;
-  --muted: #536b66;
+  --deep: #0e4a4c;
+  --ink: #16302f;
+  --mist: #e4ede6;
+  --sea-glass: #d3e2d7;
+  --line: #c3d5c8;
+  --brass: #0e4a4c;
+  --brass-hover: #0a3a3c;
+  --muted: #4c605c;
 
   /* Semantic UI Tokens */
-  --brand-text: #163d3a;
-  --brand-gold: #8f6826;
-  --nav-link: #163d3a;
-  --nav-link-hover: #0d2826;
-  --nav-link-active: #0d2826;
+  --brand-text: #0e4a4c;
+  --brand-gold: #0e4a4c;
+  --nav-link: #0e4a4c;
+  --nav-link-hover: #082f30;
+  --nav-link-active: #082f30;
 
   /* Surfaces */
   --surface: #ffffff;
   --surface-raised: #ffffff;
-  --surface-muted: #edf4f1;
+  --surface-muted: #eaf1eb;
   --card-bg: #ffffff;
   --surface-overlay: rgba(255, 255, 255, 0.88);
   --surface-modal-backdrop: rgba(12, 38, 34, 0.55);
@@ -42,13 +50,13 @@
   --glass-border-strong: rgba(185, 205, 197, 0.85);
 
   /* Buttons */
-  --btn-primary-bg: #163d3a;
-  --btn-primary-hover: #1f5550;
+  --btn-primary-bg: #0e4a4c;
+  --btn-primary-hover: #135c5e;
   --btn-primary-text: #ffffff;
   --btn-secondary-bg: rgba(255, 255, 255, 0.85);
   --btn-secondary-hover: rgba(242, 247, 245, 0.95);
-  --btn-secondary-text: #163d3a;
-  --btn-secondary-border: #a8c2b8;
+  --btn-secondary-text: #0e4a4c;
+  --btn-secondary-border: #9fbcaa;
 
   /* Sidebar */
   --sidebar-bg: rgba(22, 61, 58, 0.94);
@@ -90,25 +98,25 @@
 .dark {
   color-scheme: dark;
 
-  --deep: #17423e;
-  --ink: #e2ece8;
-  --mist: #0f1c1a;
-  --sea-glass: #1b332f;
-  --line: #26423d;
-  --brass: #d9b87f;
-  --brass-hover: #ebd09c;
-  --muted: #9ab4ac;
+  --deep: #0e4a4c;
+  --ink: #e4ede6;
+  --mist: #0a2a2b;
+  --sea-glass: #14393a;
+  --line: #24504f;
+  --brass: #eba742;
+  --brass-hover: #f3bd66;
+  --muted: #a9c2b6;
 
   /* High-Contrast Semantic UI Tokens for Dark Mode */
-  --brand-text: #edf5f1;
-  --brand-gold: #d7b683;
+  --brand-text: #f1f6f2;
+  --brand-gold: #eba742;
   --nav-link: #d2e4de;
   --nav-link-hover: #ffffff;
   --nav-link-active: #ffffff;
 
-  --surface: #152825;
-  --surface-raised: #1c3430;
-  --surface-muted: #122523;
+  --surface: #0d3132;
+  --surface-raised: #123c3d;
+  --surface-muted: #0b2c2d;
   --card-bg: rgba(26, 48, 45, 0.82);
   --surface-overlay: rgba(21, 40, 37, 0.88);
   --surface-modal-backdrop: rgba(6, 18, 16, 0.75);
@@ -119,12 +127,12 @@
   --glass-border: rgba(45, 75, 70, 0.7);
   --glass-border-strong: rgba(75, 120, 112, 0.85);
 
-  --btn-primary-bg: #23695f;
-  --btn-primary-hover: #2d8073;
-  --btn-primary-text: #ffffff;
+  --btn-primary-bg: #eba742;
+  --btn-primary-hover: #f3bd66;
+  --btn-primary-text: #0b3133;
   --btn-secondary-bg: rgba(26, 48, 45, 0.8);
   --btn-secondary-hover: rgba(35, 65, 60, 0.95);
-  --btn-secondary-text: #e2ece8;
+  --btn-secondary-text: #e4ede6;
   --btn-secondary-border: rgba(85, 130, 122, 0.75);
 
   --sidebar-bg: rgba(14, 38, 36, 0.96);
@@ -145,24 +153,24 @@
   .auto-theme {
     color-scheme: dark;
 
-    --deep: #17423e;
-    --ink: #e2ece8;
-    --mist: #0f1c1a;
-    --sea-glass: #1b332f;
-    --line: #26423d;
-    --brass: #d9b87f;
-    --brass-hover: #ebd09c;
-    --muted: #9ab4ac;
+    --deep: #0e4a4c;
+    --ink: #e4ede6;
+    --mist: #0a2a2b;
+    --sea-glass: #14393a;
+    --line: #24504f;
+    --brass: #eba742;
+    --brass-hover: #f3bd66;
+    --muted: #a9c2b6;
 
-    --brand-text: #edf5f1;
-    --brand-gold: #d7b683;
+    --brand-text: #f1f6f2;
+    --brand-gold: #eba742;
     --nav-link: #d2e4de;
     --nav-link-hover: #ffffff;
     --nav-link-active: #ffffff;
 
-    --surface: #152825;
-    --surface-raised: #1c3430;
-    --surface-muted: #122523;
+    --surface: #0d3132;
+    --surface-raised: #123c3d;
+    --surface-muted: #0b2c2d;
     --card-bg: rgba(26, 48, 45, 0.82);
     --surface-overlay: rgba(21, 40, 37, 0.88);
     --surface-modal-backdrop: rgba(6, 18, 16, 0.75);
@@ -173,12 +181,12 @@
     --glass-border: rgba(45, 75, 70, 0.7);
     --glass-border-strong: rgba(75, 120, 112, 0.85);
 
-    --btn-primary-bg: #23695f;
-    --btn-primary-hover: #2d8073;
-    --btn-primary-text: #ffffff;
+    --btn-primary-bg: #eba742;
+    --btn-primary-hover: #f3bd66;
+    --btn-primary-text: #0b3133;
     --btn-secondary-bg: rgba(26, 48, 45, 0.8);
     --btn-secondary-hover: rgba(35, 65, 60, 0.95);
-    --btn-secondary-text: #e2ece8;
+    --btn-secondary-text: #e4ede6;
     --btn-secondary-border: rgba(85, 130, 122, 0.75);
 
     --sidebar-bg: rgba(14, 38, 36, 0.96);
@@ -206,7 +214,8 @@ body {
   transition: background-color var(--duration-normal) ease, color var(--duration-normal) ease;
 }
 h1, h2, h3, .serif {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Young Serif', 'Kantumruy Pro', Georgia, serif;
+  font-weight: 400 !important;
   font-optical-sizing: auto;
 }
 h1 { letter-spacing: -.032em; line-height: 1.12; }
@@ -376,7 +385,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   display: block;
   margin-bottom: 8px;
   color: var(--muted);
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
   font-size: .84rem;
   font-weight: 600;
   letter-spacing: 0;
@@ -393,7 +402,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   border-radius: var(--radius-md);
   background: var(--surface);
   color: var(--ink);
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
   font-size: 0.95rem;
   outline: none;
   transition: border-color var(--duration-fast) ease, box-shadow var(--duration-fast) ease, background-color var(--duration-fast) ease;
@@ -418,7 +427,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   min-height: 48px;
   padding: 11px 20px;
   border-radius: var(--radius-md);
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
   font-size: .92rem;
   font-weight: 700;
   line-height: 1.25;
@@ -480,7 +489,7 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--deep);
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
   font-size: .78rem;
   font-weight: 700;
   letter-spacing: .01em;
@@ -544,7 +553,8 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   left: 22px; right: 22px; top: 72px;
   border-top: 1px solid #b8cfc5;
 }
-.hero-keycard-monogram { font-family: 'Fraunces', Georgia, serif; font-size: 6rem; line-height: .9; letter-spacing: -.12em; }
+.hero-keycard-monogram { font-family: 'Young Serif', 'Kantumruy Pro', Georgia, serif;
+  font-weight: 400 !important; font-size: 6rem; line-height: .9; letter-spacing: -.12em; }
 .hero-keycard-caption { font-size: .8rem; font-weight: 700; line-height: 1.4; max-width: 120px; }
 
 /* ─────────────────────────────────────────────
@@ -608,7 +618,8 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 .dark .room-card:nth-child(3n) .room-key { background: rgba(35, 52, 45, 0.85); }
 
 .room-key-number {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Young Serif', 'Kantumruy Pro', Georgia, serif;
+  font-weight: 400 !important;
   font-size: clamp(4rem, 5.5vw, 5.8rem);
   line-height: .8;
   letter-spacing: -.09em;
@@ -714,8 +725,9 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 .portal-rail .brand-mark { color: #fff; text-decoration: none; }
 .portal-rail .brand-mark::before,
 .portal-brand-lockup::before { display: none !important; }
-.portal-rail-rule { width: 36px; height: 2px; margin: 38px 0 24px; background: var(--brass); }
-.portal-rail-title { font-family: 'Fraunces', Georgia, serif; font-size: 1.8rem; line-height: 1.1; }
+.portal-rail-rule { width: 36px; height: 2px; margin: 56px 0 24px; background: var(--brass); }
+.portal-rail-title { font-family: 'Young Serif', 'Kantumruy Pro', Georgia, serif;
+  font-weight: 400 !important; font-size: 1.8rem; line-height: 1.1; }
 .portal-rail-note { color: var(--sidebar-text-muted); font-size: .83rem; line-height: 1.6; }
 .portal-rail-bottom { margin-top: auto; padding-top: 40px; color: var(--sidebar-text-muted); font-size: .77rem; }
 
@@ -1086,4 +1098,85 @@ button:disabled { cursor: not-allowed; opacity: .52; }
   .guest-header, .guest-footer, .portal-rail, .portal-mobile-header, button, nav, .theme-toggle { display: none !important; }
   body, .site-layout, .portal-shell { background: #fff !important; }
   .card { break-inside: avoid; backdrop-filter: none; background: #fff; }
+}
+
+/* ─────────────────────────────────────────────
+   Guest redesign — Mekong Teal / Saffron / Celadon
+   ───────────────────────────────────────────── */
+.btn-cta, .btn-ghost-light {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.75rem 1.4rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background-color var(--duration-fast) ease, transform var(--duration-fast) var(--ease-out);
+}
+.btn-cta { background: var(--cta-bg); color: var(--cta-text); border: 0; }
+.btn-cta:hover:not(:disabled) { background: var(--cta-hover); transform: translateY(-1px); }
+.btn-cta:disabled { opacity: .55; cursor: not-allowed; }
+.btn-ghost-light { color: #fff; border: 1.5px solid color-mix(in srgb, #fff 55%, transparent); }
+.btn-ghost-light:hover { background: color-mix(in srgb, #fff 12%, transparent); }
+.btn-cta:focus-visible, .btn-ghost-light:focus-visible, .chip:focus-visible {
+  outline: 3px solid var(--brand-saffron);
+  outline-offset: 3px;
+}
+
+.filter-chips {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+.filter-chips::-webkit-scrollbar { display: none; }
+.chip {
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 1.1rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: var(--surface-raised);
+  color: var(--brand-text);
+  font-weight: 600;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+.chip[aria-pressed="true"] { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
+.dark .chip[aria-pressed="true"] { background: var(--brand-saffron); border-color: var(--brand-saffron); color: var(--cta-text); }
+
+.room-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand-text);
+}
+.room-facts li { display: inline-flex; align-items: center; gap: 0.375rem; }
+.room-facts li::before {
+  content: '';
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand-saffron);
+}
+.price { font-weight: 700; font-size: 1.125rem; color: var(--brand-text); }
+.photo-tag {
+  font-size: 0.6875rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  color: #fff;
+}
+
+@media (max-width: 639px) {
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-backdrop > form, .modal-backdrop > .card {
+    border-radius: 1.25rem 1.25rem 0 0 !important;
+    max-height: 92dvh;
+    overflow-y: auto;
+    padding: 1.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom)) !important;
+  }
 }

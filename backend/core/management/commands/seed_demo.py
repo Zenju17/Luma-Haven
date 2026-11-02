@@ -13,8 +13,21 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         hotel, _ = Hotel.objects.get_or_create(name='Luma Haven', defaults={'email': 'hello@luma.local', 'phone': '+855 00 000 000'})
-        for name, price, capacity, numbers in [('Garden King', 8500, 2, ['101', '102', '103']), ('City Twin', 7200, 2, ['201', '202']), ('Family Suite', 15500, 4, ['301', '302'])]:
-            room_type, _ = RoomType.objects.get_or_create(hotel=hotel, name=name, defaults={'nightly_rate_minor': price, 'capacity': capacity, 'description': 'Thoughtful comfort for your stay.', 'amenities': ['Wi-Fi', 'Air conditioning']})
+        inventory = [
+            # name, rate (USD minor units), capacity, room numbers, description, amenities
+            ('Garden King', 8500, 2, ['101', '102', '103'], 'Warm oak walls, paper lanterns and a corner sofa.', ['King bed', 'Wi-Fi', 'Air conditioning', 'Coffee corner']),
+            ('City Twin', 7200, 2, ['201', '202'], 'Two single beds and a window over the treetops.', ['2 single beds', 'Wi-Fi', 'Air conditioning']),
+            ('Family Suite', 15500, 4, ['301', '302'], 'A king bed plus a single bed, with extra floor space.', ['King + single bed', 'Wi-Fi', 'Air conditioning', 'Desk']),
+            ('Classic Queen', 6500, 2, ['104', '105'], 'A calm, compact room with a tall window.', ['Queen bed', 'Wi-Fi', 'Air conditioning', 'Rain shower']),
+            ('City King', 8000, 2, ['203', '204'], 'A king bed and a long sofa by full-height curtains.', ['King bed', 'Wi-Fi', 'Air conditioning', 'Sofa']),
+            ('Double Queen', 9500, 4, ['205', '206'], 'Two queen beds, a work desk and a smart TV.', ['2 queen beds', 'Wi-Fi', 'Air conditioning', 'Smart TV']),
+            ('Triple Room', 10500, 3, ['207'], 'Three single beds, so nobody has to share.', ['3 single beds', 'Wi-Fi', 'Air conditioning']),
+            ('Connecting Family Rooms', 19000, 6, ['303'], 'Two rooms joined by a private connecting door.', ['2 rooms', '4 queen beds', '2 bathrooms', 'Wi-Fi']),
+            ('Signature Suite', 21000, 2, ['401'], 'Separate lounge divided from the bedroom by a walnut screen.', ['King bed', 'Lounge', 'Wi-Fi', 'Air conditioning']),
+            ('Riverfront Suite', 24000, 2, ['501'], 'Our largest room, with floor-to-ceiling river-facing windows.', ['King bed', 'River-facing windows', 'Dressing room', 'Wi-Fi']),
+        ]
+        for name, price, capacity, numbers, description, amenities in inventory:
+            room_type, _ = RoomType.objects.get_or_create(hotel=hotel, name=name, defaults={'nightly_rate_minor': price, 'capacity': capacity, 'description': description, 'amenities': amenities})
             for number in numbers:
                 room, created = Room.objects.get_or_create(hotel=hotel, number=number, defaults={'type': room_type})
                 if created and number == '102':

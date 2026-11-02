@@ -381,6 +381,8 @@ def dev_payment_provider_check(request):
         result = {'ok': True, 'status': status}
     except ProviderError as exc:
         result = {'ok': False, 'error': str(exc)[:200]}
+        from .payments.service import _record_provider_error
+        _record_provider_error('connectivity_check', 'bakong', exc)
     result['latency_ms'] = int((time.monotonic() - started) * 1000)
     Audit.objects.create(actor=_actor(request), action='BAKONG_CONNECTIVITY_CHECK', target='ok' if result['ok'] else 'failed')
     return Response(result)

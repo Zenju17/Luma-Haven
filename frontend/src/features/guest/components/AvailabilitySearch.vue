@@ -92,16 +92,12 @@ function handleSubmit() {
       <div v-if="!compact" class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
         <div>
           <h2 class="text-xl sm:text-2xl font-semibold text-[var(--brand-text)] serif">
-            Check real availability
+            When are you staying?
           </h2>
           <p class="text-xs sm:text-sm text-[var(--muted)]">
-            Live rates with no hidden fees. All bookings include breakfast &amp; physical brass key reception.
+            Pick your dates and we'll show every room that is free, with the full price.
           </p>
         </div>
-        <span class="inline-flex items-center gap-1.5 text-xs text-[var(--brass)] font-semibold px-2.5 py-1 rounded-full bg-[var(--surface-muted)]">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-          Direct Best Rate
-        </span>
       </div>
 
       <form class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end" @submit.prevent="handleSubmit">

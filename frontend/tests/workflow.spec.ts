@@ -74,14 +74,14 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
   const { mailDir, staffPassword, presentationDemo } = test.info().config.metadata as { mailDir: string; staffPassword: string; presentationDemo: boolean }
   const email = `visitor-${randomBytes(6).toString('hex')}@example.test`
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'Welcome to Luma-Haven.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Rest by the river in Phnom Penh' })).toBeVisible()
   await page.getByLabel('Arrival').fill(hotelDate())
   await page.getByLabel('Departure').fill(hotelDate(1))
   await page.getByLabel('Guests').fill('1')
   await page.getByRole('button', { name: 'Search rooms' }).click()
   const room = page.getByRole('article').filter({ hasText: 'Room 101' })
   await expect(room).toBeVisible()
-  await room.getByRole('button', { name: 'View quote' }).click()
+  await room.getByRole('button', { name: 'See price' }).click()
   await page.getByLabel('Full name').fill('Playwright Demo Guest')
   await page.getByLabel('Email for verification').fill(email)
   await page.getByLabel(/I have read and accept/).check()

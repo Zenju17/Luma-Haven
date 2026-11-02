@@ -35,6 +35,8 @@
   - Phase 6: Five authorized scheduled MIS reports (`/reports/daily-summary`, `/reports/revenue-occupancy`, `/reports/cash-reconciliation`, `/reports/housekeeping-turnaround`, `/reports/accounts-receivable`) with formula injection sanitized CSV export, and Celery beat nightly snapshot task.
   - Phase 7: Verification & testing: 15 unit tests in `test_mis_reports.py` (37/37 total backend tests passing), Playwright MIS executive journey (3/3 passing), and complete documentation in `docs/MIS_DEMONSTRATION.md`.
 
+- **Guest redesign (2 Nov 2026):** new 3-colour palette, photo-led hero, 10 room types each with its own photo (`frontend/src/data/roomCatalog.ts`, `public/images/luma-haven/rooms/<slug>/main.jpg`), bed-type filter chips, mobile room rail and bottom-sheet modals; `seed_demo` now creates 10 room types / 15 rooms. Verified: backend 110 passed, E2E 4 passed, typecheck + build green, no horizontal overflow at 390px.
+
 ## Current work
 
 Production deployment readiness, payment provider gateway integration, and guest SMS notification channels.

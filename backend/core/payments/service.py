@@ -6,7 +6,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.db.models import F
 from .. import services
-from ..models import Allocation, Audit, PaymentAttempt, Reservation
+from ..models import Allocation, Audit, ErrorEvent, PaymentAttempt, Reservation
 from .base import ProviderError
 from .factory import get_provider
 
@@ -18,6 +18,26 @@ HOLD_EXTENSION_CAP = timedelta(hours=1)  # a hold can be stretched for payment, 
 
 class SessionError(Exception):
     pass
+
+
+def _record_provider_error(stage, provider, exc, attempt_id=None):
+    """Surface provider failures (rate limit, auth, network) in the Developer Console's error list.
+
+    Messages come from ProviderError (already capped, never contains the token). Identical
+    failures within 5 minutes are collapsed so 30s polling cannot flood the table.
+    """
+    try:
+        path = f'payments/{provider}/{stage}'
+        if attempt_id:
+            path += f'/{str(attempt_id)[:8]}'
+        message = str(exc)[:300]
+        since = timezone.now() - timedelta(minutes=5)
+        if ErrorEvent.objects.filter(created_at__gte=since, path__startswith=f'payments/{provider}/{stage}',
+                                     message=message).exists():
+            return
+        ErrorEvent.objects.create(method='PAY', path=path[:200], exc_type=exc.__class__.__name__[:120], message=message)
+    except Exception:  # logging must never break a payment
+        pass
 
 
 def create_session(reservation, amount_minor, currency):
@@ -51,6 +71,7 @@ def create_session(reservation, amount_minor, currency):
         qr = provider.create_qr(amount_minor=qr_amount_minor, currency=currency, bill_number=bill)
     except ProviderError as exc:
         log.warning('Bakong create_qr failed for reservation %s: %s', reservation.pk, exc)
+        _record_provider_error('create_qr', provider.name, exc, attempt.pk)
         PaymentAttempt.objects.filter(pk=attempt.pk).update(status='FAILED')
         raise SessionError('Payment provider is unavailable. Please try again shortly.') from exc
     with transaction.atomic():
@@ -100,6 +121,7 @@ def refresh_attempt(attempt_id, *, force=False):
         status = provider.check_status(attempt.provider_md5)
     except ProviderError as exc:
         log.warning('Bakong status check failed for attempt %s: %s', attempt.pk, exc)
+        _record_provider_error('check_status', attempt.provider, exc, attempt.pk)
         return attempt  # transient: stay PENDING, the sweeper retries
     return _apply_status(attempt.pk, status)
 

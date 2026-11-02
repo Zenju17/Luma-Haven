@@ -95,3 +95,30 @@ def test_developer_cannot_sign_out_admin(db):
     c = Client()
     assert login(c, 'dev', 'test-only', portal='admin').status_code == 200
     assert c.post(f'/api/v1/admin/dev/security/revoke/{boss.pk}', {}, content_type=JSON).status_code == 403
+
+
+def test_bakong_failures_are_recorded_once_for_the_developer_console(db, monkeypatch, settings):
+    from core.models import ErrorEvent
+    from core.payments.base import ProviderError
+    settings.PAYMENT_PROVIDER = 'bakong'
+    hotel = Hotel.objects.create(name='H')
+    room = Room.objects.create(hotel=hotel, type=RoomType.objects.create(hotel=hotel, name='T', nightly_rate_minor=1000), number='1')
+    start = services.hotel_today(hotel) + timedelta(days=4)
+    res = services.reserve(services.create_quote(room, start, start + timedelta(days=1), 1), 'A', 'a@example.com')
+
+    def boom(**kw):
+        raise ProviderError('429 Too Many Requests')
+    monkeypatch.setattr(bakong, 'create_qr', boom)
+    with pytest.raises(service.SessionError):
+        service.create_session(res, 1000, 'USD')
+    event = ErrorEvent.objects.get()
+    assert event.path.startswith('payments/bakong/create_qr') and '429' in event.message
+
+    attempt = PaymentAttempt.objects.create(reservation=res, amount_minor=1, currency='USD', provider='bakong', provider_md5='b' * 32)
+
+    def fail_status(md5):
+        raise ProviderError('403 Forbidden')
+    monkeypatch.setattr(bakong, 'check_status', fail_status)
+    service.refresh_attempt(attempt.pk, force=True)
+    service.refresh_attempt(attempt.pk, force=True)  # identical failure inside 5 min is collapsed
+    assert ErrorEvent.objects.filter(path__startswith='payments/bakong/check_status').count() == 1
