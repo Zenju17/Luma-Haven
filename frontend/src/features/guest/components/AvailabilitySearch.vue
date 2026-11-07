@@ -85,89 +85,49 @@ function handleSubmit() {
 
 <template>
   <div id="search" class="w-full">
-    <div
-      :class="stacked ? '' : [
-        'card p-6 sm:p-8 border border-[var(--glass-border)] bg-[var(--surface-raised)] rounded-2xl',
-        compact ? 'p-4 sm:p-5' : '',
-      ]"
-    >
-      <div v-if="!compact && !stacked" class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
-        <div>
-          <h2 class="text-xl sm:text-2xl font-semibold text-[var(--brand-text)] serif">
-            When are you staying?
-          </h2>
-          <p class="text-xs sm:text-sm text-[var(--muted)]">
-            Pick your dates and we'll show every room that is free, with the full price.
-          </p>
+    <form :class="stacked ? 'stack-form' : 'pill-bar'" @submit.prevent="handleSubmit">
+      <div class="pf pf--dates">
+        <div class="pf-field">
+          <label for="arrival-input" class="pf-label">Arrival</label>
+          <input id="arrival-input" v-model="arrival" aria-label="Arrival" class="pf-input" type="date" :min="hotelToday()" required @change="handleArrivalChange" />
+        </div>
+        <span class="pf-to" aria-hidden="true">to</span>
+        <div class="pf-field">
+          <label for="departure-input" class="pf-label">Departure</label>
+          <input id="departure-input" v-model="departure" aria-label="Departure" class="pf-input" type="date" :min="arrival ? followingDay(arrival) : followingDay(hotelToday())" required />
         </div>
       </div>
-
-      <form :class="stacked ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end'" @submit.prevent="handleSubmit">
-        <!-- Arrival Field -->
-        <div>
-          <label for="arrival-input" class="label block text-xs font-semibold text-[var(--muted)] mb-1.5 uppercase tracking-wider">
-            Arrival
-          </label>
-          <input
-            id="arrival-input"
-            v-model="arrival"
-            aria-label="Arrival"
-            class="field w-full cursor-pointer font-medium text-sm sm:text-base"
-            type="date"
-            :min="hotelToday()"
-            required
-            @change="handleArrivalChange"
-          />
-        </div>
-
-        <!-- Departure Field -->
-        <div>
-          <label for="departure-input" class="label block text-xs font-semibold text-[var(--muted)] mb-1.5 uppercase tracking-wider">
-            Departure
-          </label>
-          <input
-            id="departure-input"
-            v-model="departure"
-            aria-label="Departure"
-            class="field w-full cursor-pointer font-medium text-sm sm:text-base"
-            type="date"
-            :min="arrival ? followingDay(arrival) : followingDay(hotelToday())"
-            required
-          />
-        </div>
-
-        <!-- Guests Field -->
-        <div>
-          <label for="guests-input" class="label block text-xs font-semibold text-[var(--muted)] mb-1.5 uppercase tracking-wider">
-            Guests
-          </label>
-          <input
-            id="guests-input"
-            v-model.number="occupants"
-            aria-label="Guests"
-            class="field w-full font-medium text-sm sm:text-base"
-            type="number"
-            min="1"
-            max="8"
-            required
-          />
-        </div>
-
-        <!-- Search Action Button -->
-        <div>
-          <button
-            type="submit"
-            class="btn w-full h-[46px] flex items-center justify-center gap-2 font-semibold text-base shadow-md hover:shadow-lg transition-all"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            Search rooms
-          </button>
-        </div>
-      </form>
-
-      <Notice v-if="error" :message="error" class="mt-4" />
-    </div>
+      <div class="pf-field pf-field--guests">
+        <label for="guests-input" class="pf-label">Guests</label>
+        <input id="guests-input" v-model.number="occupants" aria-label="Guests" class="pf-input" type="number" min="1" max="8" required />
+      </div>
+      <button type="submit" class="pf-submit">Search rooms</button>
+    </form>
+    <Notice v-if="error" :message="error" class="mt-4" />
   </div>
 </template>
+
+<style scoped>
+.pill-bar, .stack-form { display: grid; gap: .75rem; background: var(--paper); }
+.pill-bar { padding: 1rem; border-radius: var(--radius-panel); border: 1px solid var(--rule); box-shadow: var(--shadow-float); }
+.pf { display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; gap: .5rem; }
+.stack-form { background: transparent; }
+.stack-form .pf { grid-template-columns: 1fr; }
+.stack-form .pf-to { display: none; }
+.pf-field { display: grid; gap: .15rem; padding: .25rem .75rem; }
+.stack-form .pf-field { padding: 0; }
+.pf-label { color: var(--silt); font-size: .8125rem; font-weight: 500; }
+.pf-input { min-height: 44px; width: 100%; border: 0; border-bottom: 1.5px solid var(--rule); background: transparent; color: var(--river); font: 500 1rem var(--font-text); }
+.pf-input:focus-visible { outline-offset: 2px; }
+.pf-to { padding-bottom: .75rem; color: var(--silt); }
+.pf-submit { min-height: 48px; padding: 0 1.75rem; border-radius: var(--radius-pill); background: var(--btn-primary-bg); color: var(--btn-primary-text); font: 600 1rem var(--font-text); }
+.pf-submit:hover { background: var(--btn-primary-hover); }
+@media (min-width: 900px) {
+  .pill-bar { grid-template-columns: auto 140px auto; align-items: end; justify-content: space-between; border-radius: var(--radius-pill); padding: .6rem .6rem .6rem 1.25rem; }
+  .pf-field--guests { border-left: 1px solid var(--rule); padding-left: 1.25rem; }
+  .pill-bar .pf-input { border-bottom: 0; }
+  .pill-bar .pf-to { padding-bottom: .6rem; }
+  .pf { grid-template-columns: 180px auto 180px; }
+  .pf-submit { min-height: 52px; }
+}
+</style>

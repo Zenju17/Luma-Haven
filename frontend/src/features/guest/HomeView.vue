@@ -23,7 +23,7 @@ function handleFocusSearch() {
     <HeroSection @focus-search="handleFocusSearch" />
 
     <!-- Section 3: Availability search -->
-    <div class="relative z-10 lg:mt-6 mb-4">
+    <div class="search-overlap">
       <AvailabilitySearch :navigate-on-submit="true" />
     </div>
 
@@ -33,10 +33,14 @@ function handleFocusSearch() {
     <!-- Section 6: Hotel gallery carousel -->
     <HotelGallery />
 
-    <!-- Section 8: How your stay works -->
     <StaySteps />
 
     <!-- Section 9: Location and practical details -->
     <LocationSection />
   </SiteLayout>
 </template>
+
+<style scoped>
+.search-overlap { position: relative; z-index: 10; margin-top: -2rem; margin-bottom: 1rem; padding-inline: .5rem; }
+@media (min-width: 900px) { .search-overlap { margin-top: -2.5rem; padding-inline: 3rem; } }
+</style>

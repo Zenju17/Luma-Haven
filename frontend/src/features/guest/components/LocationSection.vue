@@ -1,161 +1,61 @@
-<script setup lang="ts">
-</script>
-
 <template>
-  <section id="location" class="py-16 sm:py-24 border-t border-[var(--line)]" aria-labelledby="location-heading">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-      <!-- Left Column: Details & Practical Info (7 cols) -->
-      <div class="lg:col-span-7 space-y-8">
-        <div class="space-y-3">
-          <span class="text-xs font-semibold uppercase tracking-widest text-[var(--brass)]">
-            Location &amp; Practical Details
-          </span>
-          <h2 id="location-heading" class="serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[var(--brand-text)]">
-            A quiet sanctuary in Phnom Penh<span class="text-[var(--brass)]">.</span>
-          </h2>
-          <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
-            Nestled along a tree-lined residential lane in the historic Daun Penh district, Luma Haven is situated within gentle walking distance of cafes, independent bookshops, and cultural landmarks, while maintaining absolute acoustic seclusion inside.
-          </p>
-        </div>
+  <section id="location" class="py-16 sm:py-20 border-t border-[var(--rule)]" aria-labelledby="location-heading">
+    <div class="loc">
+      <div class="loc-text">
+        <h2 id="location-heading">A quiet street in Daun Penh</h2>
+        <p>Luma Haven sits on a tree-lined lane in Phnom Penh's historic Daun Penh district, within walking distance of cafes, bookshops and the riverside.</p>
 
-        <!-- 2x2 Grid of Practical Policies -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="card p-5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-raised)] space-y-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)] block">
-              Check-in &amp; Check-out
-            </span>
-            <p class="serif text-lg font-medium text-[var(--brand-text)]">
-              14:00 In · 12:00 Out
-            </p>
-            <p class="text-xs text-[var(--muted)] leading-relaxed">
-              Asia/Phnom_Penh timezone. Complimentary luggage storage available at reception before or after.
-            </p>
-          </div>
+        <dl class="loc-rules">
+          <div><dt>Check-in and check-out</dt><dd>From 14:00 and by 12:00 (Asia/Phnom_Penh). Free luggage storage at reception.</dd></div>
+          <div><dt>Quiet hours</dt><dd>22:00 to 07:00 in corridors and courtyards.</dd></div>
+          <div><dt>Smoking</dt><dd>All rooms, indoor spaces and balconies are smoke-free.</dd></div>
+          <div><dt>Room keys</dt><dd>Leave your key at the front desk when you go out and collect it when you return.</dd></div>
+        </dl>
 
-          <div class="card p-5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-raised)] space-y-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)] block">
-              Restful Quiet Hours
-            </span>
-            <p class="serif text-lg font-medium text-[var(--brand-text)]">
-              22:00 – 07:00 Daily
-            </p>
-            <p class="text-xs text-[var(--muted)] leading-relaxed">
-              Quiet hours are gently observed throughout our guest corridors and courtyards for restorative sleep.
-            </p>
-          </div>
-
-          <div class="card p-5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-raised)] space-y-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)] block">
-              Smoke-Free Property
-            </span>
-            <p class="serif text-lg font-medium text-[var(--brand-text)]">
-              100% Smoke-Free
-            </p>
-            <p class="text-xs text-[var(--muted)] leading-relaxed">
-              All guest rooms, indoor spaces, and courtyard balconies are strictly smoke-free.
-            </p>
-          </div>
-
-          <div class="card p-5 rounded-xl border border-[var(--glass-border)] bg-[var(--surface-raised)] space-y-1.5">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)] block">
-              Physical Key Care
-            </span>
-            <p class="serif text-lg font-medium text-[var(--brand-text)]">
-              Key Drop at Reception
-            </p>
-            <p class="text-xs text-[var(--muted)] leading-relaxed">
-              Leave your brass key with our front desk when heading into the city and collect it whenever you return.
-            </p>
-          </div>
-        </div>
-
-        <!-- Contact Links Bar -->
-        <div class="pt-4 border-t border-[var(--line)] flex flex-wrap items-center gap-6 text-sm">
-          <div>
-            <span class="text-xs text-[var(--muted)] block">Email inquiries</span>
-            <a href="mailto:hello@luma.local" class="font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors">
-              hello@luma.local
-            </a>
-          </div>
-          <div class="h-8 w-[1px] bg-[var(--line)] hidden sm:block" />
-          <div>
-            <span class="text-xs text-[var(--muted)] block">Front desk telephone</span>
-            <a href="tel:+85500000000" class="font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors">
-              +855 00 000 000
-            </a>
-          </div>
-          <div class="h-8 w-[1px] bg-[var(--line)] hidden sm:block" />
-          <div>
-            <span class="text-xs text-[var(--muted)] block">Physical address</span>
-            <span class="font-medium text-[var(--brand-text)]">
-              Daun Penh, Phnom Penh, Cambodia
-            </span>
-          </div>
-        </div>
+        <ul class="loc-contact">
+          <li><span>Email</span><a href="mailto:hello@luma.local">hello@luma.local</a></li>
+          <li><span>Front desk</span><a href="tel:+85500000000">+855 00 000 000</a></li>
+          <li><span>Address</span>Daun Penh, Phnom Penh, Cambodia</li>
+        </ul>
       </div>
 
-      <!-- Right Column: Stylized Neighborhood Map Card (5 cols) -->
-      <div class="lg:col-span-5">
-        <div class="card p-6 sm:p-8 rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-raised)] shadow-lg space-y-6">
-          <div class="flex items-center justify-between border-b border-[var(--line)] pb-4">
-            <div>
-              <span class="serif text-xl font-medium text-[var(--brand-text)]">Neighborhood Guide</span>
-              <p class="text-xs text-[var(--muted)]">Daun Penh Historical Quarter</p>
-            </div>
-            <span class="px-2.5 py-1 rounded-full bg-[var(--surface-muted)] text-[var(--brass)] text-xs font-semibold">
-              Walkable
-            </span>
-          </div>
-
-          <ul class="space-y-4 text-xs sm:text-sm">
-            <li class="flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-[var(--surface-muted)] text-[var(--brass)] flex items-center justify-center shrink-0 font-bold text-xs">
-                1
-              </span>
-              <div>
-                <p class="font-semibold text-[var(--brand-text)]">Street 240 Artisan Cafes</p>
-                <p class="text-[var(--muted)] text-xs mt-0.5">3-minute walk · Specialty coffee, bakeries &amp; craft boutiques</p>
-              </div>
-            </li>
-
-            <li class="flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-[var(--surface-muted)] text-[var(--brass)] flex items-center justify-center shrink-0 font-bold text-xs">
-                2
-              </span>
-              <div>
-                <p class="font-semibold text-[var(--brand-text)]">Royal Palace &amp; Riverside</p>
-                <p class="text-[var(--muted)] text-xs mt-0.5">10-minute walk · Historic gardens and riverfront breezes</p>
-              </div>
-            </li>
-
-            <li class="flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-[var(--surface-muted)] text-[var(--brass)] flex items-center justify-center shrink-0 font-bold text-xs">
-                3
-              </span>
-              <div>
-                <p class="font-semibold text-[var(--brand-text)]">National Museum of Cambodia</p>
-                <p class="text-[var(--muted)] text-xs mt-0.5">8-minute walk · Terracotta courtyard and Khmer bronze collection</p>
-              </div>
-            </li>
-
-            <li class="flex items-start gap-3">
-              <span class="w-6 h-6 rounded-full bg-[var(--surface-muted)] text-[var(--brass)] flex items-center justify-center shrink-0 font-bold text-xs">
-                4
-              </span>
-              <div>
-                <p class="font-semibold text-[var(--brand-text)]">Phnom Penh International Airport</p>
-                <p class="text-[var(--muted)] text-xs mt-0.5">35-minute drive · Airport transfer coordination upon request</p>
-              </div>
-            </li>
-          </ul>
-
-          <div class="pt-4 border-t border-[var(--line)]">
-            <p class="text-xs text-[var(--muted)] italic">
-              Need assistance finding us? Call reception at <span class="font-mono text-[var(--brand-text)] font-semibold">+855 00 000 000</span> for local directions.
-            </p>
-          </div>
-        </div>
-      </div>
+      <figure class="loc-map">
+        <svg viewBox="0 0 480 420" role="img" aria-labelledby="map-title map-desc">
+          <title id="map-title">Map of the area around Luma Haven</title>
+          <desc id="map-desc">Luma Haven is a short walk from the Royal Palace and riverside and the National Museum of Cambodia. The airport is a 35-minute drive away.</desc>
+          <rect width="480" height="420" fill="var(--palm-leaf)" />
+          <path d="M0 40 C 120 20, 200 90, 300 70 S 440 20, 480 50 L480 130 C 400 150, 330 120, 260 150 S 100 130, 0 110 Z" fill="color-mix(in oklab, var(--river) 15%, transparent)" />
+          <g stroke="color-mix(in oklab, var(--silt) 40%, transparent)" stroke-width="3" fill="none" stroke-linecap="round">
+            <path d="M20 250 H460" /><path d="M20 330 H460" /><path d="M110 160 V410" /><path d="M250 160 V410" /><path d="M380 160 V410" /><path d="M110 250 L250 190" />
+          </g>
+          <g font-family="Hanken Grotesk, sans-serif" font-size="13" font-weight="600">
+            <g transform="translate(150 92)"><rect x="-6" y="-14" width="198" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Royal Palace &amp; Riverside</text></g>
+            <g transform="translate(300 210)"><rect x="-6" y="-14" width="186" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">National Museum of Cambodia</text></g>
+            <g transform="translate(40 380)"><rect x="-6" y="-14" width="400" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Phnom Penh International Airport, 35 min drive</text></g>
+            <circle cx="250" cy="250" r="11" fill="var(--river)" />
+            <circle cx="250" cy="250" r="18" fill="none" stroke="var(--river)" stroke-opacity=".35" />
+            <text x="272" y="288" fill="var(--river)">Luma Haven</text>
+          </g>
+        </svg>
+        <figcaption>Not to scale. Royal Palace and riverside are about 10 minutes on foot; the National Museum about 8.</figcaption>
+      </figure>
     </div>
   </section>
 </template>
+
+<style scoped>
+.loc { display: grid; gap: 2rem; }
+.loc-text { display: grid; gap: 1.25rem; align-content: start; }
+.loc-text h2 { font-size: 2.4375rem; color: var(--river); }
+.loc-text > p { color: var(--silt); }
+.loc-rules { display: grid; gap: 1rem; }
+.loc-rules > div { display: grid; gap: .15rem; padding-top: .75rem; border-top: 1px solid var(--rule); }
+.loc-rules dt { font-weight: 600; color: var(--river); }
+.loc-rules dd { color: var(--silt); font-size: .9375rem; }
+.loc-contact { display: grid; gap: .5rem; padding-top: .75rem; border-top: 1px solid var(--rule); font-size: .9375rem; color: var(--river); }
+.loc-contact span { display: inline-block; min-width: 6rem; color: var(--silt); }
+.loc-contact a { text-decoration: underline; }
+.loc-map svg { width: 100%; height: auto; border-radius: var(--radius-photo); display: block; }
+.loc-map figcaption { margin-top: .5rem; color: var(--silt); font-size: .875rem; }
+@media (min-width: 1000px) { .loc { grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; } }
+</style>

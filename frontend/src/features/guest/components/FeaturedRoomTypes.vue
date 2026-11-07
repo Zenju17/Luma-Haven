@@ -1,22 +1,15 @@
 <script setup lang="ts">
 import { responsiveSrcset, SIZES } from '../../../utils/responsiveImage'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
 import { api } from '../../../services/api'
 import { money, type PublicVisualAssetsResponse, type Room } from '../../../types'
-import { roomCatalogFor, roomPhotoFor, type BedKind } from '../../../data/roomCatalog'
+import StayRow from '../../../components/StayRow.vue'
+import FactChip from '../../../components/FactChip.vue'
+import { roomCatalogFor, roomPhotoFor } from '../../../data/roomCatalog'
 
 const router = useRouter()
-
-const filters: { label: string; value: BedKind | '' }[] = [
-  { label: 'All', value: '' },
-  { label: 'King', value: 'King' },
-  { label: 'Queen', value: 'Queen' },
-  { label: 'Single beds', value: 'Twin' },
-  { label: 'Family', value: 'Family' },
-]
-const active = ref<BedKind | ''>('')
 
 const visualAssets = useQuery({
   queryKey: ['visual-assets'],
@@ -52,9 +45,7 @@ const displayRooms = computed(() => {
   })
 })
 
-const rooms = computed(() =>
-  active.value ? displayRooms.value.filter(r => r.bedKind === active.value) : displayRooms.value,
-)
+const rooms = computed(() => displayRooms.value.slice(0, 3))
 
 function choose(room: { name: string; capacity: number }) {
   router.push({ path: '/rooms', query: { type: room.name, occupants: String(Math.min(room.capacity, 2)) } })
@@ -63,118 +54,47 @@ function choose(room: { name: string; capacity: number }) {
 
 <template>
   <section id="rooms" class="py-14 sm:py-20" aria-labelledby="rooms-heading">
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-8">
-      <div class="max-w-xl space-y-2">
-        <h2 id="rooms-heading" class="serif text-3xl sm:text-4xl font-medium text-[var(--brand-text)]">
-          Choose your room
-        </h2>
-        <p class="text-[var(--muted)]">
-          Prices are a starting guide per night. You'll see the exact total, with tax, before you pay anything.
-        </p>
-      </div>
-      <div class="filter-chips" role="group" aria-label="Filter rooms by bed type">
-        <button
-          v-for="f in filters"
-          :key="f.value"
-          type="button"
-          class="chip"
-          :aria-pressed="active === f.value"
-          @click="active = f.value"
-        >
-          {{ f.label }}
-        </button>
-      </div>
+    <div class="rt-head">
+      <h2 id="rooms-heading">Choose your room</h2>
+      <p>Prices are a starting guide per night. You'll see the exact total, with tax, before you pay anything.</p>
     </div>
 
     <p v-if="inventory.isPending.value" class="text-[var(--muted)]">Loading rooms…</p>
     <p v-else-if="inventory.error.value" class="text-[var(--muted)]">Rooms couldn't be loaded. Please refresh.</p>
-    <ul v-else class="room-rail">
-      <li v-for="room in rooms" :key="room.id">
-        <article class="guest-room">
-          <button type="button" class="guest-room-photo" :aria-label="`View ${room.name}`" @click="choose(room)">
-            <img :src="room.photo" :srcset="room.photoSrcset" :sizes="SIZES.card" :alt="room.photoAlt" width="800" height="600" loading="lazy" />
-          </button>
-          <div class="guest-room-body">
-            <div class="flex items-baseline justify-between gap-3">
-              <h3 class="serif text-xl font-medium text-[var(--brand-text)]">{{ room.name }}</h3>
-              <p class="price whitespace-nowrap">
-                <span class="text-xs font-normal text-[var(--muted)]">from</span>
-                {{ money(room.rateMinor) }}
-              </p>
-            </div>
-            <ul class="room-facts">
-              <li v-if="room.beds">{{ room.beds }}</li>
-              <li>Sleeps {{ room.capacity }}</li>
-            </ul>
-            <p class="text-sm text-[var(--muted)] leading-relaxed">{{ room.summary }}</p>
-            <button type="button" class="btn-secondary w-full mt-auto" @click="choose(room)">
-              Check {{ room.name }}
-            </button>
+    <div v-else class="rt-rows">
+      <StayRow v-for="room in rooms" :key="room.id" :title="room.name">
+        <template #photo>
+          <img :src="room.photo" :srcset="room.photoSrcset" :sizes="SIZES.card" :alt="room.photoAlt" width="800" height="600" loading="lazy" class="rt-img" />
+        </template>
+        <template #facts>
+          <FactChip v-if="room.beds">{{ room.beds }}</FactChip>
+          <FactChip>Sleeps {{ room.capacity }}</FactChip>
+        </template>
+        <p>{{ room.summary }}</p>
+        <template #price>
+          <div>
+            <span class="rt-from">From</span>
+            <p class="rt-price">{{ money(room.rateMinor) }} <span>/ night</span></p>
           </div>
-        </article>
-      </li>
-    </ul>
+        </template>
+        <template #action>
+          <button type="button" class="btn-secondary rt-btn" @click="choose(room)">Check {{ room.name }}</button>
+        </template>
+      </StayRow>
+    </div>
+    <RouterLink to="/rooms" class="rt-all">See all rooms</RouterLink>
   </section>
 </template>
 
 <style scoped>
-.room-rail {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 82%;
-  gap: 1rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 0.75rem;
-  margin: 0 -1rem;
-  padding-inline: 1rem;
-  scroll-padding-inline: 1rem;
-}
-.room-rail > li { scroll-snap-align: start; }
-.guest-room {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  background: var(--surface-raised);
-  border: 1px solid var(--line);
-  border-radius: 1rem;
-  overflow: hidden;
-}
-.guest-room-photo {
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  display: block;
-  width: 100%;
-  background: var(--surface-muted);
-}
-.guest-room-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-.guest-room-photo:hover img { transform: scale(1.03); }
-.guest-room-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  padding: 1.125rem 1.125rem 1.25rem;
-  flex: 1;
-}
-
-@media (min-width: 640px) {
-  .room-rail { grid-auto-columns: 46%; }
-}
-@media (min-width: 1024px) {
-  .room-rail {
-    grid-auto-flow: row;
-    grid-template-columns: repeat(3, 1fr);
-    overflow: visible;
-    margin: 0;
-    padding-inline: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .guest-room-photo img { transition: none; }
-}
+.rt-head { max-width: 60ch; margin-bottom: 1.5rem; display: grid; gap: .5rem; }
+.rt-head h2 { font-size: 2.4375rem; color: var(--river); }
+.rt-head p { color: var(--silt); }
+.rt-rows { display: grid; gap: 1rem; }
+.rt-img { width: 100%; height: 100%; object-fit: cover; }
+.rt-from { color: var(--silt); font-size: .8125rem; }
+.rt-price { color: var(--laterite); font-size: 1.5625rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.rt-price span { color: var(--silt); font-size: .8125rem; font-weight: 400; }
+.rt-btn { width: 100%; min-height: 44px; border-radius: var(--radius-pill) !important; }
+.rt-all { display: inline-flex; align-items: center; min-height: 44px; margin-top: 1rem; color: var(--river); font-weight: 600; text-decoration: underline; }
 </style>
