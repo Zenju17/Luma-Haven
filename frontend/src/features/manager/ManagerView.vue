@@ -3,7 +3,7 @@ import AgreementGate from '../legal/AgreementGate.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
-import PortalLayout from '../../layouts/PortalLayout.vue'
+import PortalLayout, { type PortalNavItem } from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from './ManagerDashboard.vue'
 import MediaAssetManager from '../media/MediaAssetManager.vue'
 import Notice from '../../components/Notice.vue'
@@ -25,6 +25,14 @@ watch(identity.data, current => {
   if (current && 'username' in current) user.value = current
 }, { immediate: true })
 
+const navItems = computed<PortalNavItem[]>(() => {
+  if (!user.value || !isManagerRole.value) return []
+  return [
+    { id: 'dashboard', label: 'Executive Dashboard & Yield', icon: 'chart' },
+    { id: 'media', label: 'Visual Assets & Media', icon: 'image' },
+    { id: 'staff-desk', label: 'Staff Desk', icon: 'home', group: 'more', to: '/staff' },
+  ]
+})
 const isManagerRole = computed(() => ['ADMIN', 'MANAGER', 'ACCOUNTANT'].includes(user.value?.role || ''))
 
 async function signIn() {
@@ -59,7 +67,7 @@ function handleNavigate(destination: string) {
 </script>
 
 <template>
-  <PortalLayout area="staff">
+  <PortalLayout area="staff" :items="navItems" :active="activeTab" @select="activeTab = $event as typeof activeTab">
     <AgreementGate portal="staff" :active="Boolean(user)" />
     <div v-if="identity.isPending.value" role="status" class="space-y-4">
       <p>Checking manager session…</p>
@@ -96,34 +104,6 @@ function handleNavigate(destination: string) {
           <RouterLink v-if="user.role === 'ADMIN'" to="/admin" class="btn-secondary text-xs">Admin Console</RouterLink>
           <button type="button" class="btn-secondary text-xs" @click="signOut">Sign out</button>
         </div>
-      </div>
-
-      <!-- Section Tabs -->
-      <div class="flex items-center gap-2 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330] pb-2">
-        <button
-          type="button"
-          :class="[
-            'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
-            activeTab === 'dashboard'
-              ? 'bg-[var(--brass)] text-stone-900 shadow-xs'
-              : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-          ]"
-          @click="activeTab = 'dashboard'"
-        >
-          Executive Dashboard &amp; Yield
-        </button>
-        <button
-          type="button"
-          :class="[
-            'px-4 py-2 rounded-lg text-sm font-semibold transition-colors',
-            activeTab === 'media'
-              ? 'bg-[var(--brass)] text-stone-900 shadow-xs'
-              : 'bg-[var(--surface-muted)] text-[var(--muted)] hover:text-[var(--brand-text)]',
-          ]"
-          @click="activeTab = 'media'"
-        >
-          Visual Assets &amp; Media
-        </button>
       </div>
 
       <ManagerDashboard v-if="activeTab === 'dashboard'" portal="staff" :user="user" @navigate="handleNavigate" />

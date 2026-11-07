@@ -632,45 +632,11 @@ button:disabled { cursor: not-allowed; opacity: .52; }
 /* ─────────────────────────────────────────────
    Portal (staff & admin) layout
    ───────────────────────────────────────────── */
-.portal-shell {
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  min-height: 100vh;
-  background: var(--mist);
-}
-
-.portal-rail {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding: 34px 26px;
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  border-right: 1px solid var(--glass-border);
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-}
-.portal-rail .portal-brand-lockup,
-.portal-rail .brand-mark { color: #fff; text-decoration: none; }
-.portal-rail .brand-mark::before,
-.portal-brand-lockup::before { display: none !important; }
-.portal-rail-rule { width: 36px; height: 2px; margin: 56px 0 24px; background: var(--brass); }
-.portal-rail-title { font-family: var(--font-display);
-  font-weight: 400 !important; font-size: 1.8rem; line-height: 1.1; }
-.portal-rail-note { color: var(--sidebar-text-muted); font-size: .83rem; line-height: 1.6; }
-.portal-rail-bottom { margin-top: auto; padding-top: 40px; color: var(--sidebar-text-muted); font-size: .77rem; }
-
-.portal-stage { display: flex; min-width: 0; flex-direction: column; }
-.portal-stage main { width: 100%; max-width: 1190px; margin: 0 auto; padding: 38px clamp(20px, 4vw, 54px); flex: 1; }
-
-.portal-mobile-header { display: none; }
-.portal-footer { border-top: 1px solid var(--glass-border); color: var(--muted); }
+.portal-shell { min-height: 100vh; background: var(--mist); }
+.portal-footer { border-top: 1px solid var(--rule); color: var(--muted); }
 .portal-shell:has(.portal-login) .portal-stage main { display: flex; align-items: center; justify-content: center; }
 .portal-login {
   width: min(100%, 448px);
-  border-top: 4px solid var(--brass);
 }
 
 /* ─────────────────────────────────────────────
@@ -934,19 +900,6 @@ button:disabled { cursor: not-allowed; opacity: .52; }
    Responsive Breakpoints
    ───────────────────────────────────────────── */
 @media (max-width: 850px) {
-  .portal-shell { display: block; }
-  .portal-rail { display: none; }
-  .portal-mobile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 15px;
-    min-height: 64px;
-    padding: 12px 20px;
-    background: var(--sidebar-bg);
-    color: #fff;
-    border-bottom: 1px solid var(--glass-border);
-  }
   .portal-stage main { padding: 24px 18px; }
 
   .card, .field, .btn-secondary, .metric-card, .room-tile {

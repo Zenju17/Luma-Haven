@@ -3,7 +3,7 @@ import AgreementGate from '../legal/AgreementGate.vue'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
-import PortalLayout from '../../layouts/PortalLayout.vue'
+import PortalLayout, { type PortalNavItem } from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import MediaAssetManager from '../media/MediaAssetManager.vue'
@@ -74,6 +74,14 @@ const nav = computed(() => {
   const role = user.value?.role ?? ''
   return NAV.map(g => ({ group: g.group, items: g.items.filter(i => i.roles.includes(role)) })).filter(g => g.items.length)
 })
+const SECTION_ICONS: Record<Section, string> = {
+  overview: 'home', rooms: 'bed', cms: 'page', legal: 'scale', privacy: 'lock', payments: 'card',
+  reports: 'report', team: 'people', settings: 'gear', media: 'image', audit: 'clock', dev: 'code',
+}
+const navItems = computed<PortalNavItem[]>(() =>
+  user.value && hasAccess.value
+    ? nav.value.flatMap(g => g.items.map(i => ({ id: i.id, label: i.label, icon: SECTION_ICONS[i.id], group: g.group })))
+    : [])
 const FIRST: Record<string, Section> = { ADMIN: 'overview', DEVELOPER: 'dev', CONTENT_EDITOR: 'cms' }
 
 
@@ -193,7 +201,7 @@ function handleManagerNavigate(destination: string) {
 </script>
 
 <template>
-  <PortalLayout area="admin">
+  <PortalLayout area="admin" :items="navItems" :active="section" @select="section = $event as Section">
     <AgreementGate portal="admin" :active="Boolean(user)" />
     <div v-if="identity.isPending.value" role="status" class="space-y-4">
       <p>Checking your administrator session…</p>
@@ -219,12 +227,6 @@ function handleManagerNavigate(destination: string) {
         <button class="btn-secondary" :disabled="busy" @click="signOut">Sign out</button>
       </div>
       <Notice :message="error" />
-      <nav class="admin-tabs mt-8 pb-4 space-y-3" aria-label="Administration sections">
-        <div v-for="g in nav" :key="g.group" class="flex flex-wrap items-center gap-2">
-          <span class="label w-24">{{ g.group }}</span>
-          <button v-for="item in g.items" :key="item.id" type="button" :class="section === item.id ? 'btn' : 'btn-secondary'" :aria-current="section === item.id ? 'page' : undefined" @click="section = item.id">{{ item.label }}</button>
-        </div>
-      </nav>
 
       <section v-if="section === 'overview'" aria-label="Executive MIS Intelligence">
         <ManagerDashboard portal="admin" :user="user" @navigate="handleManagerNavigate" />

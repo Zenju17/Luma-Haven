@@ -3,7 +3,7 @@ import AgreementGate from '../legal/AgreementGate.vue'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuery } from '@tanstack/vue-query'
-import PortalLayout from '../../layouts/PortalLayout.vue'
+import PortalLayout, { type PortalNavItem } from '../../layouts/PortalLayout.vue'
 import ManagerDashboard from '../manager/ManagerDashboard.vue'
 import Notice from '../../components/Notice.vue'
 import { staffApi, queryClient } from '../../services/api'
@@ -55,6 +55,22 @@ watch(() => route.query.tab, newTab => {
   if (newTab && typeof newTab === 'string' && validTabs.includes(newTab as TabType)) {
     tab.value = newTab as TabType
   }
+})
+
+const pendingRefunds = computed(() => Boolean(refunds.data.value?.some(r => r.status === 'PENDING')))
+const navItems = computed<PortalNavItem[]>(() => {
+  if (!user.value) return []
+  const items: PortalNavItem[] = [{ id: 'operations', label: 'Daily Operations', icon: 'home' }]
+  if (canSeeReservations.value) items.push({ id: 'reservations', label: 'Reservations & Amendments', icon: 'calendar' })
+  if (isManagerOrAdmin.value) {
+    items.push(
+      { id: 'refunds', label: 'Refunds & Reconciliation', icon: 'coin', badge: pendingRefunds.value },
+      { id: 'rates', label: 'Room Rates & Pricing', icon: 'tag' },
+      { id: 'manager', label: 'Manager Intelligence', icon: 'chart' },
+      { id: 'manager-view', label: 'Manager View', icon: 'report', group: 'more', to: '/manager' },
+    )
+  }
+  return items
 })
 
 function setTab(nextTab: TabType) {
@@ -333,7 +349,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
 </script>
 
 <template>
-  <PortalLayout area="staff">
+  <PortalLayout area="staff" :items="navItems" :active="tab" @select="setTab($event as TabType)">
     <AgreementGate portal="staff" :active="hasStaff" />
     <div v-if="identity.isPending.value" role="status" class="space-y-4">
       <p>Checking your staff session…</p>
@@ -363,59 +379,6 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           <button class="btn-secondary text-xs" :disabled="busy" @click="signOut">Sign out</button>
         </div>
       </div>
-
-      <!-- Navigation Tabs -->
-      <nav class="flex flex-wrap gap-2 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330] pb-3" aria-label="Staff navigation">
-        <button
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm transition"
-          :class="tab === 'operations' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="setTab('operations')"
-        >
-          Daily Operations
-        </button>
-
-        <button
-          v-if="canSeeReservations"
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm transition"
-          :class="tab === 'reservations' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="setTab('reservations')"
-        >
-          Reservations & Amendments
-        </button>
-
-        <button
-          v-if="isManagerOrAdmin"
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm transition flex items-center gap-2"
-          :class="tab === 'refunds' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="setTab('refunds')"
-        >
-          Refunds & Reconciliation
-          <span v-if="refunds.data.value?.filter(r => r.status === 'PENDING').length" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-        </button>
-
-        <button
-          v-if="isManagerOrAdmin"
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm transition"
-          :class="tab === 'rates' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="setTab('rates')"
-        >
-          Room Rates & Pricing
-        </button>
-
-        <button
-          v-if="isManagerOrAdmin"
-          type="button"
-          class="px-4 py-2 rounded-lg text-sm transition"
-          :class="tab === 'manager' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] font-semibold' : 'btn-secondary'"
-          @click="setTab('manager')"
-        >
-          Manager Intelligence
-        </button>
-      </nav>
 
       <Notice :message="error" />
       <Notice :message="successNotice" status />
