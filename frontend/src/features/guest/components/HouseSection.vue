@@ -34,9 +34,9 @@ const lounge = '/images/luma-haven/facilities/lounge.jpg'
 </template>
 
 <style scoped>
-.house { padding: 4rem 0; border-top: 1px solid var(--rule); }
+.house { margin-bottom: 1rem; padding: clamp(1.25rem, 3vw, 2.5rem); background: var(--paper); border-radius: var(--radius-panel); }
 .house-head { display: grid; gap: .5rem; margin-bottom: 2rem; }
-.house-head h2 { font-size: clamp(2.4375rem, 5vw, 3.8125rem); color: var(--river); }
+.house-head h2 { font-size: clamp(2rem, 4vw, 3rem); color: var(--ink); }
 .house-head p { color: var(--silt); }
 .house-grid { display: grid; gap: 1.25rem; }
 .house-grid figure { margin: 0; }

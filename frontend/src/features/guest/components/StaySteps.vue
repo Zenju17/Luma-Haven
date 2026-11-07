@@ -22,12 +22,12 @@ const stops = [
 </template>
 
 <style scoped>
-.clock { padding: 4rem 0; border-top: 1px solid var(--rule); }
-.clock h2 { font-size: clamp(2.4375rem, 5vw, 3.8125rem); color: var(--river); margin-bottom: 2.5rem; }
+.clock { margin-bottom: 1rem; padding: clamp(1.25rem, 3vw, 2.5rem); background: var(--paper); border-radius: var(--radius-panel); }
+.clock h2 { font-size: clamp(2rem, 4vw, 3rem); color: var(--ink); margin-bottom: 2.5rem; }
 .clock-line { display: grid; gap: 2rem; }
 .clock-line li { position: relative; display: grid; grid-template-rows: auto auto 1fr; align-content: start; gap: .4rem; padding-left: 1.5rem; border-left: 1px solid var(--river); }
 .clock-line li::before { content: ''; position: absolute; left: -5px; top: .9rem; width: 9px; height: 9px; border-radius: 50%; background: var(--laterite); }
-.clock-when { display: block; height: 1em; font: 400 clamp(2.4375rem, 4vw, 3.8125rem)/1 var(--font-display); color: var(--laterite); font-variant-numeric: lining-nums; letter-spacing: -.01em; }
+.clock-when { display: block; height: 1em; font: 600 clamp(2rem, 3.4vw, 3rem)/1 var(--font-display); color: var(--river); font-variant-numeric: tabular-nums; letter-spacing: -.03em; }
 .clock h3 { margin-top: .6rem; font: 600 1.0625rem/1.3 var(--font-text); color: var(--river); }
 .clock p { font-size: .9375rem; color: var(--silt); max-width: 34ch; }
 

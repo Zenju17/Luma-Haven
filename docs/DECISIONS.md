@@ -86,3 +86,14 @@ the stay laid out by its real times (14:00, 22:00, 12:00) instead of numbered st
 The e2e labels ("Arrival", "Departure", "Guests", "Search rooms") and the hero heading are unchanged.
 The Khmer line (សម្រាកក្បែរមាត់ទន្លេ នៅភ្នំពេញ) should be checked by a native speaker.
 
+## 2026-11-07: Landing page restyled after the owner's "homely" reference; Manrope replaces Caslon
+
+The owner preferred a reference made of white rounded panels on a light neutral background, with a geometric sans
+headline. The site now uses one family, Manrope, for headings and text, replacing Libre Caslon Condensed and Hanken
+Grotesk. `--paper` is white and `--palm-leaf` is a light warm grey (`#F1F0EC`). The landing page is now a hero panel
+(place pill, headline, compact search, photo), two room cards plus one wide card, a large "Rooms and rates" heading
+with bed-type tabs, and room rows with a price box (beds, sleeps, rooms of this type) and a "Book" button.
+The pool, clock and location sections also sit in panels. The reference's rating pill and "Trusted by" logos were not
+copied, because Luma Haven has no ratings or partners to show. A real place name and the KHQR banks are shown instead.
+The sentence-style search from earlier the same day was replaced by compact fields with the same labels.
+

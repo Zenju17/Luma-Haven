@@ -1,5 +1,5 @@
 <template>
-  <section id="location" class="py-16 sm:py-20 border-t border-[var(--rule)]" aria-labelledby="location-heading">
+  <section id="location" class="loc-panel" aria-labelledby="location-heading">
     <div class="loc">
       <div class="loc-text">
         <h2 id="location-heading">A quiet street in Daun Penh</h2>
@@ -28,7 +28,7 @@
           <g stroke="color-mix(in oklab, var(--silt) 40%, transparent)" stroke-width="3" fill="none" stroke-linecap="round">
             <path d="M20 250 H460" /><path d="M20 330 H460" /><path d="M110 160 V410" /><path d="M250 160 V410" /><path d="M380 160 V410" /><path d="M110 250 L250 190" />
           </g>
-          <g font-family="Hanken Grotesk, sans-serif" font-size="13" font-weight="600">
+          <g font-family="Manrope, sans-serif" font-size="13" font-weight="600">
             <g transform="translate(150 92)"><rect x="-6" y="-14" width="198" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Royal Palace &amp; Riverside</text></g>
             <g transform="translate(250 210)"><rect x="-6" y="-14" width="216" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">National Museum of Cambodia</text></g>
             <g transform="translate(40 380)"><rect x="-6" y="-14" width="400" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Phnom Penh International Airport, 35 min drive</text></g>
@@ -44,9 +44,10 @@
 </template>
 
 <style scoped>
+.loc-panel { margin-bottom: 1rem; padding: clamp(1.25rem, 3vw, 2.5rem); background: var(--paper); border-radius: var(--radius-panel); }
 .loc { display: grid; gap: 2rem; }
 .loc-text { display: grid; gap: 1.25rem; align-content: start; }
-.loc-text h2 { font-size: 2.4375rem; color: var(--river); }
+.loc-text h2 { font-size: clamp(2rem, 4vw, 3rem); color: var(--ink); }
 .loc-text > p { color: var(--silt); }
 .loc-rules { display: grid; gap: 1rem; }
 .loc-rules > div { display: grid; gap: .15rem; padding-top: .75rem; border-top: 1px solid var(--rule); }

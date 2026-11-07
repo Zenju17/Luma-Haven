@@ -12,7 +12,7 @@ const props = withDefaults(
     navigateOnSubmit?: boolean
     compact?: boolean
     stacked?: boolean
-    /** Landing page: the search reads as one sentence, the way you'd ask at the desk. */
+    /** Landing page hero: compact fields inside the hero panel. */
     sentence?: boolean
   }>(),
   {
@@ -88,17 +88,20 @@ function handleSubmit() {
 
 <template>
   <div id="search" class="w-full">
-    <form v-if="sentence" class="ask" @submit.prevent="handleSubmit">
-      <p class="ask-line">
-        <label for="arrival-input">Arriving</label>
-        <input id="arrival-input" v-model="arrival" aria-label="Arrival" class="ask-in ask-in--date" type="date" :min="hotelToday()" required @change="handleArrivalChange" />
-        <label for="departure-input">leaving</label>
-        <input id="departure-input" v-model="departure" aria-label="Departure" class="ask-in ask-in--date" type="date" :min="arrival ? followingDay(arrival) : followingDay(hotelToday())" required />
-        <label for="guests-input">with</label>
-        <input id="guests-input" v-model.number="occupants" aria-label="Guests" class="ask-in ask-in--num" type="number" min="1" max="8" required />
-        <span>{{ occupants === 1 ? 'guest.' : 'guests.' }}</span>
-      </p>
-      <button type="submit" class="ask-go">Search rooms</button>
+    <form v-if="sentence" class="hs" @submit.prevent="handleSubmit">
+      <div class="hs-field">
+        <label for="arrival-input">Arrival</label>
+        <input id="arrival-input" v-model="arrival" aria-label="Arrival" type="date" :min="hotelToday()" required @change="handleArrivalChange" />
+      </div>
+      <div class="hs-field">
+        <label for="departure-input">Departure</label>
+        <input id="departure-input" v-model="departure" aria-label="Departure" type="date" :min="arrival ? followingDay(arrival) : followingDay(hotelToday())" required />
+      </div>
+      <div class="hs-field hs-field--n">
+        <label for="guests-input">Guests</label>
+        <input id="guests-input" v-model.number="occupants" aria-label="Guests" type="number" min="1" max="8" required />
+      </div>
+      <button type="submit" class="hs-go">Search rooms</button>
     </form>
     <form v-else :class="stacked ? 'stack-form' : 'pill-bar'" @submit.prevent="handleSubmit">
       <div class="pf pf--dates">
@@ -138,21 +141,17 @@ function handleSubmit() {
 .pf-to { padding-bottom: .75rem; color: var(--silt); }
 .pf-submit { min-height: 48px; padding: 0 1.75rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 1rem var(--font-text); }
 .pf-submit:hover { background: var(--river-hover); }
-/* Sentence form: inputs sit inside the line of display type, underlined like a filled-in register. */
-.ask { display: grid; gap: 1.5rem; justify-items: start; }
-.ask-line { max-width: none; font: 400 clamp(1.5625rem, 2.6vw, 2.4375rem)/1.45 var(--font-display); color: var(--river); }
-.ask-line label { margin-right: .3em; }
-.ask-in {
-  min-width: 0; margin-right: .3em; padding: 0 .1em; border: 0; border-bottom: 2px solid var(--laterite);
-  background: transparent; color: var(--laterite); font: inherit; font-variant-numeric: tabular-nums;
+/* Hero search: three soft fields and one dark button, inside the hero panel. */
+.hs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: .5rem; }
+.hs-field { min-width: 0; display: grid; gap: .1rem; padding: .55rem .9rem; border-radius: 14px; background: var(--palm-leaf); }
+.hs-field label { font-size: .75rem; font-weight: 600; color: var(--silt); }
+.hs-field input { min-width: 0; width: 100%; min-height: 28px; border: 0; background: transparent; color: var(--ink); font: 600 .9375rem var(--font-text); font-variant-numeric: tabular-nums; }
+.hs-field input:focus-visible { outline-offset: 6px; }
+.hs-go { grid-column: 1 / -1; min-height: 52px; padding: 0 1.75rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 .9375rem var(--font-text); }
+.hs-go:hover { background: var(--river-hover); }
+@media (min-width: 480px) {
+  .hs { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 5.5rem; }
 }
-.ask-in:focus-visible { outline-offset: 4px; }
-.ask-in--date { width: 7.4em; }
-.ask-in--num { width: 1.8em; text-align: center; }
-.ask-in::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
-.ask-go { min-height: 52px; padding: 0 2rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 1rem var(--font-text); }
-.ask-go:hover { background: var(--river-hover); }
-@media (max-width: 479px) { .ask-in--date { width: 100%; display: block; margin-bottom: .15em; } }
 
 @media (min-width: 900px) {
   .pill-bar { grid-template-columns: auto 140px auto; align-items: end; justify-content: space-between; border-radius: var(--radius-pill); padding: .6rem .6rem .6rem 1.25rem; }
