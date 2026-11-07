@@ -1,4 +1,18 @@
 {
+ "/images/luma-haven/clean/dining.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
+ "/images/luma-haven/clean/pool.jpg": {
+  "variants": [
+   640,
+   1280
+  ],
+  "width": 1600
+ },
  "/images/luma-haven/facilities/details.jpg": {
   "variants": [
    640,

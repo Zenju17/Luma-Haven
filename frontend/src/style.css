@@ -118,6 +118,7 @@
    ───────────────────────────────────────────── */
 body {
   min-width: 320px;
+  overflow-x: clip;
   background: var(--palm-leaf);
   color: var(--ink);
   transition: background-color var(--duration-normal) ease, color var(--duration-normal) ease;

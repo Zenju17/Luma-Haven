@@ -12,6 +12,8 @@ const props = withDefaults(
     navigateOnSubmit?: boolean
     compact?: boolean
     stacked?: boolean
+    /** Landing page: the search reads as one sentence, the way you'd ask at the desk. */
+    sentence?: boolean
   }>(),
   {
     initialArrival: '',
@@ -20,6 +22,7 @@ const props = withDefaults(
     navigateOnSubmit: true,
     compact: false,
     stacked: false,
+    sentence: false,
   }
 )
 
@@ -85,7 +88,19 @@ function handleSubmit() {
 
 <template>
   <div id="search" class="w-full">
-    <form :class="stacked ? 'stack-form' : 'pill-bar'" @submit.prevent="handleSubmit">
+    <form v-if="sentence" class="ask" @submit.prevent="handleSubmit">
+      <p class="ask-line">
+        <label for="arrival-input">Arriving</label>
+        <input id="arrival-input" v-model="arrival" aria-label="Arrival" class="ask-in ask-in--date" type="date" :min="hotelToday()" required @change="handleArrivalChange" />
+        <label for="departure-input">leaving</label>
+        <input id="departure-input" v-model="departure" aria-label="Departure" class="ask-in ask-in--date" type="date" :min="arrival ? followingDay(arrival) : followingDay(hotelToday())" required />
+        <label for="guests-input">with</label>
+        <input id="guests-input" v-model.number="occupants" aria-label="Guests" class="ask-in ask-in--num" type="number" min="1" max="8" required />
+        <span>{{ occupants === 1 ? 'guest.' : 'guests.' }}</span>
+      </p>
+      <button type="submit" class="ask-go">Search rooms</button>
+    </form>
+    <form v-else :class="stacked ? 'stack-form' : 'pill-bar'" @submit.prevent="handleSubmit">
       <div class="pf pf--dates">
         <div class="pf-field">
           <label for="arrival-input" class="pf-label">Arrival</label>
@@ -123,6 +138,22 @@ function handleSubmit() {
 .pf-to { padding-bottom: .75rem; color: var(--silt); }
 .pf-submit { min-height: 48px; padding: 0 1.75rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 1rem var(--font-text); }
 .pf-submit:hover { background: var(--river-hover); }
+/* Sentence form: inputs sit inside the line of display type, underlined like a filled-in register. */
+.ask { display: grid; gap: 1.5rem; justify-items: start; }
+.ask-line { max-width: none; font: 400 clamp(1.5625rem, 2.6vw, 2.4375rem)/1.45 var(--font-display); color: var(--river); }
+.ask-line label { margin-right: .3em; }
+.ask-in {
+  min-width: 0; margin-right: .3em; padding: 0 .1em; border: 0; border-bottom: 2px solid var(--laterite);
+  background: transparent; color: var(--laterite); font: inherit; font-variant-numeric: tabular-nums;
+}
+.ask-in:focus-visible { outline-offset: 4px; }
+.ask-in--date { width: 7.4em; }
+.ask-in--num { width: 1.8em; text-align: center; }
+.ask-in::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
+.ask-go { min-height: 52px; padding: 0 2rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 1rem var(--font-text); }
+.ask-go:hover { background: var(--river-hover); }
+@media (max-width: 479px) { .ask-in--date { width: 100%; display: block; margin-bottom: .15em; } }
+
 @media (min-width: 900px) {
   .pill-bar { grid-template-columns: auto 140px auto; align-items: end; justify-content: space-between; border-radius: var(--radius-pill); padding: .6rem .6rem .6rem 1.25rem; }
   .pf-field--guests { border-left: 1px solid var(--rule); padding-left: 1.25rem; }

@@ -72,3 +72,17 @@ both themes. Hard-coded Tailwind palette classes in staff screens (emerald, rose
 were mapped to `--status-*`, `--ink`, `--silt`, `--sunk` and `--rule`. The printable receipt is
 the exception: it keeps fixed colours because it is a paper document.
 
+## 2026-11-07: Landing page rebuilt around a sentence search and a rate card
+
+Most gallery and facility images have advert-style captions baked into the pixels ("Lobby, a
+warm welcome awaits"). The landing page showed them in a full-width carousel, which made it look
+generated whatever the CSS did. The landing page now uses only clean images. The pool and
+restaurant are cropped above their captions (`public/images/luma-haven/clean/`). The carousel
+(`HotelGallery.vue`) was removed, and the Gallery page still shows admin-uploaded assets. The page is now:
+a hero with an oversized headline, a Khmer line, and the booking search written as a sentence
+("Arriving … leaving … with 2 guests."); a rate card listing every room type, cheapest first, with a
+photo that follows the row under the pointer; three clean photos, labelled as design visualisations;
+the stay laid out by its real times (14:00, 22:00, 12:00) instead of numbered steps; and the location map.
+The e2e labels ("Arrival", "Departure", "Guests", "Search rooms") and the hero heading are unchanged.
+The Khmer line (សម្រាកក្បែរមាត់ទន្លេ នៅភ្នំពេញ) should be checked by a native speaker.
+
