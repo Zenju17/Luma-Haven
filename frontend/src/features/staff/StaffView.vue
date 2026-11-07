@@ -420,7 +420,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               <p class="mt-2 text-xs text-[var(--muted)]">
                 {{ room.occupied ? 'Occupied' : 'Vacant' }} · {{ room.cleaning }} · {{ room.in_service ? 'In service' : 'Out of service' }}
               </p>
-              <p v-if="room.rate_minor" class="text-xs font-mono font-medium mt-2">
+              <p v-if="room.rate_minor" class="text-xs tabular-nums font-medium mt-2">
                 {{ money(room.rate_minor) }} <span class="text-[10px] text-[var(--muted)]">/ night</span>
               </p>
             </div>
@@ -532,32 +532,32 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[980px]">
             <thead>
-              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-28">Reference</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Guest</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Room</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Stay Dates</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right">Balance</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right min-w-[340px]">Actions</th>
+              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-28">Reference</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Guest</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Room</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Stay Dates</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] text-right">Balance</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] text-right min-w-[340px]">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
-                <td class="py-3 px-4 font-mono font-bold text-xs text-[#0c2b26] dark:text-[#88e2cb] whitespace-nowrap">{{ b.reference }}</td>
+              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
+                <td class="py-3 px-4 tabular-nums font-bold text-xs text-[color:var(--river)] dark:text-[color:var(--status-available)] whitespace-nowrap">{{ b.reference }}</td>
                 <td class="py-3 px-4 font-medium whitespace-nowrap">{{ b.guest_name }}</td>
                 <td class="py-3 px-4 whitespace-nowrap">
                   <span class="font-medium">Room {{ b.room }}</span>
                   <span class="text-xs text-[var(--muted)] ml-1">({{ b.room_type }})</span>
                 </td>
-                <td class="py-3 px-4 text-xs font-mono text-[var(--muted)] whitespace-nowrap">
+                <td class="py-3 px-4 text-xs tabular-nums text-[var(--muted)] whitespace-nowrap">
                   <span>{{ b.arrival }}</span>
-                  <span class="mx-1 text-[#9ab4ac]">→</span>
+                  <span class="mx-1 text-[color:var(--silt)]">→</span>
                   <span>{{ b.departure }}</span>
                 </td>
                 <td class="py-3 px-4 whitespace-nowrap">
                   <span
-                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border uppercase"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border "
                     :class="{
                       'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50': b.status === 'CONFIRMED',
                       'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/50': b.status === 'CHECKED_IN',
@@ -579,7 +579,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                     {{ b.status.replace('_', ' ') }}
                   </span>
                 </td>
-                <td class="py-3 px-4 font-mono text-xs text-right whitespace-nowrap" :class="b.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400 font-bold' : 'text-[var(--muted)]'">
+                <td class="py-3 px-4 tabular-nums text-xs text-right whitespace-nowrap" :class="b.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400 font-bold' : 'text-[var(--muted)]'">
                   {{ money(b.balance_minor) }}
                 </td>
                 <td class="py-3 px-4 text-right whitespace-nowrap">
@@ -671,27 +671,27 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[920px]">
             <thead>
-              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-24">Refund ID</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] w-32">Reservation Ref</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Guest</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Amount</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Reason</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Requested By</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right min-w-[260px]">Review Action</th>
+              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-24">Refund ID</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-32">Reservation Ref</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Guest</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Amount</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Reason</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Requested By</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] text-right min-w-[260px]">Review Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
-                <td class="py-3 px-4 font-mono font-medium whitespace-nowrap">#{{ r.id }}</td>
-                <td class="py-3 px-4 font-mono font-bold text-xs text-[#0c2b26] dark:text-[#88e2cb] whitespace-nowrap">{{ r.reservation_reference }}</td>
+              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
+                <td class="py-3 px-4 tabular-nums font-medium whitespace-nowrap">#{{ r.id }}</td>
+                <td class="py-3 px-4 tabular-nums font-bold text-xs text-[color:var(--river)] dark:text-[color:var(--status-available)] whitespace-nowrap">{{ r.reservation_reference }}</td>
                 <td class="py-3 px-4 font-medium whitespace-nowrap">{{ r.guest_name }}</td>
-                <td class="py-3 px-4 font-mono font-bold whitespace-nowrap">{{ money(r.amount_minor) }}</td>
+                <td class="py-3 px-4 tabular-nums font-bold whitespace-nowrap">{{ money(r.amount_minor) }}</td>
                 <td class="py-3 px-4 text-xs max-w-xs">{{ r.reason }}</td>
                 <td class="py-3 px-4 whitespace-nowrap">
                   <span
-                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border uppercase"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border "
                     :class="{
                       'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800/50': r.status === 'PENDING',
                       'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800/50': r.status === 'APPROVED',
@@ -784,9 +784,9 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               <p class="text-xs text-[var(--muted)] mt-1">Capacity: Up to {{ rt.capacity }} guests</p>
             </div>
 
-            <div class="flex items-baseline justify-between pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <div class="flex items-baseline justify-between pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
               <div>
-                <span class="text-2xl font-bold font-mono">{{ money(rt.nightly_rate_minor) }}</span>
+                <span class="text-2xl font-bold tabular-nums">{{ money(rt.nightly_rate_minor) }}</span>
                 <span class="text-xs text-[var(--muted)]"> / night</span>
               </div>
               <button type="button" class="btn-secondary text-xs" @click="openEditRate(rt)">
@@ -816,11 +816,11 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <button type="button" class="text-xl" @click="detailBooking = null">✕</button>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4] text-xs">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] text-xs">
             <div><span class="label text-[10px]">Arrival</span><p class="font-medium">{{ detailBooking.arrival }}</p></div>
             <div><span class="label text-[10px]">Departure</span><p class="font-medium">{{ detailBooking.departure }}</p></div>
             <div><span class="label text-[10px]">Status</span><p class="font-medium">{{ detailBooking.status }}</p></div>
-            <div><span class="label text-[10px]">Balance</span><p class="font-mono font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'">{{ money(detailBooking.balance_minor) }}</p></div>
+            <div><span class="label text-[10px]">Balance</span><p class="tabular-nums font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'">{{ money(detailBooking.balance_minor) }}</p></div>
           </div>
 
           <section v-if="detailBooking.status === 'CONFIRMED' && ['ADMIN', 'RECEPTION'].includes(role || '')" class="p-4 rounded-lg border border-[var(--line)] space-y-3">
@@ -842,7 +842,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div class="card overflow-hidden">
               <table class="data-table w-full text-left text-xs">
                 <thead>
-                  <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
+                  <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                     <th class="p-3">Category</th>
                     <th class="p-3">Description</th>
                     <th class="p-3">Service Date</th>
@@ -850,11 +850,11 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(entry, idx) in detailBooking.entries" :key="idx" class="border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+                  <tr v-for="(entry, idx) in detailBooking.entries" :key="idx" class="border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
                     <td class="p-3 font-semibold">{{ entry.category }}</td>
                     <td class="p-3">{{ entry.description }}</td>
-                    <td class="p-3 font-mono">{{ entry.service_date }}</td>
-                    <td class="p-3 text-right font-mono" :class="entry.amount_minor < 0 ? 'text-emerald-600 dark:text-emerald-400' : ''">
+                    <td class="p-3 tabular-nums">{{ entry.service_date }}</td>
+                    <td class="p-3 text-right tabular-nums" :class="entry.amount_minor < 0 ? 'text-emerald-600 dark:text-emerald-400' : ''">
                       {{ money(entry.amount_minor) }}
                     </td>
                   </tr>
@@ -864,7 +864,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           </div>
 
           <Notice :message="error" />
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
             <button v-if="canServe && detailBooking.status === 'CONFIRMED'" type="button" class="btn text-xs"
               :disabled="busy || !detailBooking.verified || detailBooking.balance_minor > 0 || detailBooking.hotel_today < detailBooking.arrival || detailBooking.hotel_today >= detailBooking.departure"
               @click="recordStayTransition('check-in')">Check in guest</button>

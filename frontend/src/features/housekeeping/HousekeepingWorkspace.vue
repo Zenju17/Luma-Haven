@@ -125,7 +125,7 @@ async function submitMaintenance() {
     <Notice :message="error || (tasks.error.value ? String(tasks.error.value) : '')" />
     <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
-      <button class="text-xs font-semibold uppercase hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
+      <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
 
     <!-- Header Actions & Tabs -->
@@ -133,14 +133,14 @@ async function submitMaintenance() {
       <div class="flex items-center gap-2">
         <button
           class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-          :class="activeTab === 'queue' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
+          :class="activeTab === 'queue' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
           @click="activeTab = 'queue'"
         >
           Cleaning Queue
         </button>
         <button
           class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-          :class="activeTab === 'history' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
+          :class="activeTab === 'history' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
           @click="activeTab = 'history'"
         >
           Turnaround History
@@ -193,7 +193,7 @@ async function submitMaintenance() {
             <div class="flex items-center gap-3">
               <span class="text-lg font-bold">Room {{ task.room__number }}</span>
               <span
-                class="badge text-[10px] font-bold uppercase"
+                class="badge text-[10px] font-bold "
                 :class="{
                   'bg-rose-500/10 text-rose-600 border-rose-500/30': task.priority === 'URGENT',
                   'bg-amber-500/10 text-amber-600 border-amber-500/30': task.priority === 'HIGH',
@@ -203,7 +203,7 @@ async function submitMaintenance() {
                 {{ task.priority || 'NORMAL' }} PRIORITY
               </span>
               <span
-                class="badge text-[10px] uppercase font-bold"
+                class="badge text-[10px] font-bold"
                 :class="{
                   'bg-rose-500/10 text-rose-500 border-rose-500/30': task.status === 'DIRTY',
                   'bg-amber-500/10 text-amber-500 border-amber-500/30': task.status === 'CLEANING',

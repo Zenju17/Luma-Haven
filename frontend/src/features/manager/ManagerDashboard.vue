@@ -98,24 +98,24 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
 <template>
   <div class="manager-dashboard space-y-8">
     <!-- Header & Period Filter Controls -->
-    <div class="card p-6 flex flex-wrap items-center justify-between gap-5 bg-gradient-to-r from-white via-white to-[#f0f6f4] dark:from-[#0f211f] dark:to-[#081514]">
+    <div class="card p-6 flex flex-wrap items-center justify-between gap-5 ">
       <div>
         <p class="label">Management Information System</p>
-        <h1 class="text-3xl font-serif text-[#0c2b26] dark:text-[#f3ede2]">
+        <h1 class="text-3xl font-serif text-[color:var(--river)] dark:text-[color:var(--river)]">
           Manager Intelligence Dashboard
         </h1>
-        <p class="text-sm text-[#536b66] dark:text-[#9ab4ac] mt-1">
+        <p class="text-sm text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
           Accurate operational transactions, recognized revenues, and prescriptive decision support.
         </p>
       </div>
 
       <!-- Presets and Date Controls -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="inline-flex rounded-lg border border-[#cbdad4] dark:border-[#223936] p-1 bg-[#eaf2ee] dark:bg-[#0a1716] text-xs">
+        <div class="inline-flex rounded-lg border border-[color:var(--rule)] dark:border-[color:var(--rule)] p-1 bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] text-xs">
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === 'today' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] shadow-sm' : 'text-[#3d5a54] hover:text-[#0c2b26] dark:text-[#9ab4ac] dark:hover:text-[#f3ede2]'"
+            :class="activePreset === 'today' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('today')"
           >
             Today
@@ -123,7 +123,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === '7days' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] shadow-sm' : 'text-[#3d5a54] hover:text-[#0c2b26] dark:text-[#9ab4ac] dark:hover:text-[#f3ede2]'"
+            :class="activePreset === '7days' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('7days')"
           >
             Last 7 Days
@@ -131,7 +131,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === 'month' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] shadow-sm' : 'text-[#3d5a54] hover:text-[#0c2b26] dark:text-[#9ab4ac] dark:hover:text-[#f3ede2]'"
+            :class="activePreset === 'month' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('month')"
           >
             This Month
@@ -145,7 +145,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
             class="field py-1.5 px-2.5 text-xs rounded-lg"
             aria-label="Start date"
           />
-          <span class="text-[#536b66] dark:text-[#9ab4ac]">to</span>
+          <span class="text-[color:var(--silt)] dark:text-[color:var(--silt)]">to</span>
           <input
             v-model="end"
             type="date"
@@ -171,7 +171,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
     <!-- Role Restriction Notice -->
     <div v-if="isHousekeeping" class="card p-6 border-l-4 border-amber-500">
       <p class="font-medium text-amber-800 dark:text-amber-200">Role-Restricted View</p>
-      <p class="text-sm mt-1 text-[#536b66] dark:text-[#9ab4ac]">
+      <p class="text-sm mt-1 text-[color:var(--silt)] dark:text-[color:var(--silt)]">
         Housekeeping accounts have access to room operations and turnover queues. Financial performance metrics and ledger reconciliations are restricted to management and accounting roles.
       </p>
     </div>
@@ -183,8 +183,8 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
       <!-- Section 2: Executive KPI Cards with Tooltips & Definitions -->
       <div class="space-y-4">
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-serif text-[#0c2b26] dark:text-[#f3ede2]">Executive Financial & Operational KPIs</h2>
-          <span class="text-xs text-[#536b66] dark:text-[#9ab4ac]">
+          <h2 class="text-2xl font-serif text-[color:var(--river)] dark:text-[color:var(--river)]">Executive Financial & Operational KPIs</h2>
+          <span class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">
             Period: {{ kpis.start }} to {{ kpis.end_exclusive }} ({{ kpis.days }} {{ kpis.days === 1 ? 'day' : 'days' }}) · Hotel: {{ kpis.hotel }}
           </span>
         </div>
@@ -193,13 +193,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 1: Occupancy Rate -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Occupancy Rate</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Formula: Sold Room-Nights ÷ Sellable Room-Nights × 100. Accurately adjusts for early checkouts and historical maintenance blocks.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Occupancy Rate</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Formula: Sold Room-Nights ÷ Sellable Room-Nights × 100. Accurately adjusts for early checkouts and historical maintenance blocks.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
               {{ kpis.occupancy_rate_percent !== null ? `${kpis.occupancy_rate_percent}%` : 'N/A' }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               {{ kpis.sold_room_nights }} sold / {{ kpis.sellable_room_nights }} sellable nights
             </p>
           </div>
@@ -207,13 +207,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 2: ADR -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Average Daily Rate (ADR)</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Formula: Net Room Revenue ÷ Sold Room-Nights. Measures the average realized rental income per paid room night, excluding taxes.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Average Daily Rate (ADR)</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Formula: Net Room Revenue ÷ Sold Room-Nights. Measures the average realized rental income per paid room night, excluding taxes.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
               {{ kpis.average_daily_rate_minor !== null ? money(kpis.average_daily_rate_minor) : 'N/A' }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Per occupied room night
             </p>
           </div>
@@ -221,13 +221,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 3: RevPAR -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">RevPAR</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Formula: Net Room Revenue ÷ Sellable Room-Nights. Comprehensive metric combining pricing discipline with inventory occupancy.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">RevPAR</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Formula: Net Room Revenue ÷ Sellable Room-Nights. Comprehensive metric combining pricing discipline with inventory occupancy.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
               {{ kpis.revpar_minor !== null ? money(kpis.revpar_minor) : 'N/A' }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Per sellable room night
             </p>
           </div>
@@ -235,13 +235,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 4: Net Room Revenue -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Net Room Revenue</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Earned room revenue recognized strictly by service date for nights stayed. Excludes taxes, unstayed nights, and non-room items.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Net Room Revenue</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Earned room revenue recognized strictly by service date for nights stayed. Excludes taxes, unstayed nights, and non-room items.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
               {{ money(kpis.net_room_revenue_minor) }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Service-date recognized
             </p>
           </div>
@@ -249,13 +249,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 5: Net Settled Cash -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Net Settled Cash</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Net cash collected = Gross settled payments minus settled refunds in hotel timezone during this period.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Net Settled Cash</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Net cash collected = Gross settled payments minus settled refunds in hotel timezone during this period.">ⓘ</span>
             </div>
             <p class="text-3xl font-bold mt-2 text-emerald-700 dark:text-emerald-400">
               {{ money(kpis.settled_cash_minor) }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Gross: {{ money(kpis.gross_cash_minor) }} · Refunds: -{{ money(kpis.refunded_cash_minor) }}
             </p>
           </div>
@@ -263,13 +263,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 6: Outstanding Balances -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Outstanding Balances</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Unsettled balances across active confirmed and checked-in reservation folios. Accounts receivable asset.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Outstanding Balances</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Unsettled balances across active confirmed and checked-in reservation folios. Accounts receivable asset.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2" :class="kpis.outstanding_balances_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-[#0c2b26] dark:text-[#f3ede2]'">
+            <p class="text-3xl font-bold mt-2" :class="kpis.outstanding_balances_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-[color:var(--river)] dark:text-[color:var(--river)]'">
               {{ money(kpis.outstanding_balances_minor) }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Unsettled active folios
             </p>
           </div>
@@ -277,13 +277,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 7: Cancellations & No-Shows -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Cancellations / No-Shows</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Cancelled reservations during period, plus arrivals marked as no-show. Rate calculated against booking cohorts.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Cancellations / No-Shows</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Cancelled reservations during period, plus arrivals marked as no-show. Rate calculated against booking cohorts.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
-              {{ kpis.cancellations_count }} <span class="text-base font-normal text-[#536b66] dark:text-[#9ab4ac]">/ {{ kpis.no_shows_count }} no-shows</span>
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
+              {{ kpis.cancellations_count }} <span class="text-base font-normal text-[color:var(--silt)] dark:text-[color:var(--silt)]">/ {{ kpis.no_shows_count }} no-shows</span>
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Cancellation rate: {{ kpis.cancellation_rate_percent !== null ? `${kpis.cancellation_rate_percent}%` : 'N/A' }}
             </p>
           </div>
@@ -291,13 +291,13 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <!-- KPI 8: Housekeeping Turnaround -->
           <div class="card p-5 metric-card relative group">
             <div class="flex items-center justify-between">
-              <span class="label text-xs uppercase tracking-wider text-[#536b66] dark:text-[#9ab4ac]">Avg Turnover Time</span>
-              <span class="cursor-help text-xs text-[#536b66] dark:text-[#9ab4ac]" title="Average duration from guest checkout to housekeeping completion and ready inspection for rooms turned over in period.">ⓘ</span>
+              <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Avg Turnover Time</span>
+              <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Average duration from guest checkout to housekeeping completion and ready inspection for rooms turned over in period.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-[#0c2b26] dark:text-[#f3ede2]">
+            <p class="text-3xl font-bold mt-2 text-[color:var(--river)] dark:text-[color:var(--river)]">
               {{ kpis.avg_housekeeping_turnaround_minutes !== null ? `${kpis.avg_housekeeping_turnaround_minutes}m` : 'N/A' }}
             </p>
-            <p class="text-xs text-[#536b66] dark:text-[#9ab4ac] mt-1">
+            <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
               Checkout to ready state
             </p>
           </div>
@@ -313,9 +313,9 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <h3 class="text-lg font-serif">Daily Room Demand & Capacity</h3>
               <p class="text-xs text-[var(--muted)]">Sellable inventory vs booked room-nights per date.</p>
             </div>
-            <div class="flex items-center gap-3 text-xs text-[#536b66] dark:text-[#9ab4ac]">
-              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#dce9e5] border border-[#cbdad4] dark:border-transparent dark:bg-[#1a3834]" /> Capacity</span>
-              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[#0c2b26] dark:bg-[#d7b683]" /> Sold</span>
+            <div class="flex items-center gap-3 text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] dark:border-transparent dark:bg-[var(--surface-muted)]" /> Capacity</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[var(--river)]" /> Sold</span>
             </div>
           </div>
 
@@ -325,9 +325,9 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <div v-else class="relative h-48 w-full">
             <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 60">
               <!-- Grid lines -->
-              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[#18312e]" stroke-dasharray="2,2" stroke-width="0.5" />
-              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[#18312e]" stroke-dasharray="2,2" stroke-width="0.5" />
-              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[#18312e]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
 
               <!-- Daily bars -->
               <g v-for="(point, idx) in trends" :key="point.date">
@@ -337,14 +337,14 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                   :y="50 - (point.sellable / maxOccupancyValue) * 45"
                   :width="(0.6 / trends.length) * 100"
                   :height="(point.sellable / maxOccupancyValue) * 45"
-                  class="fill-[#dce9e5] dark:fill-[#1a3834] rx-1"
+                  class="fill-[var(--surface-muted)] rx-1"
                 />
                 <rect
                   :x="((idx + 0.2) / trends.length) * 100"
                   :y="50 - (point.sold / maxOccupancyValue) * 45"
                   :width="(0.6 / trends.length) * 100"
                   :height="(point.sold / maxOccupancyValue) * 45"
-                  class="fill-[#0c2b26] dark:fill-[#d7b683] transition-all hover:opacity-80 cursor-pointer rx-1"
+                  class="fill-[var(--river)] transition-all hover:opacity-80 cursor-pointer rx-1"
                   @mouseenter="hoveredTrendIndex = idx"
                   @mouseleave="hoveredTrendIndex = null"
                 />
@@ -360,7 +360,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
             <!-- Hover tooltip -->
             <div
               v-if="hoveredTrendIndex !== null && trends[hoveredTrendIndex]"
-              class="absolute top-2 right-2 p-2 rounded bg-[#0c2b26] text-white text-xs shadow-lg space-y-0.5"
+              class="absolute top-2 right-2 p-2 rounded bg-[var(--river)] text-[color:var(--palm-leaf)] text-xs shadow-lg space-y-0.5"
             >
               <p class="font-bold">{{ trends[hoveredTrendIndex].date }}</p>
               <p>Sold: {{ trends[hoveredTrendIndex].sold }} / Sellable: {{ trends[hoveredTrendIndex].sellable }}</p>
@@ -376,7 +376,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <h3 class="text-lg font-serif">Daily Room Revenue Trend</h3>
               <p class="text-xs text-[var(--muted)]">Net room revenue recognized per stay service date.</p>
             </div>
-            <span class="text-xs font-mono text-[#8f6826] dark:text-[#d7b683] font-semibold">
+            <span class="text-xs tabular-nums text-[color:var(--laterite)] dark:text-[color:var(--laterite)] font-semibold">
               Peak: {{ money(maxRevenueValue) }}
             </span>
           </div>
@@ -390,7 +390,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <polyline
                 fill="none"
                 stroke="currentColor"
-                class="text-emerald-600 dark:text-[#d7b683]"
+                class="text-emerald-600 dark:text-[color:var(--laterite)]"
                 stroke-width="2"
                 :points="trends.map((p, i) => `${((i + 0.5) / trends.length) * 100},${50 - (p.revenue_minor / maxRevenueValue) * 45}`).join(' ')"
               />
@@ -400,7 +400,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                 :cx="((i + 0.5) / trends.length) * 100"
                 :cy="50 - (p.revenue_minor / maxRevenueValue) * 45"
                 r="1.5"
-                class="fill-emerald-700 dark:fill-[#d7b683]"
+                class="fill-emerald-700 "
               />
             </svg>
 
@@ -414,7 +414,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
 
       <!-- Section 4: Room-Type Performance Table -->
       <div class="card overflow-hidden">
-        <div class="p-6 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330] flex flex-wrap items-center justify-between gap-4">
+        <div class="p-6 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)] flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 class="text-xl font-serif">Room-Type Performance Breakdown</h3>
             <p class="text-xs text-[var(--muted)] mt-0.5">Comparative yield, sellable nights, and ADR across room inventory categories.</p>
@@ -427,7 +427,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="overflow-x-auto">
           <table class="data-table w-full text-left text-sm">
             <thead>
-              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
+              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                 <th class="p-4">Room Type</th>
                 <th class="p-4">Total Rooms</th>
                 <th class="p-4">Base Rate</th>
@@ -442,7 +442,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <tr
                 v-for="rt in roomTypes"
                 :key="rt.id"
-                class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition"
+                class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition"
               >
                 <td class="p-4 font-medium">{{ rt.name }}</td>
                 <td class="p-4">{{ rt.total_rooms }}</td>
@@ -457,8 +457,8 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                     {{ rt.occupancy_rate_percent !== null ? `${rt.occupancy_rate_percent}%` : 'N/A' }}
                   </span>
                 </td>
-                <td class="p-4 font-mono font-medium">{{ money(rt.net_room_revenue_minor) }}</td>
-                <td class="p-4 font-mono">{{ rt.adr_minor !== null ? money(rt.adr_minor) : 'N/A' }}</td>
+                <td class="p-4 tabular-nums font-medium">{{ money(rt.net_room_revenue_minor) }}</td>
+                <td class="p-4 tabular-nums">{{ rt.adr_minor !== null ? money(rt.adr_minor) : 'N/A' }}</td>
               </tr>
             </tbody>
           </table>
@@ -471,7 +471,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Today's Desk Movements</h3>
           <div class="space-y-3">
-            <div class="flex items-center justify-between p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4]">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span class="text-sm">Expected Arrivals</span>
               <span class="font-bold text-base">{{ operations.arrivals.total }}</span>
             </div>
@@ -484,7 +484,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               </div>
             </div>
 
-            <div class="flex items-center justify-between p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4] mt-2">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] mt-2">
               <span class="text-sm">Expected Departures</span>
               <span class="font-bold text-base">{{ operations.departures.total }}</span>
             </div>
@@ -503,19 +503,19 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div v-if="readiness" class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Room Readiness Status</h3>
           <div class="space-y-2 text-sm">
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
               <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Ready for Check-in</span>
               <span class="font-bold">{{ readiness.ready }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
               <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-sky-500" /> Cleaning in Progress</span>
               <span class="font-bold">{{ readiness.cleaning }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
               <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Inspection Pending</span>
               <span class="font-bold">{{ readiness.inspection }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
               <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500" /> Dirty (Awaiting Turnover)</span>
               <span class="font-bold">{{ readiness.dirty }}</span>
             </div>
@@ -536,27 +536,27 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Exceptions & Pending Queue</h3>
           <div class="space-y-2.5 text-xs">
-            <div class="flex justify-between items-center p-2.5 rounded bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Active Maintenance Tickets</span>
-              <span class="font-bold font-mono px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
                 {{ operations.open_maintenance.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Open Guest Service Requests</span>
-              <span class="font-bold font-mono px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
                 {{ operations.open_requests.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Pending Refunds for Review</span>
-              <span class="font-bold font-mono px-2 py-0.5 rounded" :class="operations.pending_refunds.length > 0 ? 'bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.pending_refunds.length > 0 ? 'bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
                 {{ operations.pending_refunds.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#d8ece4]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Payment Exceptions</span>
-              <span class="font-bold font-mono px-2 py-0.5 rounded" :class="operations.payment_exceptions_count > 0 ? 'bg-rose-200 text-rose-900 dark:bg-rose-950 dark:text-rose-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.payment_exceptions_count > 0 ? 'bg-rose-200 text-rose-900 dark:bg-rose-950 dark:text-rose-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
                 {{ operations.payment_exceptions_count }}
               </span>
             </div>

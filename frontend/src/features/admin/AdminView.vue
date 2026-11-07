@@ -248,18 +248,18 @@ function handleManagerNavigate(destination: string) {
         <div v-else-if="team.data.value" class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[640px]">
             <thead>
-              <tr class="bg-[#f0f6f4] text-[#1f3330] border-b border-[#cbdad4] dark:bg-[#0c1c1a] dark:text-[#d8ece4] dark:border-[#1a3330]">
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Username</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Role</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb]">Status</th>
-                <th class="py-3 px-4 font-semibold text-xs tracking-wider uppercase text-[#35534c] dark:text-[#a5c4bb] text-right">Action</th>
+              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Username</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Role</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Status</th>
+                <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] text-right">Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="member in team.data.value" :key="member.id" class="border-t border-[#cbdad4] dark:border-[#1a3330] hover:bg-[#f0f6f4]/60 dark:hover:bg-[#122523]/60 transition">
+              <tr v-for="member in team.data.value" :key="member.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
                 <td class="py-3 px-4 font-medium">{{ member.username }}</td>
                 <td class="py-3 px-4">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wider bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
                     {{ member.role }}
                   </span>
                 </td>
@@ -317,8 +317,8 @@ function handleManagerNavigate(destination: string) {
                 <input id="confirm-staff-password" v-model="confirmPassword" class="field w-full" type="password" autocomplete="new-password" minlength="8" maxlength="12" required />
               </div>
 
-              <div class="mt-4 p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-xs text-[#536b66] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#9ab4ac] space-y-1">
-                <p class="font-medium text-[#0c2b26] dark:text-[#f3ede2]">Password requirements:</p>
+              <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-xs text-[color:var(--silt)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--silt)] space-y-1">
+                <p class="font-medium text-[color:var(--river)] dark:text-[color:var(--river)]">Password requirements:</p>
                 <ul class="list-disc list-inside space-y-0.5">
                   <li>Between 8 and 12 characters</li>
                   <li>Cannot be too similar to the username or email</li>
@@ -377,7 +377,7 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 1</span>
-                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Daily Archive</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Daily Archive</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Daily Manager Summary</h3>
               <p class="text-xs text-[var(--muted)] mt-1">
@@ -393,7 +393,7 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 2</span>
-                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">Yield & Demand</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">Yield & Demand</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Revenue & Occupancy by Room Type</h3>
               <p class="text-xs text-[var(--muted)] mt-1">
@@ -409,7 +409,7 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 3</span>
-                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Financial Audit</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Financial Audit</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Cash Reconciliation & Audit Ledger</h3>
               <p class="text-xs text-[var(--muted)] mt-1">
@@ -425,7 +425,7 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 4</span>
-                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">Operational SLA</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">Operational SLA</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Housekeeping Turnaround & Efficiency</h3>
               <p class="text-xs text-[var(--muted)] mt-1">
@@ -441,7 +441,7 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 5</span>
-                <span class="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Credit Risk</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Credit Risk</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Accounts Receivable Aging & Outstanding Balances</h3>
               <p class="text-xs text-[var(--muted)] mt-1">
@@ -471,8 +471,8 @@ function handleManagerNavigate(destination: string) {
             <div><p class="label">Average daily rate</p><p class="text-2xl font-bold">{{ report.data.value.average_daily_rate_minor === null ? 'N/A' : money(report.data.value.average_daily_rate_minor) }}</p></div>
             <div><p class="label">Revenue per available room</p><p class="text-2xl font-bold">{{ report.data.value.revpar_minor === null ? 'N/A' : money(report.data.value.revpar_minor) }}</p></div>
             <div><p class="label">Sold room-nights</p><p class="text-2xl font-bold">{{ report.data.value.sold_room_nights }}</p></div>
-            <div><p class="label">Net room revenue</p><p class="text-2xl font-bold font-mono">{{ money(report.data.value.net_room_revenue_minor) }}</p></div>
-            <div><p class="label">Settled cash</p><p class="text-2xl font-bold font-mono text-emerald-700 dark:text-emerald-400">{{ money(report.data.value.settled_cash_minor) }}</p></div>
+            <div><p class="label">Net room revenue</p><p class="text-2xl font-bold tabular-nums">{{ money(report.data.value.net_room_revenue_minor) }}</p></div>
+            <div><p class="label">Settled cash</p><p class="text-2xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">{{ money(report.data.value.settled_cash_minor) }}</p></div>
           </div>
         </div>
       </section>

@@ -85,7 +85,7 @@ async function settleRefund(refundId: number) {
     <Notice :message="error || (reconciliation.error.value ? String(reconciliation.error.value) : '')" />
     <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
-      <button class="text-xs font-semibold uppercase hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
+      <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
 
     <!-- Summary KPI Strip -->
@@ -120,21 +120,21 @@ async function settleRefund(refundId: number) {
     <div class="flex items-center gap-2 border-b border-[var(--line)] pb-4">
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'reconciliation' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
+        :class="activeTab === 'reconciliation' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
         @click="activeTab = 'reconciliation'"
       >
         Folio Reconciliation
       </button>
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'ledger' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
+        :class="activeTab === 'ledger' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
         @click="activeTab = 'ledger'"
       >
         Payments Audit Ledger
       </button>
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
-        :class="activeTab === 'refunds' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26]' : 'btn-secondary'"
+        :class="activeTab === 'refunds' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
         @click="activeTab = 'refunds'"
       >
         Approved Refunds Settlement ({{ approvedRefunds.length }})
@@ -167,13 +167,13 @@ async function settleRefund(refundId: number) {
           </thead>
           <tbody class="divide-y divide-[var(--line)]">
             <tr v-for="item in reconciliation.data.value || []" :key="item.reservation_id" class="hover:bg-[var(--card)]/80">
-              <td class="py-3 px-2 font-mono font-bold">{{ item.reference }}</td>
+              <td class="py-3 px-2 tabular-nums font-bold">{{ item.reference }}</td>
               <td class="py-3 px-2">{{ item.guest_name }}</td>
               <td class="py-3 px-2 text-[var(--muted)]">{{ item.arrival }} → {{ item.departure }}</td>
-              <td class="py-3 px-2 text-right font-mono">{{ money(item.charges_minor) }}</td>
-              <td class="py-3 px-2 text-right font-mono text-emerald-600">{{ money(item.settled_minor) }}</td>
-              <td class="py-3 px-2 text-right font-mono text-rose-500">{{ money(item.refunds_minor) }}</td>
-              <td class="py-3 px-2 text-right font-mono font-bold" :class="item.balance_minor === 0 ? 'text-emerald-600' : 'text-rose-500'">
+              <td class="py-3 px-2 text-right tabular-nums">{{ money(item.charges_minor) }}</td>
+              <td class="py-3 px-2 text-right tabular-nums text-emerald-600">{{ money(item.settled_minor) }}</td>
+              <td class="py-3 px-2 text-right tabular-nums text-rose-500">{{ money(item.refunds_minor) }}</td>
+              <td class="py-3 px-2 text-right tabular-nums font-bold" :class="item.balance_minor === 0 ? 'text-emerald-600' : 'text-rose-500'">
                 {{ money(item.balance_minor) }}
               </td>
               <td class="py-3 px-2 text-center">
@@ -238,11 +238,11 @@ async function settleRefund(refundId: number) {
           </thead>
           <tbody class="divide-y divide-[var(--line)]">
             <tr v-for="p in payments.data.value || []" :key="p.id" class="hover:bg-[var(--card)]/80">
-              <td class="py-3 px-2 font-mono">#{{ p.id }}</td>
-              <td class="py-3 px-2 font-mono font-bold">{{ p.reference }}</td>
+              <td class="py-3 px-2 tabular-nums">#{{ p.id }}</td>
+              <td class="py-3 px-2 tabular-nums font-bold">{{ p.reference }}</td>
               <td class="py-3 px-2">{{ p.guest_name }}</td>
-              <td class="py-3 px-2 font-mono text-[11px] text-[var(--muted)]">{{ p.gateway_reference || 'N/A' }}</td>
-              <td class="py-3 px-2 text-right font-mono font-bold">{{ money(p.amount_minor) }}</td>
+              <td class="py-3 px-2 tabular-nums text-[11px] text-[var(--muted)]">{{ p.gateway_reference || 'N/A' }}</td>
+              <td class="py-3 px-2 text-right tabular-nums font-bold">{{ money(p.amount_minor) }}</td>
               <td class="py-3 px-2 text-center">
                 <span
                   class="badge text-[10px]"
@@ -287,7 +287,7 @@ async function settleRefund(refundId: number) {
           <div class="space-y-1">
             <div class="flex items-center gap-3">
               <span class="font-bold text-base">{{ money(rf.amount_minor) }}</span>
-              <span class="badge text-[10px] font-mono">{{ rf.reservation_reference }}</span>
+              <span class="badge text-[10px] tabular-nums">{{ rf.reservation_reference }}</span>
               <span class="badge text-[10px] bg-blue-500/10 text-blue-600 border-blue-500/30">APPROVED</span>
             </div>
             <p class="text-xs text-[var(--muted)]">Guest: {{ rf.guest_name }} · Reason: "{{ rf.reason }}"</p>

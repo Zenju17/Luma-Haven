@@ -144,7 +144,7 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     <div v-else-if="tab === 'flags'" class="card p-4 space-y-3">
       <ul class="divide-y divide-[var(--line)]">
         <li v-for="f in flagList.data.value" :key="f.key" class="py-3 flex items-center justify-between gap-3">
-          <div><p class="font-mono text-sm">{{ f.key }}</p><p class="text-xs text-[var(--muted)]">{{ f.description }} <span v-if="f.updated_by">· last by {{ f.updated_by }}</span></p></div>
+          <div><p class="tabular-nums text-sm">{{ f.key }}</p><p class="text-xs text-[var(--muted)]">{{ f.description }} <span v-if="f.updated_by">· last by {{ f.updated_by }}</span></p></div>
           <button class="btn-secondary" :disabled="busy || !canWrite" :aria-pressed="f.enabled" @click="toggle(f)">{{ f.enabled ? 'ON' : 'off' }}</button>
         </li>
       </ul>
@@ -159,7 +159,7 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     <div v-else-if="tab === 'errors'" class="card overflow-auto">
       <table class="data-table w-full text-left text-sm"><thead><tr><th>When</th><th>Request</th><th>Error</th><th>Request ID</th></tr></thead>
         <tbody>
-          <tr v-for="e in errors.data.value" :key="e.id"><td>{{ stamp(e.created_at) }}</td><td>{{ e.method }} {{ e.path }}</td><td>{{ e.exc_type }}: {{ e.message }}</td><td class="font-mono text-xs">{{ e.request_id.slice(0, 8) }}</td></tr>
+          <tr v-for="e in errors.data.value" :key="e.id"><td>{{ stamp(e.created_at) }}</td><td>{{ e.method }} {{ e.path }}</td><td>{{ e.exc_type }}: {{ e.message }}</td><td class="tabular-nums text-xs">{{ e.request_id.slice(0, 8) }}</td></tr>
           <tr v-if="errors.data.value?.length === 0"><td colspan="4" class="text-[var(--muted)]">No server errors recorded.</td></tr>
         </tbody></table>
     </div>

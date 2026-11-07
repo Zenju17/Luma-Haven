@@ -94,9 +94,9 @@ function handleNavigate(destination: string) {
 
     <!-- Dashboard -->
     <div v-else class="space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330]">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
         <div>
-          <span class="label uppercase tracking-widest text-xs">Hotel Management Information System</span>
+          <span class="label text-xs">Hotel Management Information System</span>
           <p class="text-sm text-[var(--muted)]">Signed in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
         </div>
         <div class="flex items-center gap-3">

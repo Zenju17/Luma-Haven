@@ -296,7 +296,7 @@ async function submitUpload() {
     </div>
 
     <!-- Category Filter Tabs -->
-    <div class="flex flex-wrap items-center gap-2 border-b border-[var(--line,#e2e8e0)] dark:border-[#1a3330] pb-2">
+    <div class="flex flex-wrap items-center gap-2 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)] pb-2">
       <button
         v-for="cat in categories"
         :key="cat.id"
@@ -352,14 +352,14 @@ async function submitUpload() {
           <div class="absolute inset-0 bg-gradient-to-t from-[var(--deep)]/50 via-transparent to-transparent pointer-events-none" />
 
           <!-- Category Badge -->
-          <span class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase bg-[var(--deep)]/90 text-stone-200 border border-[var(--glass-border)] backdrop-blur-xs">
+          <span class="absolute top-3 left-3 px-2 py-0.5 rounded text-[10px] font-semibold bg-[var(--deep)]/90 text-stone-200 border border-[var(--glass-border)] backdrop-blur-xs">
             {{ asset.category }}
           </span>
 
           <!-- Source Type / Concept Badge -->
           <span
             v-if="asset.source_type === 'CONCEPT'"
-            class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium bg-black/70 text-[#d9b87f] border border-[#d9b87f]/30 backdrop-blur-xs"
+            class="absolute top-3 right-3 px-2 py-0.5 rounded text-[10px] font-medium bg-black/70 text-[color:var(--laterite)] border border-[color:var(--laterite)]/30 backdrop-blur-xs"
           >
             Design Concept
           </span>
@@ -387,7 +387,7 @@ async function submitUpload() {
           </button>
 
           <!-- Order Tag -->
-          <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded text-[10px] font-mono bg-black/60 text-stone-300 backdrop-blur-xs">
+          <span class="absolute bottom-3 right-3 px-2 py-0.5 rounded text-[10px] tabular-nums bg-black/60 text-stone-300 backdrop-blur-xs">
             Order #{{ asset.display_order }}
           </span>
         </div>
@@ -404,7 +404,7 @@ async function submitUpload() {
             </p>
 
             <!-- Metadata info -->
-            <div class="pt-2 border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330] space-y-1 text-[11px] text-[var(--muted)]">
+            <div class="pt-2 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)] space-y-1 text-[11px] text-[var(--muted)]">
               <p v-if="asset.room_type_name" class="flex items-center gap-1.5">
                 <strong class="text-[var(--brand-text)]">Room:</strong> {{ asset.room_type_name }}
               </p>
@@ -417,14 +417,14 @@ async function submitUpload() {
               <p v-if="isLowRes(asset.width, asset.height)" class="text-amber-600 dark:text-amber-400 font-semibold">
                 ⚠️ Low resolution: will look blurry when enlarged
               </p>
-              <p class="font-mono text-[10px] text-[var(--muted)] truncate">
+              <p class="tabular-nums text-[10px] text-[var(--muted)] truncate">
                 {{ asset.original_filename }} ({{ asset.width }}×{{ asset.height }} · {{ Math.round(asset.file_size_bytes / 1024) }} KB)
               </p>
             </div>
           </div>
 
           <!-- Actions -->
-          <div class="pt-3 border-t border-[var(--line,#e2e8e0)] dark:border-[#1a3330] flex items-center justify-between gap-2">
+          <div class="pt-3 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)] flex items-center justify-between gap-2">
             <button
               type="button"
               class="btn-secondary text-xs font-semibold px-3 py-1.5"
@@ -464,23 +464,23 @@ async function submitUpload() {
 
         <form class="space-y-4" @submit.prevent="saveEdit">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Title</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Title</label>
             <input v-model="editForm.title" class="field w-full" required />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Caption</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Caption</label>
             <textarea v-model="editForm.caption" class="field w-full h-20 text-sm" placeholder="Atmospheric description or guest note…" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Alt Text (Accessibility)</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Alt Text (Accessibility)</label>
             <input v-model="editForm.alt_text" class="field w-full" required />
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Category</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Category</label>
               <select v-model="editForm.category" class="field w-full">
                 <option value="BRANDING">Branding &amp; Logo</option>
                 <option value="HERO">Homepage Hero</option>
@@ -492,7 +492,7 @@ async function submitUpload() {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Assigned Room Type</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Assigned Room Type</label>
               <select v-model="editForm.room_type_id" class="field w-full">
                 <option :value="null">(Unassigned)</option>
                 <option v-for="rt in roomTypes" :key="rt.id" :value="rt.id">
@@ -504,12 +504,12 @@ async function submitUpload() {
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Display Order</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Display Order</label>
               <input v-model.number="editForm.display_order" type="number" min="0" class="field w-full" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Source Type</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Source Type</label>
               <select v-model="editForm.source_type" class="field w-full">
                 <option value="CONCEPT">AI Concept Visualization</option>
                 <option value="VERIFIED">Verified Hotel Photograph</option>
@@ -519,7 +519,7 @@ async function submitUpload() {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">
               Facility Claim Note (if unverified)
             </label>
             <input
@@ -566,7 +566,7 @@ async function submitUpload() {
 
         <form class="space-y-4" @submit.prevent="submitUpload">
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">
               Image File (.png, .jpg, .webp up to 10MB)
             </label>
             <input
@@ -592,23 +592,23 @@ async function submitUpload() {
           </p>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Title</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Title</label>
             <input v-model="uploadForm.title" class="field w-full" placeholder="e.g. Courtyard Twilight" required />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Caption</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Caption</label>
             <textarea v-model="uploadForm.caption" class="field w-full h-20 text-sm" placeholder="Description of space…" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Alt Text</label>
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Alt Text</label>
             <input v-model="uploadForm.alt_text" class="field w-full" required />
           </div>
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Category</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Category</label>
               <select v-model="uploadForm.category" class="field w-full">
                 <option value="GALLERY">Homepage Gallery</option>
                 <option value="HERO">Homepage Hero</option>
@@ -620,7 +620,7 @@ async function submitUpload() {
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Assigned Room Type</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Assigned Room Type</label>
               <select v-model="uploadForm.room_type_id" class="field w-full">
                 <option :value="null">(Unassigned)</option>
                 <option v-for="rt in roomTypes" :key="rt.id" :value="rt.id">
@@ -632,12 +632,12 @@ async function submitUpload() {
 
           <div class="grid sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Display Order</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Display Order</label>
               <input v-model.number="uploadForm.display_order" type="number" min="0" class="field w-full" />
             </div>
 
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">Source Type</label>
+              <label class="block text-xs font-semibold text-[var(--muted)] mb-1">Source Type</label>
               <select v-model="uploadForm.source_type" class="field w-full">
                 <option value="CONCEPT">AI Concept Visualization</option>
                 <option value="VERIFIED">Verified Hotel Photograph</option>
@@ -646,7 +646,7 @@ async function submitUpload() {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted)] mb-1">
+            <label class="block text-xs font-semibold text-[var(--muted)] mb-1">
               Facility Claim Note (if unverified)
             </label>
             <input

@@ -164,7 +164,7 @@ async function completeRequest(requestId: number) {
     <Notice :message="error || (reservations.error.value ? String(reservations.error.value) : '')" />
     <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
-      <button class="text-xs font-semibold uppercase hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
+      <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
 
     <!-- Desk Movements KPI Strip -->
@@ -219,7 +219,7 @@ async function completeRequest(requestId: number) {
               <span class="font-semibold text-base">{{ res.guest_name }}</span>
               <span class="badge text-[11px]">{{ res.reference }}</span>
               <span
-                class="badge text-[10px] uppercase font-bold"
+                class="badge text-[10px] font-bold"
                 :class="{
                   'bg-emerald-500/10 text-emerald-600 border-emerald-500/30': res.status === 'CHECKED_IN',
                   'bg-amber-500/10 text-amber-600 border-amber-500/30': res.status === 'CONFIRMED'
@@ -371,7 +371,7 @@ async function completeRequest(requestId: number) {
                 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300': item.severity === 'INFO'
               }"
             >
-              <span class="font-bold uppercase text-[10px]">{{ item.severity }}</span>
+              <span class="font-bold text-[10px]">{{ item.severity }}</span>
               <span class="flex-1">{{ item.message }}</span>
             </div>
           </div>

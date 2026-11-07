@@ -73,14 +73,14 @@ const publish = () => run(async () => {
             <label class="label">Language<select v-model="form.language" class="field mt-1 w-full"><option value="en">English</option><option value="km">ខ្មែរ</option></select></label>
           </div>
           <label class="label block">Title<input v-model="form.title" class="field mt-1 w-full" required /></label>
-          <label class="label block">Text (Markdown)<textarea v-model="form.body_markdown" class="field mt-1 w-full font-mono text-sm" rows="6" required /></label>
+          <label class="label block">Text (Markdown)<textarea v-model="form.body_markdown" class="field mt-1 w-full tabular-nums text-sm" rows="6" required /></label>
           <button class="btn" :disabled="busy">Create draft</button>
         </form>
         <div v-if="current" class="card p-5 space-y-3">
           <p class="label">{{ current.kind }} · {{ current.language.toUpperCase() }} · v{{ current.version }} · {{ current.status }}</p>
           <template v-if="current.status === 'DRAFT'">
             <input v-model="current.title" class="field w-full" aria-label="Title" />
-            <textarea v-model="current.body_markdown" class="field w-full font-mono text-sm" rows="10" aria-label="Text" />
+            <textarea v-model="current.body_markdown" class="field w-full tabular-nums text-sm" rows="10" aria-label="Text" />
             <div class="flex gap-3">
               <button class="btn-secondary" :disabled="busy" @click="saveDraft">Save draft</button>
               <button class="btn" :disabled="busy" @click="publish">Publish new version</button>

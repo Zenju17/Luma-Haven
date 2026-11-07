@@ -376,12 +376,12 @@ function cleaningBadgeClass(status: string) {
           <div>
             <div class="flex items-start justify-between gap-3 mb-2">
               <div>
-                <span class="text-xs uppercase font-bold tracking-wider text-[var(--brand)]">
+                <span class="text-xs font-bold text-[var(--brand)]">
                   Capacity: {{ rt.capacity }} guest{{ rt.capacity > 1 ? 's' : '' }}
                 </span>
                 <h3 class="text-xl font-serif mt-1 text-[var(--ink)]">{{ rt.name }}</h3>
               </div>
-              <span class="text-lg font-mono font-bold text-[var(--brand-text)] whitespace-nowrap">
+              <span class="text-lg tabular-nums font-bold text-[var(--brand-text)] whitespace-nowrap">
                 {{ money(rt.nightly_rate_minor) }}
                 <span class="text-xs font-normal text-[var(--muted)]">/ night</span>
               </span>
@@ -460,7 +460,7 @@ function cleaningBadgeClass(status: string) {
       <div v-else class="card overflow-auto">
         <table class="data-table w-full text-left text-sm min-w-[700px]">
           <thead>
-            <tr class="bg-[var(--surface-muted)] border-b border-[var(--line)] text-xs uppercase tracking-wider text-[var(--muted)] font-semibold">
+            <tr class="bg-[var(--surface-muted)] border-b border-[var(--line)] text-xs text-[var(--muted)] font-semibold">
               <th class="py-3 px-4">Room #</th>
               <th class="py-3 px-4">Type</th>
               <th class="py-3 px-4">Nightly Rate</th>
@@ -477,11 +477,11 @@ function cleaningBadgeClass(status: string) {
               :key="r.id"
               class="border-t border-[var(--line)] hover:bg-[var(--surface-muted)]/50 transition"
             >
-              <td class="py-3 px-4 font-mono font-bold text-base text-[var(--ink)]">
+              <td class="py-3 px-4 tabular-nums font-bold text-base text-[var(--ink)]">
                 {{ r.number }}
               </td>
               <td class="py-3 px-4 font-medium">{{ r.type_name }}</td>
-              <td class="py-3 px-4 font-mono">{{ money(r.nightly_rate_minor) }}</td>
+              <td class="py-3 px-4 tabular-nums">{{ money(r.nightly_rate_minor) }}</td>
               <td class="py-3 px-4 text-xs text-[var(--muted)]">{{ r.capacity }} guest(s)</td>
               <td class="py-3 px-4">
                 <span
@@ -501,7 +501,7 @@ function cleaningBadgeClass(status: string) {
                 </span>
               </td>
               <td class="py-3 px-4">
-                <span v-if="r.active_stay" class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <span v-if="r.active_stay" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
                   Occupied
                 </span>
                 <span v-else class="text-xs text-[var(--muted)]">Vacant</span>
@@ -551,7 +551,7 @@ function cleaningBadgeClass(status: string) {
 
             <div>
               <label class="label mb-1">Nightly Rate (USD $)</label>
-              <input v-model="typeForm.rateDollars" type="number" step="0.01" min="1" class="field w-full font-mono" placeholder="120.00" required />
+              <input v-model="typeForm.rateDollars" type="number" step="0.01" min="1" class="field w-full tabular-nums" placeholder="120.00" required />
             </div>
 
             <div>
@@ -630,7 +630,7 @@ function cleaningBadgeClass(status: string) {
 
           <div>
             <label class="label mb-1">Room Number</label>
-            <input v-model="roomForm.number" class="field w-full font-mono text-base" placeholder="e.g. 101, 202, PH-1" required />
+            <input v-model="roomForm.number" class="field w-full tabular-nums text-base" placeholder="e.g. 101, 202, PH-1" required />
           </div>
 
           <div>

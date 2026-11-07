@@ -80,7 +80,7 @@ function actionLabel(alert: DecisionAlert): string {
         <button
           type="button"
           class="px-3 py-1.5 rounded-full border transition"
-          :class="filter === 'ALL' ? 'bg-[#0c2b26] text-white dark:bg-[#d7b683] dark:text-[#0c2b26] border-transparent font-medium' : 'border-[var(--line,#e2e8e0)] text-[var(--muted,#5e7470)] hover:border-[#0c2b26]'"
+          :class="filter === 'ALL' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] border-transparent font-medium' : 'border-[var(--line,#e2e8e0)] text-[var(--muted,#5e7470)] hover:border-[#0c2b26]'"
           @click="filter = 'ALL'"
         >
           All ({{ alerts.length }})
@@ -136,7 +136,7 @@ function actionLabel(alert: DecisionAlert): string {
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div class="flex items-center gap-2">
             <span
-              class="px-2.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wider"
+              class="px-2.5 py-0.5 rounded text-xs font-semibold "
               :class="{
                 'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200': alert.severity === 'URGENT',
                 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200': alert.severity === 'WARNING',
@@ -145,13 +145,13 @@ function actionLabel(alert: DecisionAlert): string {
             >
               {{ alert.severity }}
             </span>
-            <span class="text-xs uppercase tracking-wider text-[var(--muted,#5e7470)] font-medium">
+            <span class="text-xs text-[var(--muted,#5e7470)] font-medium">
               {{ alert.category.replace(/_/g, ' ') }}
             </span>
           </div>
           <button
             type="button"
-            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-[#8f6826] bg-[#8f6826]/10 hover:bg-[#8f6826]/20 border border-[#8f6826]/30 dark:text-[#d7b683] dark:bg-[#d7b683]/15 dark:hover:bg-[#d7b683]/25 dark:border-[#d7b683]/30 transition shadow-xs cursor-pointer"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-[color:var(--laterite)] bg-[var(--laterite)]/10 hover:bg-[var(--laterite)]/20 border border-[color:var(--laterite)]/30 dark:text-[color:var(--laterite)] dark:bg-[var(--laterite)]/15 dark:hover:bg-[var(--laterite)]/25 dark:border-[color:var(--laterite)]/30 transition shadow-xs cursor-pointer"
             :title="`Open ${actionLabel(alert)} in operations workspace`"
             @click="emit('navigate', actionTarget(alert))"
           >
@@ -161,30 +161,30 @@ function actionLabel(alert: DecisionAlert): string {
           </button>
         </div>
 
-        <h3 class="text-xl font-serif text-[#0c2b26] dark:text-[#f3ede2]">
+        <h3 class="text-xl font-serif text-[color:var(--river)] dark:text-[color:var(--river)]">
           {{ alert.title }}
         </h3>
 
         <!-- 4-Part Structure -->
         <div class="grid md:grid-cols-2 gap-4 mt-4 text-sm">
-          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">1. What happened</span>
-            <p class="text-[#0c2b26] dark:text-[#e4ded5]">{{ alert.what_happened }}</p>
+          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+            <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">1. What happened</span>
+            <p class="text-[color:var(--river)] dark:text-[color:var(--river)]">{{ alert.what_happened }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">2. Records involved</span>
-            <p class="font-mono text-xs text-[#0c2b26] dark:text-[#e4ded5] break-words">{{ alert.records_involved }}</p>
+          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+            <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">2. Records involved</span>
+            <p class="tabular-nums text-xs text-[color:var(--river)] dark:text-[color:var(--river)] break-words">{{ alert.records_involved }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#f0f6f4] border border-[#cbdad4] text-[#1f3330] dark:bg-[#122523] dark:border-[#1a3330] dark:text-[#e4ded5] space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[#536b66] dark:text-[#9ab4ac]">3. Why it matters</span>
-            <p class="text-[#0c2b26] dark:text-[#e4ded5]">{{ alert.why_it_matters }}</p>
+          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+            <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">3. Why it matters</span>
+            <p class="text-[color:var(--river)] dark:text-[color:var(--river)]">{{ alert.why_it_matters }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[#fbf8f2] border border-[#8f6826]/30 dark:bg-[#122523] dark:border-[#d7b683]/30 space-y-1">
-            <span class="label text-[10px] uppercase font-bold text-[#8f6826] dark:text-[#d7b683]">4. Recommended action</span>
-            <p class="text-[#0c2b26] dark:text-[#f3ede2] font-medium">{{ alert.recommended_action }}</p>
+          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--laterite)]/30 dark:bg-[var(--surface-muted)] dark:border-[color:var(--laterite)]/30 space-y-1">
+            <span class="label text-[10px] font-bold text-[color:var(--laterite)] dark:text-[color:var(--laterite)]">4. Recommended action</span>
+            <p class="text-[color:var(--river)] dark:text-[color:var(--river)] font-medium">{{ alert.recommended_action }}</p>
           </div>
         </div>
       </article>
