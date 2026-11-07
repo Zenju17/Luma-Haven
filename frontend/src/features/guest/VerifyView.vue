@@ -59,7 +59,7 @@ async function resend() {
 
 <template>
   <SiteLayout>
-    <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto items-center animate-[fadeIn_0.4s_ease-out]">
+    <div class="grid md:grid-cols-2 gap-10 max-w-4xl mx-auto items-center">
       <div>
         <h1 class="text-4xl text-[var(--brand-text)]">Find your booking.</h1>
         <p class="mt-4 text-[var(--muted)]">Enter your booking reference and email to request a one-time code. You can also verify your identity in person at reception.</p>

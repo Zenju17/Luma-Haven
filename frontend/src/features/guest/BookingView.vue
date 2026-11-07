@@ -83,7 +83,7 @@ async function sendRequest() {
         </div>
       </div>
       <Notice v-else-if="booking.error.value" :message="String(booking.error.value)" />
-      <div v-else-if="booking.data.value" class="max-w-3xl mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
+      <div v-else-if="booking.data.value" class="max-w-3xl mx-auto">
         <div class="flex items-center gap-2.5 mb-2">
           <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
           <p class="label mb-0">Your reservation</p>

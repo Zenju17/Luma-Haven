@@ -107,7 +107,7 @@ async function newQr() {
 
 <template>
   <SiteLayout>
-    <div class="card payment-panel p-8 max-w-lg mx-auto animate-[slideUp_0.4s_cubic-bezier(0.16,1,0.3,1)_both]">
+    <div class="card payment-panel p-8 max-w-lg mx-auto">
       <div class="flex items-center justify-between gap-2.5 mb-3">
         <div class="flex items-center gap-2.5">
           <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
