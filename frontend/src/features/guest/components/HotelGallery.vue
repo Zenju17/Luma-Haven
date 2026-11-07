@@ -172,263 +172,58 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section id="gallery" class="py-16 sm:py-24 border-t border-[var(--line)]" aria-labelledby="gallery-heading">
-    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-12">
-      <div class="space-y-2">
-        <span class="text-xs font-semibold uppercase tracking-widest text-[var(--brass)]">
-          Visual Atmosphere
-        </span>
-        <h2 id="gallery-heading" class="serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[var(--brand-text)]">
-          Moments around the hotel<span class="text-[var(--brass)]">.</span>
-        </h2>
-        <p class="text-sm sm:text-base text-[var(--muted)]">
-          Explore the spaces where morning calm meets unhurried Cambodian hospitality.
-        </p>
+  <section id="gallery" class="py-16 sm:py-20 border-t border-[var(--rule)]" aria-labelledby="gallery-heading">
+    <div class="hg-head">
+      <div>
+        <h2 id="gallery-heading">Around the hotel</h2>
+        <p>The lobby, the rooftop pool, the courtyard restaurant and the places in between.</p>
       </div>
+      <div class="hg-ctrl">
+        <span class="hg-count">Photo {{ currentIndex + 1 }} of {{ displayPhotos.length }}</span>
+        <button type="button" class="lb-close" aria-label="Previous photo" @click="prev"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg></button>
+        <button type="button" class="lb-close" aria-label="Next photo" @click="next"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg></button>
+      </div>
+    </div>
 
-      <!-- Controls & Slide Counter -->
-      <div class="flex items-center gap-4">
-        <span class="text-xs sm:text-sm font-medium text-[var(--muted)] font-mono">
-          Photo {{ currentIndex + 1 }} of {{ displayPhotos.length }}
-        </span>
-
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            class="w-10 h-10 rounded-full border border-[var(--glass-border)] bg-[var(--surface-raised)] text-[var(--brand-text)] hover:border-[var(--brass)] hover:bg-[var(--surface-muted)] flex items-center justify-center transition-colors shadow-xs"
-            aria-label="Previous photo"
-            @click="prev"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            class="w-10 h-10 rounded-full border border-[var(--glass-border)] bg-[var(--surface-raised)] text-[var(--brand-text)] hover:border-[var(--brass)] hover:bg-[var(--surface-muted)] flex items-center justify-center transition-colors shadow-xs"
-            aria-label="Next photo"
-            @click="next"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+    <div class="hg-stage" tabindex="0" role="region" aria-label="Hotel gallery carousel" @touchstart="handleTouchStart" @touchend="handleTouchEnd" @click="openLightbox">
+      <TransitionGroup name="fade">
+        <div v-for="(photo, index) in displayPhotos" v-show="index === currentIndex" :key="photo.id" class="hg-slide">
+          <img :src="photo.src" :srcset="responsiveSrcset(photo.src, photo.width)" :sizes="SIZES.card" :alt="photo.alt" loading="lazy" width="1600" height="1128" />
+          <span v-if="photo.facilityClaim || photo.isConcept" class="lb-chip hg-chip">{{ photo.facilityClaim ? `Design concept: ${photo.facilityClaim}` : 'Design concept' }}</span>
         </div>
-      </div>
+      </TransitionGroup>
+    </div>
+    <div v-if="currentSlide" class="hg-cap">
+      <h3>{{ currentSlide.caption }}</h3>
+      <p>{{ currentSlide.location }}</p>
     </div>
 
-    <!-- Carousel Main Stage -->
-    <div
-      class="relative rounded-2xl overflow-hidden border border-[var(--glass-border)] bg-[var(--deep)] shadow-2xl focus:outline-none focus:ring-2 focus:ring-[var(--brass)] cursor-pointer group"
-      tabindex="0"
-      role="region"
-      aria-label="Hotel gallery carousel"
-      @touchstart="handleTouchStart"
-      @touchend="handleTouchEnd"
-      @click="openLightbox"
-    >
-      <!-- Slides Container -->
-      <div class="relative w-full aspect-[16/10] sm:aspect-[16/9] overflow-hidden">
-        <TransitionGroup name="fade">
-          <div
-            v-for="(photo, index) in displayPhotos"
-            v-show="index === currentIndex"
-            :key="photo.id"
-            class="absolute inset-0 w-full h-full"
-          >
-            <img
-              :src="photo.src"
-              :srcset="responsiveSrcset(photo.src, photo.width)"
-              :sizes="SIZES.card"
-              :alt="photo.alt"
-              class="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-700"
-              loading="lazy"
-              width="1600"
-              height="1128"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-[var(--deep)]/90 via-[var(--deep)]/25 to-transparent pointer-events-none" />
-
-            <!-- Corner Disclaimer Badge -->
-            <div
-              v-if="photo.facilityClaim"
-              class="absolute top-4 right-4 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-black/75 backdrop-blur-md text-amber-200 border border-amber-400/40 shadow-sm pointer-events-none"
-            >
-              Design Concept · {{ photo.facilityClaim }}
-            </div>
-            <div
-              v-else-if="photo.isConcept"
-              class="absolute top-4 right-4 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide bg-black/70 backdrop-blur-md text-[#d9b87f] border border-[#d9b87f]/30 shadow-sm pointer-events-none"
-            >
-              Design Concept
-            </div>
-
-            <!-- Enlarge Icon Hint -->
-            <div class="absolute top-4 left-4 px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 text-white text-xs font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <svg class="w-4 h-4 text-[var(--brass)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-              </svg>
-              <span>Click to enlarge photo</span>
-            </div>
-
-            <!-- Caption Overlay at Bottom -->
-            <div class="absolute bottom-0 inset-x-0 p-6 sm:p-8 backdrop-blur-sm bg-black/40 border-t border-white/10 text-white flex flex-col sm:flex-row sm:items-end justify-between gap-4 pointer-events-none">
-              <div class="space-y-1.5 max-w-2xl">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold uppercase tracking-wider text-[#d9b87f]">
-                    {{ photo.location }}
-                  </span>
-                  <span
-                    v-if="photo.facilityClaim"
-                    class="text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5 rounded bg-amber-900/60 text-amber-200 border border-amber-600/30"
-                  >
-                    Unverified
-                  </span>
-                </div>
-                <h3 class="serif text-xl sm:text-2xl lg:text-3xl font-medium text-white">
-                  {{ photo.caption }}
-                </h3>
-                <p class="text-xs sm:text-sm text-stone-300 leading-relaxed font-normal">
-                  {{ photo.title }}
-                </p>
-              </div>
-
-              <!-- Quick Jump Indicator on slide -->
-              <span class="text-xs text-stone-300 font-mono hidden sm:inline-block">
-                Press ← or → to navigate
-              </span>
-            </div>
-          </div>
-        </TransitionGroup>
-      </div>
+    <div class="hg-dots" role="tablist" aria-label="Gallery slides">
+      <button v-for="(photo, index) in displayPhotos" :key="photo.id" type="button" role="tab" :aria-selected="index === currentIndex" :aria-label="`Slide ${index + 1}: ${photo.title}`" class="hg-dot" @click.stop="goTo(index)" />
     </div>
 
-    <!-- Dot Indicators -->
-    <div class="flex items-center justify-center gap-2 mt-6" role="tablist" aria-label="Gallery slides">
-      <button
-        v-for="(photo, index) in displayPhotos"
-        :key="photo.id"
-        type="button"
-        role="tab"
-        :aria-selected="index === currentIndex"
-        :aria-label="`Slide ${index + 1}: ${photo.title}`"
-        :class="[
-          'h-2.5 rounded-full transition-all duration-300',
-          index === currentIndex ? 'w-8 bg-[var(--brass)]' : 'w-2.5 bg-[var(--line)] hover:bg-[var(--muted)]',
-        ]"
-        @click.stop="goTo(index)"
-      />
+    <div class="hg-links">
+      <RouterLink to="/gallery" class="btn">View the full gallery</RouterLink>
+      <RouterLink to="/spaces" class="btn-secondary">See all spaces</RouterLink>
     </div>
 
-    <!-- Gallery Exploration Actions -->
-    <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-      <RouterLink
-        to="/gallery"
-        class="btn px-6 py-3 rounded-xl font-semibold text-xs sm:text-sm inline-flex items-center gap-2 shadow-sm"
-      >
-        <svg class="w-4 h-4 text-[var(--brass)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
-        View Full Photo Gallery (29 Photos) &rarr;
-      </RouterLink>
-
-      <RouterLink
-        to="/spaces"
-        class="btn-secondary px-6 py-3 rounded-xl font-semibold text-xs sm:text-sm inline-flex items-center gap-2 hover:border-[var(--brass)] transition-all shadow-sm"
-      >
-        <svg class="w-4 h-4 text-[var(--brass)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-        Review Hotel Spaces &amp; Locations &rarr;
-      </RouterLink>
-    </div>
-
-    <!-- Carousel Full-Screen Lightbox Modal -->
-    <Transition name="fade">
-      <div
-        v-if="showLightbox && currentSlide"
-        class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="currentSlide.title"
-        @click.self="closeLightbox"
-      >
-        <div class="relative w-full max-w-5xl bg-[var(--surface-raised)] border border-[var(--glass-border)] rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[94vh]">
-          <!-- Modal Header -->
-          <div class="px-5 py-3.5 border-b border-[var(--line)] bg-[var(--surface-muted)] flex items-center justify-between gap-4">
-            <div class="space-y-0.5">
-              <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">
-                {{ currentSlide.location }}
-              </span>
-              <h3 class="serif text-xl sm:text-2xl font-medium text-[var(--brand-text)]">
-                {{ currentSlide.caption }}
-              </h3>
+    <Transition name="lb-fade">
+      <div v-if="showLightbox && currentSlide" class="lb-scrim" role="dialog" aria-modal="true" :aria-label="currentSlide.title" @click.self="closeLightbox">
+        <div class="lb-panel">
+          <div class="lb-head">
+            <div>
+              <h3 class="lb-title">{{ currentSlide.caption }}</h3>
+              <p class="lb-sub">{{ currentSlide.location }}, {{ currentIndex + 1 }} of {{ displayPhotos.length }}</p>
             </div>
-
-            <div class="flex items-center gap-3">
-              <span class="text-xs font-mono px-2.5 py-1 rounded-full bg-[var(--surface-overlay)] text-[var(--muted)] border border-[var(--glass-border)]">
-                {{ currentIndex + 1 }} of {{ displayPhotos.length }}
-              </span>
-              <button
-                type="button"
-                class="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--brand-text)] hover:bg-[var(--surface-overlay)] transition-colors"
-                aria-label="Close"
-                @click="closeLightbox"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+            <button type="button" class="lb-close" aria-label="Close" @click="closeLightbox"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
           </div>
-
-          <!-- Modal Viewport -->
-          <div class="relative grow overflow-hidden bg-black flex items-center justify-center min-h-[360px] sm:min-h-[500px]">
-            <img
-              :src="currentSlide.src"
-              :srcset="responsiveSrcset(currentSlide.src, currentSlide.width)"
-              :sizes="SIZES.lightbox"
-              :alt="currentSlide.alt"
-              class="max-h-[68vh] w-auto max-w-full object-contain mx-auto"
-            />
-
-            <!-- Left / Right Controls -->
-            <button
-              type="button"
-              class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all shadow-lg"
-              aria-label="Previous photo"
-              @click.stop="prev"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all shadow-lg"
-              aria-label="Next photo"
-              @click.stop="next"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+          <div class="lb-stage">
+            <img :src="currentSlide.src" :srcset="responsiveSrcset(currentSlide.src, currentSlide.width)" :sizes="SIZES.lightbox" :alt="currentSlide.alt" />
+            <div v-if="currentSlide.isConcept" class="lb-chips"><span class="lb-chip">{{ currentSlide.facilityClaim || 'Design concept' }}</span></div>
+            <button type="button" class="lb-nav lb-nav--prev" aria-label="Previous photo" @click.stop="prev"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg></button>
+            <button type="button" class="lb-nav lb-nav--next" aria-label="Next photo" @click.stop="next"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg></button>
           </div>
-
-          <!-- Modal Footer Details -->
-          <div class="p-4 bg-[var(--surface-muted)] border-t border-[var(--line)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-            <div class="flex items-center gap-3">
-              <span class="font-semibold text-[var(--brand-text)]">{{ currentSlide.title }}</span>
-              <span v-if="currentSlide.isConcept" class="px-2 py-0.5 rounded text-[10px] font-medium bg-[#d9b87f]/20 text-[#d9b87f] border border-[#d9b87f]/40">
-                {{ currentSlide.facilityClaim || 'Design Concept' }}
-              </span>
-            </div>
-            <div class="flex items-center gap-4 text-[var(--muted)] font-mono text-[11px]">
-              <span>Press ESC to exit</span>
-              <RouterLink to="/gallery" class="text-[var(--brass)] font-sans font-semibold hover:underline" @click="closeLightbox">
-                Open full gallery &rarr;
-              </RouterLink>
-            </div>
-          </div>
+          <RouterLink to="/gallery" class="hg-open" @click="closeLightbox">Open the full gallery</RouterLink>
         </div>
       </div>
     </Transition>
@@ -436,12 +231,23 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.4s ease-in-out;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.hg-head { display: grid; gap: 1rem; margin-bottom: 1.5rem; }
+.hg-head h2 { font-size: 2.4375rem; color: var(--river); }
+.hg-head p { color: var(--silt); }
+.hg-ctrl { display: flex; align-items: center; gap: .5rem; }
+.hg-count { margin-right: auto; color: var(--silt); font-size: .875rem; font-variant-numeric: tabular-nums; }
+.hg-stage { position: relative; aspect-ratio: 16 / 10; border-radius: var(--radius-photo); overflow: hidden; background: var(--surface-muted); cursor: zoom-in; }
+.hg-slide { position: absolute; inset: 0; }
+.hg-slide img { width: 100%; height: 100%; object-fit: cover; }
+.hg-chip { position: absolute; top: .75rem; right: .75rem; }
+.hg-cap { margin-top: .75rem; }
+.hg-cap h3 { font-size: 1.9375rem; color: var(--river); }
+.hg-cap p { color: var(--silt); font-size: .875rem; }
+.hg-dots { display: flex; gap: .25rem; margin-top: .75rem; }
+.hg-dot { width: 44px; height: 44px; position: relative; }
+.hg-dot::after { content: ''; position: absolute; inset: 50% 8px auto; height: 3px; transform: translateY(-50%); border-radius: 2px; background: var(--rule); }
+.hg-dot[aria-selected="true"]::after { background: var(--river); }
+.hg-links { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.hg-open { color: var(--laterite); text-decoration: underline; min-height: 44px; display: inline-flex; align-items: center; }
+@media (min-width: 800px) { .hg-head { grid-template-columns: 1fr auto; align-items: end; } }
 </style>

@@ -370,217 +370,54 @@ function handleBookRoom(roomType?: string) {
 </script>
 
 <template>
-  <div class="spaces-explorer py-8 sm:py-12">
-    <!-- Category Filter Tabs -->
-    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-8 border-b border-[var(--line)] scrollbar-none">
-      <button
-        v-for="cat in categories"
-        :key="cat.id"
-        type="button"
-        class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold tracking-wide whitespace-nowrap transition-all flex items-center gap-2"
-        :class="activeCategory === cat.id
-          ? 'bg-[var(--brass)] text-[var(--deep)] shadow-sm'
-          : 'bg-[var(--surface-raised)] border border-[var(--glass-border)] text-[var(--brand-text)] hover:border-[var(--brass)]/50'"
-        @click="activeCategory = cat.id"
-      >
-        <span>{{ cat.label }}</span>
-        <span
-          class="text-[11px] font-mono px-1.5 py-0.2 rounded-full"
-          :class="activeCategory === cat.id ? 'bg-black/15' : 'bg-[var(--surface-muted)] text-[var(--muted)]'"
-        >
-          {{
-            cat.id === 'all'
-              ? allSpaces.length
-              : cat.id === 'details'
-                ? allSpaces.filter(s => s.areaCategory === 'details' || s.asset.original_filename?.includes('amenities') || s.asset.original_filename?.includes('minibar') || s.asset.original_filename?.includes('work_desk')).length
-                : allSpaces.filter(s => s.areaCategory === cat.id).length
-          }}
-        </span>
-      </button>
+  <div class="spaces-explorer py-6">
+    <div class="sx-filters" role="group" aria-label="Filter spaces">
+      <button v-for="cat in categories" :key="cat.id" type="button" class="sx-filter" :aria-pressed="activeCategory === cat.id" @click="activeCategory = cat.id">{{ cat.label }}</button>
     </div>
 
-    <!-- Empty State -->
-    <div v-if="filteredSpaces.length === 0" class="card p-12 text-center rounded-2xl border border-[var(--glass-border)]">
-      <p class="text-base text-[var(--muted)]">No spaces discovered for this category.</p>
-    </div>
+    <p v-if="filteredSpaces.length === 0" class="sx-empty">No spaces in this group yet. Pick another from the list above.</p>
 
-    <!-- Responsive Spaces Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-      <article
-        v-for="(space, index) in filteredSpaces"
-        :key="space.id"
-        class="card rounded-2xl overflow-hidden border border-[var(--glass-border)] bg-[var(--surface-raised)] hover:border-[var(--brass)]/60 transition-all shadow-sm hover:shadow-md flex flex-col group cursor-pointer"
-        @click="openLightbox(index)"
-      >
-        <!-- Photo Container -->
-        <div class="relative aspect-[16/11] overflow-hidden bg-[var(--deep)]">
+    <div class="sx-masonry">
+      <figure v-for="(space, index) in filteredSpaces" :key="space.id" class="sx-item">
+        <button type="button" class="sx-photo" :aria-label="`View ${space.spaceName} larger`" @click="openLightbox(index)">
           <img
             :src="space.asset.image_url"
             :srcset="responsiveSrcset(space.asset.image_url, space.asset.width)"
             :sizes="SIZES.card"
             :alt="space.asset.alt_text"
-            class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
+            :width="space.asset.width"
+            :height="space.asset.height"
             loading="lazy"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70 group-hover:opacity-40 transition-opacity" />
-
-          <!-- Location Badge (Derived from Filename) -->
-          <div class="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[11px] font-medium bg-black/60 backdrop-blur-md text-white border border-white/20">
-            {{ space.floorLocation }}
-          </div>
-
-          <!-- Concept / Verified Badge -->
-          <div class="absolute top-3 right-3">
-            <span
-              v-if="space.isConcept"
-              class="px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide bg-black/60 backdrop-blur-md text-[#d9b87f] border border-[#d9b87f]/40"
-            >
-              {{ space.facilityClaim ? `Concept · ${space.facilityClaim}` : 'Design Concept' }}
-            </span>
-            <span
-              v-else
-              class="px-2.5 py-1 rounded-md text-[10px] font-semibold tracking-wide bg-emerald-950/80 backdrop-blur-md text-emerald-300 border border-emerald-500/30"
-            >
-              Verified
-            </span>
-          </div>
-
-          <!-- Bottom Dimensions & Filename Tag -->
-          <div class="absolute bottom-2.5 right-3 text-[10px] font-mono text-stone-300 bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm">
-            {{ space.asset.width }}×{{ space.asset.height }}
-          </div>
-        </div>
-
-        <!-- Body -->
-        <div class="p-5 flex flex-col grow justify-between gap-4">
-          <div class="space-y-1.5">
-            <h3 class="serif text-xl font-medium text-[var(--brand-text)] group-hover:text-[var(--brass)] transition-colors">
-              {{ space.spaceName }}
-            </h3>
-            <p class="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-              {{ space.description }}
-            </p>
-          </div>
-
-          <div class="pt-3 border-t border-[var(--line)] flex items-center justify-between text-xs">
-            <span class="font-mono text-[var(--muted)] truncate max-w-[170px]" :title="space.asset.original_filename">
-              {{ space.asset.original_filename }}
-            </span>
-
-            <span class="font-medium text-[var(--brass)] group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
-              View photo →
-            </span>
-          </div>
-        </div>
-      </article>
+        </button>
+        <figcaption>
+          <strong>{{ space.spaceName }}</strong>
+          <span>{{ space.floorLocation }}<template v-if="space.isConcept">. {{ space.facilityClaim ? `Concept: ${space.facilityClaim}` : 'Design concept' }}</template></span>
+          <span>{{ space.description }}</span>
+        </figcaption>
+      </figure>
     </div>
 
-    <!-- Lightbox Modal -->
-    <Transition name="fade">
-      <div
-        v-if="activeLightboxItem"
-        class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="activeLightboxItem.spaceName"
-        @click.self="closeLightbox"
-      >
-        <div class="relative w-full max-w-6xl bg-[var(--surface-raised)] border border-[var(--glass-border)] rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[94vh]">
-          <!-- Lightbox Header -->
-          <div class="px-5 py-3.5 border-b border-[var(--line)] bg-[var(--surface-muted)] flex items-center justify-between gap-4">
-            <div class="space-y-0.5">
-              <span class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">
-                Location: {{ activeLightboxItem.floorLocation }}
-              </span>
-              <h2 class="serif text-xl sm:text-2xl font-medium text-[var(--brand-text)] flex items-center gap-3">
-                {{ activeLightboxItem.spaceName }}
-                <span class="text-xs font-mono font-normal px-2.5 py-0.5 rounded-full bg-[var(--surface-overlay)] text-[var(--muted)] border border-[var(--glass-border)]">
-                  {{ (lightboxIndex ?? 0) + 1 }} of {{ filteredSpaces.length }}
-                </span>
-              </h2>
+    <Transition name="lb-fade">
+      <div v-if="activeLightboxItem" class="lb-scrim" role="dialog" aria-modal="true" :aria-label="activeLightboxItem.spaceName" @click.self="closeLightbox">
+        <div class="lb-panel">
+          <div class="lb-head">
+            <div>
+              <h2 class="lb-title">{{ activeLightboxItem.spaceName }}</h2>
+              <p class="lb-sub">{{ activeLightboxItem.floorLocation }}, {{ (lightboxIndex ?? 0) + 1 }} of {{ filteredSpaces.length }}</p>
             </div>
-
-            <div class="flex items-center gap-3">
-              <button
-                v-if="activeLightboxItem.roomTypeName"
-                type="button"
-                class="btn px-4 py-2 text-xs font-semibold"
-                @click="handleBookRoom(activeLightboxItem.roomTypeName)"
-              >
-                Book {{ activeLightboxItem.roomTypeName }}
-              </button>
-              <button
-                type="button"
-                class="p-2 rounded-lg text-[var(--muted)] hover:text-[var(--brand-text)] hover:bg-[var(--surface-overlay)] transition-colors"
-                aria-label="Close photo"
-                @click="closeLightbox"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+            <div class="lb-actions">
+              <button v-if="activeLightboxItem.roomTypeName" type="button" class="btn" @click="handleBookRoom(activeLightboxItem.roomTypeName)">Book {{ activeLightboxItem.roomTypeName }}</button>
+              <button type="button" class="lb-close" aria-label="Close photo" @click="closeLightbox"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
             </div>
           </div>
-
-          <!-- Lightbox Image Viewport -->
-          <div class="relative grow overflow-hidden bg-black flex items-center justify-center min-h-[360px] sm:min-h-[520px]">
-            <img
-              :src="activeLightboxItem.asset.image_url"
-              :srcset="responsiveSrcset(activeLightboxItem.asset.image_url, activeLightboxItem.asset.width)"
-              :sizes="SIZES.lightbox"
-              :alt="activeLightboxItem.asset.alt_text"
-              class="max-h-[70vh] w-auto max-w-full object-contain mx-auto"
-            />
-
-            <!-- Left / Right Nav -->
-            <button
-              v-if="filteredSpaces.length > 1"
-              type="button"
-              class="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all shadow-lg"
-              aria-label="Previous space photo"
-              @click="prevLightbox"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              v-if="filteredSpaces.length > 1"
-              type="button"
-              class="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center border border-white/20 transition-all shadow-lg"
-              aria-label="Next space photo"
-              @click="nextLightbox"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-
-            <!-- Bottom Info Overlay -->
-            <div class="absolute bottom-4 left-4 right-4 p-4 rounded-xl backdrop-blur-md bg-black/75 border border-white/15 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div class="space-y-1">
-                <div class="flex items-center gap-2">
-                  <span class="text-xs font-semibold text-[#d9b87f] uppercase tracking-wider">
-                    Defined Location: {{ activeLightboxItem.spaceName }}
-                  </span>
-                  <span
-                    v-if="activeLightboxItem.isConcept"
-                    class="px-2 py-0.5 rounded text-[10px] font-medium bg-[#d9b87f]/20 text-[#d9b87f] border border-[#d9b87f]/40"
-                  >
-                    {{ activeLightboxItem.facilityClaim ? `Concept · ${activeLightboxItem.facilityClaim}` : 'Design Concept' }}
-                  </span>
-                </div>
-                <p class="text-sm text-stone-200">
-                  {{ activeLightboxItem.description }}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-4 text-xs font-mono text-stone-400 shrink-0">
-                <span>{{ activeLightboxItem.asset.width }}×{{ activeLightboxItem.asset.height }} px</span>
-                <span>{{ Math.round((activeLightboxItem.asset.file_size_bytes || 0) / 1024) }} KB</span>
-              </div>
-            </div>
+          <div class="lb-stage">
+            <img :src="activeLightboxItem.asset.image_url" :srcset="responsiveSrcset(activeLightboxItem.asset.image_url, activeLightboxItem.asset.width)" :sizes="SIZES.lightbox" :alt="activeLightboxItem.asset.alt_text" />
+            <div v-if="activeLightboxItem.isConcept" class="lb-chips"><span class="lb-chip">{{ activeLightboxItem.facilityClaim ? `Concept: ${activeLightboxItem.facilityClaim}` : 'Design concept' }}</span></div>
+            <button v-if="filteredSpaces.length > 1" type="button" class="lb-nav lb-nav--prev" aria-label="Previous space photo" @click="prevLightbox"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" /></svg></button>
+            <button v-if="filteredSpaces.length > 1" type="button" class="lb-nav lb-nav--next" aria-label="Next space photo" @click="nextLightbox"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7" /></svg></button>
           </div>
+          <p class="lb-caption">{{ activeLightboxItem.description }}</p>
         </div>
       </div>
     </Transition>
@@ -588,12 +425,16 @@ function handleBookRoom(roomType?: string) {
 </template>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.25s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.sx-filters { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+.sx-filter { min-height: 44px; padding: 0 1rem; border-radius: var(--radius-pill); border: 1.5px solid var(--rule); color: var(--river); font: 500 .875rem var(--font-text); }
+.sx-filter[aria-pressed="true"] { background: var(--river); border-color: var(--river); color: var(--palm-leaf); }
+.sx-empty { padding: 2rem 0; color: var(--silt); }
+.sx-masonry { columns: 1; column-gap: 1.25rem; }
+.sx-item { break-inside: avoid; margin-bottom: 1.5rem; }
+.sx-photo { display: block; width: 100%; border-radius: var(--radius-photo); overflow: hidden; background: var(--surface-muted); }
+.sx-photo img { width: 100%; height: auto; display: block; }
+.sx-item figcaption { display: grid; gap: .1rem; margin-top: .5rem; font-size: .875rem; color: var(--silt); }
+.sx-item figcaption strong { color: var(--river); font-weight: 600; }
+@media (min-width: 640px) { .sx-masonry { columns: 2; } }
+@media (min-width: 1024px) { .sx-masonry { columns: 3; } }
 </style>

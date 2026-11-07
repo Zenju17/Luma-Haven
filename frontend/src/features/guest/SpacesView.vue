@@ -6,21 +6,17 @@ import SpacesExplorer from './components/SpacesExplorer.vue'
 <template>
   <SiteLayout>
     <div class="pt-8 sm:pt-12 pb-16">
-      <!-- Section Header -->
-      <div class="max-w-3xl mb-10 space-y-3">
-        <span class="text-xs font-semibold uppercase tracking-widest text-[var(--brass)]">
-          Hotel Spaces &amp; Visual Locations
-        </span>
-        <h1 class="serif text-3xl sm:text-4xl lg:text-5xl font-medium text-[var(--brand-text)]">
-          Explore every corner of Luma Haven<span class="text-[var(--brass)]">.</span>
-        </h1>
-        <p class="text-sm sm:text-base text-[var(--muted)] leading-relaxed">
-          Review our hotel photography and design concepts, with each space and room amenity categorized by its exact location and name.
-        </p>
+      <div class="sp-head">
+        <h1>Spaces</h1>
+        <p>Every room and shared area, named by where it is in the hotel.</p>
       </div>
-
-      <!-- Spaces Explorer Grid & Lightbox -->
       <SpacesExplorer />
     </div>
   </SiteLayout>
 </template>
+
+<style scoped>
+.sp-head { display: grid; gap: .5rem; max-width: 60ch; }
+.sp-head h1 { font-size: 3.0625rem; color: var(--river); }
+.sp-head p { color: var(--silt); }
+</style>
