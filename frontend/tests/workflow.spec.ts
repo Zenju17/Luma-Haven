@@ -106,7 +106,7 @@ test('guest booking, simulated payment, verification, stay, checkout and room in
     await page.getByRole('button', { name: 'Send verification code' }).click()
     await expect.poll(() => readdirSync(mailDir).filter(name => !before.has(name)).length).toBe(1)
     const message = readFileSync(join(mailDir, readdirSync(mailDir).find(name => !before.has(name))!), 'utf8')
-    const code = message.match(/Your verification code is (\d{6})/)?.[1]
+    const code = message.match(/Your verification code[^\n]* is:?\s+(\d{6})\b/)?.[1]
     expect(code).toMatch(/^\d{6}$/)
     await page.getByLabel('Six-digit code').fill(code!)
     await page.getByRole('button', { name: 'Verify and continue' }).click()
