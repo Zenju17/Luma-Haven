@@ -11,6 +11,7 @@ const props = withDefaults(
     initialOccupants?: number
     navigateOnSubmit?: boolean
     compact?: boolean
+    stacked?: boolean
   }>(),
   {
     initialArrival: '',
@@ -18,6 +19,7 @@ const props = withDefaults(
     initialOccupants: 2,
     navigateOnSubmit: true,
     compact: false,
+    stacked: false,
   }
 )
 
@@ -84,12 +86,12 @@ function handleSubmit() {
 <template>
   <div id="search" class="w-full">
     <div
-      :class="[
-        'card p-6 sm:p-8 border border-[var(--glass-border)] shadow-xl bg-[var(--surface-raised)] backdrop-blur-md rounded-2xl',
+      :class="stacked ? '' : [
+        'card p-6 sm:p-8 border border-[var(--glass-border)] bg-[var(--surface-raised)] rounded-2xl',
         compact ? 'p-4 sm:p-5' : '',
       ]"
     >
-      <div v-if="!compact" class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
+      <div v-if="!compact && !stacked" class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
         <div>
           <h2 class="text-xl sm:text-2xl font-semibold text-[var(--brand-text)] serif">
             When are you staying?
@@ -100,7 +102,7 @@ function handleSubmit() {
         </div>
       </div>
 
-      <form class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end" @submit.prevent="handleSubmit">
+      <form :class="stacked ? 'grid grid-cols-1 gap-4' : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end'" @submit.prevent="handleSubmit">
         <!-- Arrival Field -->
         <div>
           <label for="arrival-input" class="label block text-xs font-semibold text-[var(--muted)] mb-1.5 uppercase tracking-wider">
