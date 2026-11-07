@@ -123,7 +123,7 @@ async function submitMaintenance() {
 <template>
   <div class="space-y-8">
     <Notice :message="error || (tasks.error.value ? String(tasks.error.value) : '')" />
-    <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+    <div v-if="successNotice" class="p-4 rounded-xl bg-[var(--status-available)]/10 border border-[var(--status-available)]/30 text-[var(--status-available)] text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
       <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
@@ -148,17 +148,17 @@ async function submitMaintenance() {
       </div>
 
       <div class="flex items-center gap-3">
-        <div v-if="activeTab === 'queue'" class="flex items-center gap-1 border border-[var(--line)] rounded-lg p-1 bg-[var(--card)]">
+        <div v-if="activeTab === 'queue'" class="flex items-center gap-1 border border-[var(--rule)] rounded-lg p-1 bg-[var(--paper)]">
           <button
             class="px-3 py-1 text-xs rounded"
-            :class="filterAssignee === 'all' ? 'bg-[var(--line)] font-bold' : 'text-[var(--muted)]'"
+            :class="filterAssignee === 'all' ? 'bg-[var(--rule)] font-bold' : 'text-[var(--silt)]'"
             @click="filterAssignee = 'all'"
           >
             All Rooms
           </button>
           <button
             class="px-3 py-1 text-xs rounded"
-            :class="filterAssignee === 'me' ? 'bg-[var(--line)] font-bold' : 'text-[var(--muted)]'"
+            :class="filterAssignee === 'me' ? 'bg-[var(--rule)] font-bold' : 'text-[var(--silt)]'"
             @click="filterAssignee = 'me'"
           >
             Assigned to Me
@@ -175,19 +175,19 @@ async function submitMaintenance() {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-serif">Housekeeping Task Board</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Rooms ordered by urgency. Mark rooms in progress, then request inspection upon completion.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Rooms ordered by urgency. Mark rooms in progress, then request inspection upon completion.</p>
         </div>
         <span class="badge">{{ tasks.data.value?.length || 0 }} tasks</span>
       </div>
 
-      <div v-if="tasks.data.value?.length === 0" class="py-12 text-center text-sm text-[var(--muted)]">
+      <div v-if="tasks.data.value?.length === 0" class="py-12 text-center text-sm text-[var(--silt)]">
         All assigned rooms are clean and in service. Good job!
       </div>
       <div v-else class="space-y-3">
         <div
           v-for="task in tasks.data.value"
           :key="task.id"
-          class="p-4 rounded-xl border border-[var(--line)] bg-[var(--card)]/60 flex flex-wrap items-center justify-between gap-4"
+          class="p-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)]/60 flex flex-wrap items-center justify-between gap-4"
         >
           <div class="space-y-1">
             <div class="flex items-center gap-3">
@@ -195,9 +195,9 @@ async function submitMaintenance() {
               <span
                 class="badge text-[10px] font-bold "
                 :class="{
-                  'bg-rose-500/10 text-rose-600 border-rose-500/30': task.priority === 'URGENT',
-                  'bg-amber-500/10 text-amber-600 border-amber-500/30': task.priority === 'HIGH',
-                  'bg-slate-500/10 text-slate-500 border-slate-500/30': !task.priority || task.priority === 'NORMAL'
+                  'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30': task.priority === 'URGENT',
+ 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] border-[var(--status-dirty)]/30': task.priority === 'HIGH',
+                  'bg-[var(--sunk)] text-[var(--silt)] border-[var(--rule)]': !task.priority || task.priority === 'NORMAL'
                 }"
               >
                 {{ task.priority || 'NORMAL' }} PRIORITY
@@ -205,16 +205,16 @@ async function submitMaintenance() {
               <span
                 class="badge text-[10px] font-bold"
                 :class="{
-                  'bg-rose-500/10 text-rose-500 border-rose-500/30': task.status === 'DIRTY',
-                  'bg-amber-500/10 text-amber-500 border-amber-500/30': task.status === 'CLEANING',
-                  'bg-blue-500/10 text-blue-500 border-blue-500/30': task.status === 'INSPECTION'
+                  'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30': task.status === 'DIRTY',
+ 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] border-[var(--status-dirty)]/30': task.status === 'CLEANING',
+                  'bg-[var(--status-occupied)]/10 text-[var(--status-occupied)] border-[var(--status-occupied)]/30': task.status === 'INSPECTION'
                 }"
               >
                 {{ task.status }}
               </span>
             </div>
-            <p v-if="task.notes" class="text-xs text-[var(--muted)] italic">Notes: "{{ task.notes }}"</p>
-            <p class="text-xs text-[var(--muted)]">
+            <p v-if="task.notes" class="text-xs text-[var(--silt)] italic">Notes: "{{ task.notes }}"</p>
+            <p class="text-xs text-[var(--silt)]">
               Assigned: {{ task.assignee__username || 'Unassigned pool' }}
             </p>
           </div>
@@ -239,7 +239,7 @@ async function submitMaintenance() {
             </button>
             <span
               v-else-if="task.status === 'INSPECTION'"
-              class="badge bg-blue-500/10 text-blue-600 border-blue-500/30 text-xs py-1.5 px-3"
+              class="badge bg-[var(--status-occupied)]/10 text-[var(--status-occupied)] border-[var(--status-occupied)]/30 text-xs py-1.5 px-3"
             >
               Awaiting Supervisor Inspection
             </span>
@@ -253,25 +253,25 @@ async function submitMaintenance() {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-serif">Completed Cleaning History</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Audit log of inspected and released rooms.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Audit log of inspected and released rooms.</p>
         </div>
       </div>
 
-      <div v-if="historyTasks.data.value?.length === 0" class="py-12 text-center text-sm text-[var(--muted)]">
+      <div v-if="historyTasks.data.value?.length === 0" class="py-12 text-center text-sm text-[var(--silt)]">
         No completed tasks in history yet.
       </div>
       <div v-else class="space-y-3">
         <div
           v-for="task in historyTasks.data.value"
           :key="task.id"
-          class="p-4 rounded-xl border border-[var(--line)] bg-[var(--card)]/40 flex items-center justify-between"
+          class="p-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)]/40 flex items-center justify-between"
         >
           <div>
             <span class="font-bold text-base">Room {{ task.room__number }}</span>
-            <span class="badge ml-3 text-[10px] bg-emerald-500/10 text-emerald-600">READY</span>
-            <p v-if="task.notes" class="text-xs text-[var(--muted)] mt-1">"{{ task.notes }}"</p>
+            <span class="badge ml-3 text-[10px] bg-[var(--status-available)]/10 text-[var(--status-available)]">READY</span>
+            <p v-if="task.notes" class="text-xs text-[var(--silt)] mt-1">"{{ task.notes }}"</p>
           </div>
-          <span class="text-xs text-[var(--muted)]">Cleaned by {{ task.assignee__username || 'Housekeeping' }}</span>
+          <span class="text-xs text-[var(--silt)]">Cleaned by {{ task.assignee__username || 'Housekeeping' }}</span>
         </div>
       </div>
     </section>
@@ -279,14 +279,14 @@ async function submitMaintenance() {
     <!-- Modal: Request Inspection with Notes -->
     <div
       v-if="inspectionTask"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-[var(--scrim)] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       @click.self="inspectionTask = null"
     >
       <div class="card p-6 w-full max-w-md space-y-4">
         <h3 class="text-xl font-serif">Request Inspection · Room {{ inspectionTask.room__number }}</h3>
-        <p class="text-xs text-[var(--muted)]">Provide notes regarding room readiness before submitting for inspection.</p>
+        <p class="text-xs text-[var(--silt)]">Provide notes regarding room readiness before submitting for inspection.</p>
         <textarea
           v-model="inspectionNotes"
           class="field w-full h-24 text-xs normal-case"
@@ -304,14 +304,14 @@ async function submitMaintenance() {
     <!-- Modal: Report Maintenance Issue -->
     <div
       v-if="showMaintenanceModal"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-[var(--scrim)] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       @click.self="showMaintenanceModal = false"
     >
       <div class="card p-6 w-full max-w-md space-y-4">
         <h3 class="text-xl font-serif">Report Maintenance Ticket</h3>
-        <p class="text-xs text-[var(--muted)]">Flag damaged or malfunctioning equipment to take the room out of service.</p>
+        <p class="text-xs text-[var(--silt)]">Flag damaged or malfunctioning equipment to take the room out of service.</p>
 
         <div>
           <label class="label text-[10px]">Select Room</label>

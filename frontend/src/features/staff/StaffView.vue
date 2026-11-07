@@ -401,27 +401,22 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div
               v-for="room in rooms.data.value"
               :key="room.id"
-              class="card room-tile p-4 transition hover:shadow-md relative"
+              class="card room-tile p-4 transition relative"
               :data-cleaning="room.cleaning"
               :data-service="room.in_service ? 'in' : 'out'"
             >
               <span
-                class="absolute top-4 right-4 w-2.5 h-2.5 rounded-full"
-                :class="{
-                  'bg-emerald-500': room.cleaning === 'READY' && room.in_service,
-                  'bg-sky-500': room.cleaning === 'CLEANING',
-                  'bg-indigo-500': room.cleaning === 'INSPECTION',
-                  'bg-amber-500': room.cleaning === 'DIRTY',
-                  'bg-rose-500': !room.in_service
-                }"
-              />
+                class="status absolute top-4 right-4"
+                :class="!room.in_service ? 'status--out' : room.cleaning === 'READY' ? 'status--available' : room.cleaning === 'DIRTY' ? 'status--dirty' : 'status--occupied'"
+                aria-hidden="true"
+              >{{ !room.in_service ? 'Out' : room.cleaning === 'READY' ? 'Ready' : room.cleaning === 'DIRTY' ? 'Dirty' : room.cleaning === 'INSPECTION' ? 'Inspection' : 'Cleaning' }}</span>
               <span class="label">Room {{ room.number }}</span>
               <h3 class="text-xl font-serif mt-1">{{ room.type }}</h3>
-              <p class="mt-2 text-xs text-[var(--muted)]">
+              <p class="mt-2 text-xs text-[var(--silt)]">
                 {{ room.occupied ? 'Occupied' : 'Vacant' }} · {{ room.cleaning }} · {{ room.in_service ? 'In service' : 'Out of service' }}
               </p>
               <p v-if="room.rate_minor" class="text-xs tabular-nums font-medium mt-2">
-                {{ money(room.rate_minor) }} <span class="text-[10px] text-[var(--muted)]">/ night</span>
+                {{ money(room.rate_minor) }} <span class="text-[10px] text-[var(--silt)]">/ night</span>
               </p>
             </div>
           </div>
@@ -431,15 +426,15 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-if="canClean">
           <h2 class="text-2xl font-serif mb-4">Housekeeping Queue</h2>
           <Notice :message="tasks.error.value ? String(tasks.error.value) : ''" />
-          <p v-if="tasks.data.value?.length === 0" class="text-sm text-[var(--muted)]">No housekeeping tasks.</p>
+          <p v-if="tasks.data.value?.length === 0" class="text-sm text-[var(--silt)]">No housekeeping tasks.</p>
           <div v-else class="space-y-3">
             <div v-for="task in tasks.data.value" :key="task.id" class="card queue-row p-4 flex flex-wrap items-center justify-between gap-3">
               <span>
                 Room {{ task.room__number }} · {{ task.status }}
-                <span v-if="task.assignee__username" class="text-xs text-[var(--muted)] ml-2 font-normal">
+                <span v-if="task.assignee__username" class="text-xs text-[var(--silt)] ml-2 font-normal">
                   (Assigned: {{ task.assignee__username }})
                 </span>
-                <span v-else class="text-xs text-amber-600 dark:text-amber-400 ml-2 font-normal">
+                <span v-else class="text-xs text-[var(--status-dirty)] ml-2 font-normal">
                   (Unassigned)
                 </span>
               </span>
@@ -469,7 +464,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-if="canServe">
           <h2 class="text-2xl font-serif mb-4">Guest Requests</h2>
           <Notice :message="requests.error.value ? String(requests.error.value) : ''" />
-          <p v-if="requests.data.value?.length === 0" class="text-sm text-[var(--muted)]">No guest requests.</p>
+          <p v-if="requests.data.value?.length === 0" class="text-sm text-[var(--silt)]">No guest requests.</p>
           <div v-else class="space-y-3">
             <div v-for="request in requests.data.value" :key="request.id" class="card queue-row p-4 flex justify-between items-center">
               <span>{{ request.type }} · {{ request.description }} · {{ request.status }}</span>
@@ -491,14 +486,14 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h2 class="text-2xl font-serif">Reservation Management</h2>
-            <p class="text-xs text-[var(--muted)]">Inspect folios, amend dates, reassign rooms, or record cancellations and no-shows.</p>
+            <p class="text-xs text-[var(--silt)]">Inspect folios, amend dates, reassign rooms, or record cancellations and no-shows.</p>
           </div>
           <div class="flex items-center gap-3">
-            <span v-if="searchReservationQuery" class="text-xs text-[var(--muted)]">
+            <span v-if="searchReservationQuery" class="text-xs text-[var(--silt)]">
               Showing {{ filteredReservations.length }} of {{ reservations.data.value?.length || 0 }}
             </span>
             <div class="relative w-64">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--muted)]">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[var(--silt)]">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
@@ -512,7 +507,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               <button
                 v-if="searchReservationQuery"
                 type="button"
-                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs text-[var(--muted)] hover:text-inherit"
+                class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-xs text-[var(--silt)] hover:text-inherit"
                 title="Clear search"
                 @click="searchReservationQuery = ''"
               >
@@ -525,14 +520,14 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
         <div v-if="reservations.isPending.value" role="status">Loading reservations…</div>
         <Notice :message="reservations.error.value ? String(reservations.error.value) : ''" />
 
-        <div v-if="filteredReservations.length === 0" class="card p-8 text-center text-sm text-[var(--muted)]">
+        <div v-if="filteredReservations.length === 0" class="card p-8 text-center text-sm text-[var(--silt)]">
           No matching reservations found.
         </div>
 
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[980px]">
             <thead>
-              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+              <tr class="bg-[var(--sunk)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--sunk)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-28">Reference</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Guest</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Room</th>
@@ -543,14 +538,14 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               </tr>
             </thead>
             <tbody>
-              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
+              <tr v-for="b in filteredReservations" :key="b.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--sunk)]/60 dark:hover:bg-[var(--sunk)]/60 transition">
                 <td class="py-3 px-4 tabular-nums font-bold text-xs text-[color:var(--river)] dark:text-[color:var(--status-available)] whitespace-nowrap">{{ b.reference }}</td>
                 <td class="py-3 px-4 font-medium whitespace-nowrap">{{ b.guest_name }}</td>
                 <td class="py-3 px-4 whitespace-nowrap">
                   <span class="font-medium">Room {{ b.room }}</span>
-                  <span class="text-xs text-[var(--muted)] ml-1">({{ b.room_type }})</span>
+                  <span class="text-xs text-[var(--silt)] ml-1">({{ b.room_type }})</span>
                 </td>
-                <td class="py-3 px-4 text-xs tabular-nums text-[var(--muted)] whitespace-nowrap">
+                <td class="py-3 px-4 text-xs tabular-nums text-[var(--silt)] whitespace-nowrap">
                   <span>{{ b.arrival }}</span>
                   <span class="mx-1 text-[color:var(--silt)]">→</span>
                   <span>{{ b.departure }}</span>
@@ -559,27 +554,27 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                   <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border "
                     :class="{
-                      'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50': b.status === 'CONFIRMED',
-                      'bg-teal-50 text-teal-800 border-teal-200 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800/50': b.status === 'CHECKED_IN',
-                      'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700/50': b.status === 'CHECKED_OUT',
-                      'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/50': b.status === 'HOLD',
-                      'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/50': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
+                      'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30 ': b.status === 'CONFIRMED',
+                      'bg-[var(--river)]/10 text-[var(--river)] border-[var(--river)]/30   ': b.status === 'CHECKED_IN',
+                      'bg-[var(--sunk)] text-[var(--ink)] border-[var(--rule)]   ': b.status === 'CHECKED_OUT',
+                      'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] border-[var(--status-dirty)]/30   ': b.status === 'HOLD',
+                      'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30   ': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
                     }"
                   >
                     <span
                       class="w-1.5 h-1.5 rounded-full"
                       :class="{
-                        'bg-emerald-500': b.status === 'CONFIRMED',
-                        'bg-teal-500': b.status === 'CHECKED_IN',
-                        'bg-slate-400': b.status === 'CHECKED_OUT',
-                        'bg-amber-500': b.status === 'HOLD',
-                        'bg-rose-500': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
+                        'bg-[var(--status-available)]': b.status === 'CONFIRMED',
+ 'bg-[var(--river)]': b.status === 'CHECKED_IN',
+                        'bg-[var(--rule-strong)]': b.status === 'CHECKED_OUT',
+                        'bg-[var(--status-dirty)]': b.status === 'HOLD',
+                        'bg-[var(--status-out)]': b.status === 'CANCELLED' || b.status === 'NO_SHOW'
                       }"
                     />
                     {{ b.status.replace('_', ' ') }}
                   </span>
                 </td>
-                <td class="py-3 px-4 tabular-nums text-xs text-right whitespace-nowrap" :class="b.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400 font-bold' : 'text-[var(--muted)]'">
+                <td class="py-3 px-4 tabular-nums text-xs text-right whitespace-nowrap" :class="b.balance_minor > 0 ? 'text-[var(--status-dirty)] font-bold' : 'text-[var(--silt)]'">
                   {{ money(b.balance_minor) }}
                 </td>
                 <td class="py-3 px-4 text-right whitespace-nowrap">
@@ -658,20 +653,20 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
       <section v-else-if="tab === 'refunds'" class="space-y-6">
         <div>
           <h2 class="text-2xl font-serif">Refund Management & Ledger Reconciliation</h2>
-          <p class="text-xs text-[var(--muted)]">Two-person review control: refunds requested by staff require approval and settlement by management before folio credits are posted.</p>
+          <p class="text-xs text-[var(--silt)]">Two-person review control: refunds requested by staff require approval and settlement by management before folio credits are posted.</p>
         </div>
 
         <div v-if="refunds.isPending.value" role="status">Loading refunds ledger…</div>
         <Notice :message="refunds.error.value ? String(refunds.error.value) : ''" />
 
-        <div v-if="refunds.data.value?.length === 0" class="card p-8 text-center text-sm text-[var(--muted)]">
+        <div v-if="refunds.data.value?.length === 0" class="card p-8 text-center text-sm text-[var(--silt)]">
           No refund records in ledger.
         </div>
 
         <div v-else class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[920px]">
             <thead>
-              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+              <tr class="bg-[var(--sunk)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--sunk)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-24">Refund ID</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] w-32">Reservation Ref</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Guest</th>
@@ -683,7 +678,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
               </tr>
             </thead>
             <tbody>
-              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
+              <tr v-for="r in refunds.data.value" :key="r.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--sunk)]/60 dark:hover:bg-[var(--sunk)]/60 transition">
                 <td class="py-3 px-4 tabular-nums font-medium whitespace-nowrap">#{{ r.id }}</td>
                 <td class="py-3 px-4 tabular-nums font-bold text-xs text-[color:var(--river)] dark:text-[color:var(--status-available)] whitespace-nowrap">{{ r.reservation_reference }}</td>
                 <td class="py-3 px-4 font-medium whitespace-nowrap">{{ r.guest_name }}</td>
@@ -693,25 +688,25 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                   <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide border "
                     :class="{
-                      'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-800/50': r.status === 'PENDING',
-                      'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-200 dark:border-sky-800/50': r.status === 'APPROVED',
-                      'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800/50': r.status === 'SETTLED',
-                      'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-200 dark:border-rose-800/50': r.status === 'REJECTED'
+                      'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] border-[var(--status-dirty)]/30 ': r.status === 'PENDING',
+                      'bg-[var(--status-occupied)]/10 text-[var(--status-occupied)] border-[var(--status-occupied)]/30   ': r.status === 'APPROVED',
+                      'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30   ': r.status === 'SETTLED',
+                      'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30   ': r.status === 'REJECTED'
                     }"
                   >
                     <span
                       class="w-1.5 h-1.5 rounded-full"
                       :class="{
-                        'bg-amber-500': r.status === 'PENDING',
-                        'bg-sky-500': r.status === 'APPROVED',
-                        'bg-emerald-500': r.status === 'SETTLED',
-                        'bg-rose-500': r.status === 'REJECTED'
+                        'bg-[var(--status-dirty)]': r.status === 'PENDING',
+ 'bg-[var(--status-occupied)]': r.status === 'APPROVED',
+                        'bg-[var(--status-available)]': r.status === 'SETTLED',
+                        'bg-[var(--status-out)]': r.status === 'REJECTED'
                       }"
                     />
                     {{ r.status }}
                   </span>
                 </td>
-                <td class="py-3 px-4 text-xs text-[var(--muted)] whitespace-nowrap">{{ r.requested_by || 'system' }}</td>
+                <td class="py-3 px-4 text-xs text-[var(--silt)] whitespace-nowrap">{{ r.requested_by || 'system' }}</td>
                 <td class="py-3 px-4 text-right whitespace-nowrap">
                   <div class="table-actions">
                     <button
@@ -722,7 +717,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                       title="Approve refund request"
                       @click="submitApproveRefund(r)"
                     >
-                      <svg class="w-3.5 h-3.5 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      <svg class="w-3.5 h-3.5 shrink-0 text-[var(--status-dirty)] " fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                       <span>Approve</span>
                     </button>
                     <button
@@ -749,9 +744,9 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                     </button>
                     <span
                       v-if="r.status === 'SETTLED'"
-                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50"
+                      class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[var(--status-available)]/10 text-[var(--status-available)] border border-[var(--status-available)]/30 "
                     >
-                      <svg class="w-3 h-3 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      <svg class="w-3 h-3 text-[var(--status-available)] " fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                       Settled
                     </span>
                   </div>
@@ -766,7 +761,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
       <section v-else-if="tab === 'rates'" class="space-y-6">
         <div>
           <h2 class="text-2xl font-serif">Room Rate Management</h2>
-          <p class="text-xs text-[var(--muted)]">Adjust inventory nightly rates. Changes are immutably audited and reflected in real-time booking quotes.</p>
+          <p class="text-xs text-[var(--silt)]">Adjust inventory nightly rates. Changes are immutably audited and reflected in real-time booking quotes.</p>
         </div>
 
         <div v-if="rates.isPending.value" role="status">Loading room rates…</div>
@@ -777,17 +772,17 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <div class="flex items-center justify-between">
                 <span class="label">Room Category</span>
-                <span class="text-xs text-[var(--muted)]">{{ rt.total_rooms }} rooms in inventory</span>
+                <span class="text-xs text-[var(--silt)]">{{ rt.total_rooms }} rooms in inventory</span>
               </div>
               <h3 class="text-2xl font-serif mt-1">{{ rt.name }}</h3>
-              <p class="text-sm text-[var(--muted)] mt-2">{{ rt.description || 'Luxury accommodation at Luma Haven.' }}</p>
-              <p class="text-xs text-[var(--muted)] mt-1">Capacity: Up to {{ rt.capacity }} guests</p>
+              <p class="text-sm text-[var(--silt)] mt-2">{{ rt.description || 'Luxury accommodation at Luma Haven.' }}</p>
+              <p class="text-xs text-[var(--silt)] mt-1">Capacity: Up to {{ rt.capacity }} guests</p>
             </div>
 
-            <div class="flex items-baseline justify-between pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
+            <div class="flex items-baseline justify-between pt-4 border-t border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
               <div>
                 <span class="text-2xl font-bold tabular-nums">{{ money(rt.nightly_rate_minor) }}</span>
-                <span class="text-xs text-[var(--muted)]"> / night</span>
+                <span class="text-xs text-[var(--silt)]"> / night</span>
               </div>
               <button type="button" class="btn-secondary text-xs" @click="openEditRate(rt)">
                 Adjust Rate ✎
@@ -811,19 +806,19 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <span class="label">Folio Inspector</span>
               <h3 class="text-2xl font-serif">Reservation {{ detailBooking.reference }}</h3>
-              <p class="text-sm text-[var(--muted)]">Guest: {{ detailBooking.guest_name }} · Room {{ detailBooking.room }} ({{ detailBooking.room_type }})</p>
+              <p class="text-sm text-[var(--silt)]">Guest: {{ detailBooking.guest_name }} · Room {{ detailBooking.room }} ({{ detailBooking.room_type }})</p>
             </div>
             <button type="button" class="text-xl" @click="detailBooking = null">✕</button>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] text-xs">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] text-xs">
             <div><span class="label text-[10px]">Arrival</span><p class="font-medium">{{ detailBooking.arrival }}</p></div>
             <div><span class="label text-[10px]">Departure</span><p class="font-medium">{{ detailBooking.departure }}</p></div>
             <div><span class="label text-[10px]">Status</span><p class="font-medium">{{ detailBooking.status }}</p></div>
-            <div><span class="label text-[10px]">Balance</span><p class="tabular-nums font-bold" :class="detailBooking.balance_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'">{{ money(detailBooking.balance_minor) }}</p></div>
+            <div><span class="label text-[10px]">Balance</span><p class="tabular-nums font-bold" :class="detailBooking.balance_minor > 0 ? 'text-[var(--status-dirty)] ' : 'text-[var(--status-available)] '">{{ money(detailBooking.balance_minor) }}</p></div>
           </div>
 
-          <section v-if="detailBooking.status === 'CONFIRMED' && ['ADMIN', 'RECEPTION'].includes(role || '')" class="p-4 rounded-lg border border-[var(--line)] space-y-3">
+          <section v-if="detailBooking.status === 'CONFIRMED' && ['ADMIN', 'RECEPTION'].includes(role || '')" class="p-4 rounded-lg border border-[var(--rule)] space-y-3">
             <p v-if="detailBooking.verified" class="text-sm" role="status">Guest verification completed.</p>
             <template v-else>
               <h4 class="font-semibold text-sm">Verify guest at reception</h4>
@@ -842,7 +837,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div class="card overflow-hidden">
               <table class="data-table w-full text-left text-xs">
                 <thead>
-                  <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+                  <tr class="bg-[var(--sunk)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--sunk)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                     <th class="p-3">Category</th>
                     <th class="p-3">Description</th>
                     <th class="p-3">Service Date</th>
@@ -850,11 +845,11 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(entry, idx) in detailBooking.entries" :key="idx" class="border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
+                  <tr v-for="(entry, idx) in detailBooking.entries" :key="idx" class="border-t border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
                     <td class="p-3 font-semibold">{{ entry.category }}</td>
                     <td class="p-3">{{ entry.description }}</td>
                     <td class="p-3 tabular-nums">{{ entry.service_date }}</td>
-                    <td class="p-3 text-right tabular-nums" :class="entry.amount_minor < 0 ? 'text-emerald-600 dark:text-emerald-400' : ''">
+                    <td class="p-3 text-right tabular-nums" :class="entry.amount_minor < 0 ? 'text-[var(--status-available)] ' : ''">
                       {{ money(entry.amount_minor) }}
                     </td>
                   </tr>
@@ -864,7 +859,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
           </div>
 
           <Notice :message="error" />
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
             <button v-if="canServe && detailBooking.status === 'CONFIRMED'" type="button" class="btn text-xs"
               :disabled="busy || !detailBooking.verified || detailBooking.balance_minor > 0 || detailBooking.hotel_today < detailBooking.arrival || detailBooking.hotel_today >= detailBooking.departure"
               @click="recordStayTransition('check-in')">Check in guest</button>
@@ -884,7 +879,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <span class="label">Operational Amendment</span>
               <h3 class="text-2xl font-serif">Amend Reservation</h3>
-              <p class="text-xs text-[var(--muted)]">Ref: {{ amendBooking.reference }} · Current: {{ amendBooking.arrival }} to {{ amendBooking.departure }}</p>
+              <p class="text-xs text-[var(--silt)]">Ref: {{ amendBooking.reference }} · Current: {{ amendBooking.arrival }} to {{ amendBooking.departure }}</p>
             </div>
             <button type="button" class="text-xl" @click="amendBooking = null">✕</button>
           </div>
@@ -904,7 +899,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <input v-model.number="amendOccupants" type="number" min="1" max="8" class="field w-full" required />
           </div>
 
-          <p class="text-xs text-[var(--muted)]">
+          <p class="text-xs text-[var(--silt)]">
             Amending dates performs real-time database exclusion checks and automatically posts immutable folio adjustments for rate differences.
           </p>
 
@@ -925,7 +920,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <span class="label">Inventory Reassignment</span>
               <h3 class="text-2xl font-serif">Reassign Room</h3>
-              <p class="text-xs text-[var(--muted)]">Ref: {{ reassignBooking.reference }} · Currently in Room {{ reassignBooking.room }}</p>
+              <p class="text-xs text-[var(--silt)]">Ref: {{ reassignBooking.reference }} · Currently in Room {{ reassignBooking.room }}</p>
             </div>
             <button type="button" class="text-xl" @click="reassignBooking = null">✕</button>
           </div>
@@ -944,7 +939,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             </select>
           </div>
 
-          <p class="text-xs text-[var(--muted)]">
+          <p class="text-xs text-[var(--silt)]">
             Transfers booking allocation under row-level database locking. If room rates differ, an adjustment entry is automatically posted to the folio.
           </p>
 
@@ -965,7 +960,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <span class="label">Financial Control</span>
               <h3 class="text-2xl font-serif">Request Refund</h3>
-              <p class="text-xs text-[var(--muted)]">Ref: {{ refundReqBooking.reference }} · Guest: {{ refundReqBooking.guest_name }}</p>
+              <p class="text-xs text-[var(--silt)]">Ref: {{ refundReqBooking.reference }} · Guest: {{ refundReqBooking.guest_name }}</p>
             </div>
             <button type="button" class="text-xl" @click="refundReqBooking = null">✕</button>
           </div>
@@ -980,7 +975,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <textarea v-model="refundReason" rows="3" placeholder="Provide operational rationale for this refund request…" class="field w-full" required />
           </div>
 
-          <p class="text-xs text-[var(--muted)]">
+          <p class="text-xs text-[var(--silt)]">
             Refund requests require secondary approval and settlement by management before cash is disbursed and folio credit is granted.
           </p>
 
@@ -1001,7 +996,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <div>
               <span class="label">Revenue Strategy</span>
               <h3 class="text-2xl font-serif">Update Room Rate</h3>
-              <p class="text-xs text-[var(--muted)]">{{ editingRate.name }} · Current: {{ money(editingRate.nightly_rate_minor) }}/night</p>
+              <p class="text-xs text-[var(--silt)]">{{ editingRate.name }} · Current: {{ money(editingRate.nightly_rate_minor) }}/night</p>
             </div>
             <button type="button" class="text-xl" @click="editingRate = null">✕</button>
           </div>
@@ -1011,7 +1006,7 @@ const nextStep: Record<string, string> = { DIRTY: 'CLEANING', CLEANING: 'INSPECT
             <input v-model="newRateDollars" type="number" step="0.01" min="1.00" class="field w-full" required />
           </div>
 
-          <p class="text-xs text-[var(--muted)]">
+          <p class="text-xs text-[var(--silt)]">
             Updating room rates will affect all future quotes. An immutable audit record will log this rate modification with your staff username.
           </p>
 

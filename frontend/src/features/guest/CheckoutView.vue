@@ -147,13 +147,13 @@ async function newQr() {
 
             <div class="co-actions">
               <button type="button" class="btn" :disabled="pending" @click="simulate('SUCCESS')">
-                {{ pending ? 'Confirming booking…' : '⚡ Simulate Payment (Confirm Free)' }}
+                {{ pending ? 'Confirming booking…' : 'Simulate payment (no charge)' }}
               </button>
               <button type="button" class="btn-secondary" :disabled="checking" @click="checkPaymentNow">
                 {{ checking ? 'Checking status…' : "I've paid $0.01 in my bank app" }}
               </button>
               <button type="button" class="btn-secondary" @click="copyQrString">
-                {{ copied ? 'KHQR payload copied! ✓' : 'Copy KHQR payload' }}
+                {{ copied ? 'KHQR payload copied' : 'Copy KHQR payload' }}
               </button>
             </div>
 

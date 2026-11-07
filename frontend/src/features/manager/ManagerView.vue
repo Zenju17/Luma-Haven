@@ -88,16 +88,16 @@ function handleNavigate(destination: string) {
     <!-- Role Guard -->
     <div v-else-if="!isManagerRole" class="card p-8 max-w-xl mx-auto space-y-4">
       <h1 class="text-3xl font-serif">Management access required</h1>
-      <p class="text-sm text-[var(--muted)]">Your staff role ({{ user.role }}) does not have permission to view executive management dashboards and financial reports.</p>
+      <p class="text-sm text-[var(--silt)]">Your staff role ({{ user.role }}) does not have permission to view executive management dashboards and financial reports.</p>
       <RouterLink class="btn inline-block" to="/staff">Go to staff operations</RouterLink>
     </div>
 
     <!-- Dashboard -->
     <div v-else class="space-y-6">
-      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
+      <div class="flex flex-wrap items-center justify-between gap-4 pb-2 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
         <div>
           <span class="label text-xs">Hotel Management Information System</span>
-          <p class="text-sm text-[var(--muted)]">Signed in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
+          <p class="text-sm text-[var(--silt)]">Signed in as <strong>{{ user.username }}</strong> ({{ user.role }})</p>
         </div>
         <div class="flex items-center gap-3">
           <RouterLink to="/staff" class="btn-secondary text-xs">Staff Desk</RouterLink>

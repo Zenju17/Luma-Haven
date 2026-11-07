@@ -87,17 +87,17 @@ const todayLabel = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'num
 .portal-shell { display: grid; grid-template-columns: 1fr; }
 .rail {
   position: fixed; z-index: 30; inset: auto 0 0 0; display: flex; align-items: center; gap: .25rem;
-  background: var(--sidebar-bg); color: var(--sidebar-text); padding: .25rem .5rem; padding-bottom: calc(.25rem + env(safe-area-inset-bottom));
+  background: var(--rail-bg); color: var(--rail-text); padding: .25rem .5rem; padding-bottom: calc(.25rem + env(safe-area-inset-bottom));
 }
 .rail-mark, .rail-foot { display: none; }
 .rail-nav { display: flex; gap: .25rem; overflow-x: auto; flex: 1; }
-.rail-rule { flex: 0 0 1px; align-self: stretch; margin: .5rem .25rem; background: color-mix(in oklab, var(--sidebar-text) 25%, transparent); }
+.rail-rule { flex: 0 0 1px; align-self: stretch; margin: .5rem .25rem; background: color-mix(in oklab, var(--rail-text) 25%, transparent); }
 .rail-item {
   position: relative; flex: 0 0 auto; min-width: 48px; min-height: 48px; display: grid; place-items: center; align-content: center; gap: 2px;
-  padding: .25rem .5rem; border-radius: 12px; color: var(--sidebar-text-muted);
+  padding: .25rem .5rem; border-radius: 12px; color: var(--rail-text-muted);
 }
-.rail-item:hover { color: var(--sidebar-text); }
-.rail-item--on { background: color-mix(in oklab, var(--sidebar-text) 14%, transparent); color: var(--sidebar-text); }
+.rail-item:hover { color: var(--rail-text); }
+.rail-item--on { background: color-mix(in oklab, var(--rail-text) 14%, transparent); color: var(--rail-text); }
 .rail-item:focus-visible { outline: 2px solid var(--laterite); outline-offset: 2px; }
 .rail-label { font-size: .6875rem; font-weight: 600; line-height: 1.1; max-width: 72px; text-align: center; }
 .rail-dot { position: absolute; top: 8px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--laterite); }
@@ -114,7 +114,7 @@ const todayLabel = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'num
   .rail {
     position: sticky; top: 0; inset: auto; height: 100vh; flex-direction: column; justify-content: flex-start; gap: .75rem; padding: 1rem 0; align-items: stretch;
   }
-  .rail-mark { display: grid; place-items: center; height: 44px; font: 500 1.4375rem/1 var(--font-display); color: var(--sidebar-text); }
+  .rail-mark { display: grid; place-items: center; height: 44px; font: 500 1.4375rem/1 var(--font-display); color: var(--rail-text); }
   .rail-nav { flex-direction: column; align-items: center; overflow-y: auto; overflow-x: visible; flex: 1; scrollbar-width: none; }
   .rail-rule { flex: 0 0 1px; align-self: center; width: 28px; height: 1px; margin: .35rem 0; }
   .rail-item { width: 60px; min-height: 56px; }

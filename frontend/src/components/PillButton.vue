@@ -16,10 +16,10 @@ withDefaults(defineProps<{ variant?: 'primary' | 'outline' | 'quiet'; type?: 'bu
   font: 600 .9375rem/1 var(--font-text); border: 1.5px solid transparent;
   transition: background-color var(--duration-fast) ease, border-color var(--duration-fast) ease;
 }
-.pill-btn--primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); }
-.pill-btn--primary:hover:not(:disabled) { background: var(--btn-primary-hover); }
+.pill-btn--primary { background: var(--river); color: var(--on-river); }
+.pill-btn--primary:hover:not(:disabled) { background: var(--river-hover); }
 .pill-btn--outline { background: transparent; color: var(--river); border-color: var(--river); }
-.pill-btn--outline:hover:not(:disabled) { background: var(--surface-muted); }
+.pill-btn--outline:hover:not(:disabled) { background: var(--sunk); }
 .pill-btn--quiet { background: transparent; color: var(--river); }
-.pill-btn--quiet:hover:not(:disabled) { background: var(--surface-muted); }
+.pill-btn--quiet:hover:not(:disabled) { background: var(--sunk); }
 </style>

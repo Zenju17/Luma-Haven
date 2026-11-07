@@ -431,7 +431,7 @@ function handleBookRoom(roomType?: string) {
 .sx-empty { padding: 2rem 0; color: var(--silt); }
 .sx-masonry { columns: 1; column-gap: 1.25rem; }
 .sx-item { break-inside: avoid; margin-bottom: 1.5rem; }
-.sx-photo { display: block; width: 100%; border-radius: var(--radius-photo); overflow: hidden; background: var(--surface-muted); }
+.sx-photo { display: block; width: 100%; border-radius: var(--radius-photo); overflow: hidden; background: var(--sunk); }
 .sx-photo img { width: 100%; height: auto; display: block; }
 .sx-item figcaption { display: grid; gap: .1rem; margin-top: .5rem; font-size: .875rem; color: var(--silt); }
 .sx-item figcaption strong { color: var(--river); font-weight: 600; }

@@ -47,10 +47,10 @@ const request = (type: 'RECTIFY' | 'DELETE') => run(async () => {
 <template>
   <section class="card p-6 mt-5" aria-labelledby="my-data-title">
     <h2 id="my-data-title" class="text-2xl">My data</h2>
-    <p class="text-sm text-[var(--muted)] mt-2">
+    <p class="text-sm text-[var(--silt)] mt-2">
       You can download a copy of your personal data, ask us to correct it, or ask us to delete it.
       Accounting records we must keep by law are retained in anonymised form.
-      <RouterLink class="underline text-[var(--brass)]" to="/legal/privacy">Privacy Policy</RouterLink>
+      <RouterLink class="underline text-[var(--laterite)]" to="/legal/privacy">Privacy Policy</RouterLink>
     </p>
     <p v-if="!verified" class="text-sm mt-3">Verify your booking with the emailed code to use these options.</p>
     <div v-else class="flex flex-wrap gap-3 mt-4">

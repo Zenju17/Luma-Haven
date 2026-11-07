@@ -248,7 +248,7 @@ function handleManagerNavigate(destination: string) {
         <div v-else-if="team.data.value" class="card overflow-auto">
           <table class="data-table w-full text-left text-sm min-w-[640px]">
             <thead>
-              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+              <tr class="bg-[var(--sunk)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--sunk)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Username</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Role</th>
                 <th class="py-3 px-4 font-semibold text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Status</th>
@@ -256,19 +256,19 @@ function handleManagerNavigate(destination: string) {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="member in team.data.value" :key="member.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition">
+              <tr v-for="member in team.data.value" :key="member.id" class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--sunk)]/60 dark:hover:bg-[var(--sunk)]/60 transition">
                 <td class="py-3 px-4 font-medium">{{ member.username }}</td>
                 <td class="py-3 px-4">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[var(--sunk)] text-[var(--ink)] ">
                     {{ member.role }}
                   </span>
                 </td>
                 <td class="py-3 px-4">
                   <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                    :class="member.is_active ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/50' : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800/60 dark:text-slate-400 dark:border-slate-700/50'"
+                    :class="member.is_active ? 'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30 ' : 'bg-[var(--sunk)] text-[var(--silt)] border-[var(--rule)] '"
                   >
-                    <span class="w-1.5 h-1.5 rounded-full" :class="member.is_active ? 'bg-emerald-500' : 'bg-slate-400'" />
+                    <span class="w-1.5 h-1.5 rounded-full" :class="member.is_active ? 'bg-[var(--status-available)]' : 'bg-[var(--rule-strong)]'" />
                     {{ member.is_active ? 'Active' : 'Inactive' }}
                   </span>
                 </td>
@@ -283,7 +283,7 @@ function handleManagerNavigate(destination: string) {
                       <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                       <span>Change password</span>
                     </button>
-                    <span v-else class="text-xs text-[var(--muted)]">Current account</span>
+                    <span v-else class="text-xs text-[var(--silt)]">Current account</span>
                   </div>
                 </td>
               </tr>
@@ -296,11 +296,11 @@ function handleManagerNavigate(destination: string) {
               <button type="button" class="float-right" aria-label="Close" @click="closePasswordForm">✕</button>
               <p class="label">Administrator action</p>
               <h3 class="text-2xl">Change password for {{ editingUser.username }}</h3>
-              <p class="mt-3 text-sm text-[var(--muted)]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
+              <p class="mt-3 text-sm text-[var(--silt)]">The new password will be hashed in the database and stored in the owner-only local <code>backend/.private-staff-passwords</code> file. It will not appear in the API response or audit log.</p>
               <div class="mt-5">
                 <div class="flex justify-between items-center mb-1">
                   <label for="new-staff-password" class="label mb-0">New password</label>
-                  <span v-if="newPassword.length > 0" class="text-xs" :class="newPassword.length >= 8 && newPassword.length <= 12 ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-amber-600 dark:text-amber-400'">
+                  <span v-if="newPassword.length > 0" class="text-xs" :class="newPassword.length >= 8 && newPassword.length <= 12 ? 'text-[var(--status-available)] font-medium' : 'text-[var(--status-dirty)] '">
                     {{ newPassword.length }} characters {{ newPassword.length >= 8 && newPassword.length <= 12 ? '✓' : '(8–12 characters)' }}
                   </span>
                 </div>
@@ -310,14 +310,14 @@ function handleManagerNavigate(destination: string) {
               <div class="mt-4">
                 <div class="flex justify-between items-center mb-1">
                   <label for="confirm-staff-password" class="label mb-0">Confirm new password</label>
-                  <span v-if="confirmPassword.length > 0" class="text-xs font-medium" :class="newPassword === confirmPassword ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'">
+                  <span v-if="confirmPassword.length > 0" class="text-xs font-medium" :class="newPassword === confirmPassword ? 'text-[var(--status-available)] ' : 'text-[var(--status-out)]'">
                     {{ newPassword === confirmPassword ? 'Passwords match ✓' : 'Passwords do not match' }}
                   </span>
                 </div>
                 <input id="confirm-staff-password" v-model="confirmPassword" class="field w-full" type="password" autocomplete="new-password" minlength="8" maxlength="12" required />
               </div>
 
-              <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-xs text-[color:var(--silt)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--silt)] space-y-1">
+              <div class="mt-4 p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-xs text-[color:var(--silt)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--silt)] space-y-1">
                 <p class="font-medium text-[color:var(--river)] dark:text-[color:var(--river)]">Password requirements:</p>
                 <ul class="list-disc list-inside space-y-0.5">
                   <li>Between 8 and 12 characters</li>
@@ -341,7 +341,7 @@ function handleManagerNavigate(destination: string) {
         <div v-else-if="audit.data.value" class="card overflow-auto">
           <table class="data-table w-full text-left text-sm">
             <thead><tr><th class="p-4">Time</th><th class="p-4">Actor</th><th class="p-4">Action</th><th class="p-4">Target</th></tr></thead>
-            <tbody><tr v-for="entry in audit.data.value" :key="entry.id" class="border-t border-[var(--line)]"><td class="p-4">{{ entry.timestamp }}</td><td class="p-4">{{ entry.actor }}</td><td class="p-4">{{ entry.action }}</td><td class="p-4">{{ entry.target }}</td></tr></tbody>
+            <tbody><tr v-for="entry in audit.data.value" :key="entry.id" class="border-t border-[var(--rule)]"><td class="p-4">{{ entry.timestamp }}</td><td class="p-4">{{ entry.actor }}</td><td class="p-4">{{ entry.action }}</td><td class="p-4">{{ entry.target }}</td></tr></tbody>
           </table>
         </div>
       </section>
@@ -367,7 +367,7 @@ function handleManagerNavigate(destination: string) {
       <section v-else aria-label="Reports">
 
         <h2 class="text-2xl mt-8 mb-2 font-serif">Executive Management Reports</h2>
-        <p class="text-sm text-[var(--muted)] mb-6">
+        <p class="text-sm text-[var(--silt)] mb-6">
           Pre-formatted, authorized management information reports with formula-injection-sanitized CSV export for compliance and auditing.
         </p>
 
@@ -377,10 +377,10 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 1</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">Daily Archive</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--status-available)]/10 text-[var(--status-available)] ">Daily Archive</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Daily Manager Summary</h3>
-              <p class="text-xs text-[var(--muted)] mt-1">
+              <p class="text-xs text-[var(--silt)] mt-1">
                 Executive operational snapshot: sellable/sold room-nights, RevPAR, ADR, cash collections, and room readiness for today.
               </p>
             </div>
@@ -393,10 +393,10 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 2</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300">Yield & Demand</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--status-occupied)]/10 text-[var(--status-occupied)] ">Yield & Demand</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Revenue & Occupancy by Room Type</h3>
-              <p class="text-xs text-[var(--muted)] mt-1">
+              <p class="text-xs text-[var(--silt)] mt-1">
                 Comparative room-type performance: capacity, sellable nights, realized occupancy %, net revenue, and ADR.
               </p>
             </div>
@@ -409,10 +409,10 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 3</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">Financial Audit</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] ">Financial Audit</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Cash Reconciliation & Audit Ledger</h3>
-              <p class="text-xs text-[var(--muted)] mt-1">
+              <p class="text-xs text-[var(--silt)] mt-1">
                 Gross payment collections, settled refunds, net cash variance, and payment gateway audit records.
               </p>
             </div>
@@ -425,10 +425,10 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 4</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300">Operational SLA</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--status-occupied)]/10 text-[var(--status-occupied)]  ">Operational SLA</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Housekeeping Turnaround & Efficiency</h3>
-              <p class="text-xs text-[var(--muted)] mt-1">
+              <p class="text-xs text-[var(--silt)] mt-1">
                 Turnover duration from checkout to ready status, staff member task completion, and inspection logs.
               </p>
             </div>
@@ -441,10 +441,10 @@ function handleManagerNavigate(destination: string) {
             <div>
               <div class="flex items-center justify-between">
                 <span class="label text-xs">MIS Report 5</span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">Credit Risk</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[var(--status-out)]/10 text-[var(--status-out)] ">Credit Risk</span>
               </div>
               <h3 class="text-lg font-serif mt-1">Accounts Receivable Aging & Outstanding Balances</h3>
-              <p class="text-xs text-[var(--muted)] mt-1">
+              <p class="text-xs text-[var(--silt)] mt-1">
                 Aging buckets (Current 0–7 days, 8–14 days, 15–30 days, 30+ days) across unclosed active reservation folios.
               </p>
             </div>
@@ -456,7 +456,7 @@ function handleManagerNavigate(destination: string) {
 
         <!-- Custom Date Range KPI Report -->
         <h3 class="text-xl font-serif mt-8 mb-2">Custom Period Financial Metrics</h3>
-        <p class="text-sm text-[var(--muted)] mb-4">Room revenue recognizes stay dates; cash uses payment settlement dates. Period end is exclusive.</p>
+        <p class="text-sm text-[var(--silt)] mb-4">Room revenue recognizes stay dates; cash uses payment settlement dates. Period end is exclusive.</p>
         <div class="flex flex-wrap gap-4 items-end mb-5">
           <label><span class="label">Start date</span><input v-model="start" class="field" type="date" /></label>
           <label><span class="label">End date (exclusive)</span><input v-model="end" class="field" type="date" /></label>
@@ -472,7 +472,7 @@ function handleManagerNavigate(destination: string) {
             <div><p class="label">Revenue per available room</p><p class="text-2xl font-bold">{{ report.data.value.revpar_minor === null ? 'N/A' : money(report.data.value.revpar_minor) }}</p></div>
             <div><p class="label">Sold room-nights</p><p class="text-2xl font-bold">{{ report.data.value.sold_room_nights }}</p></div>
             <div><p class="label">Net room revenue</p><p class="text-2xl font-bold tabular-nums">{{ money(report.data.value.net_room_revenue_minor) }}</p></div>
-            <div><p class="label">Settled cash</p><p class="text-2xl font-bold tabular-nums text-emerald-700 dark:text-emerald-400">{{ money(report.data.value.settled_cash_minor) }}</p></div>
+            <div><p class="label">Settled cash</p><p class="text-2xl font-bold tabular-nums text-[var(--status-available)] ">{{ money(report.data.value.settled_cash_minor) }}</p></div>
           </div>
         </div>
       </section>

@@ -58,3 +58,17 @@ batch job. Only the widths 640 and 1280 are allowed, so the endpoint cannot be u
 generate arbitrary sizes. Static photos ship pre-rendered variants plus a width
 manifest.
 
+## 2026-11-07 — "Mekong at dusk" redesign tokens, and teal kept in dark mode
+
+The site-wide redesign (`docs/REDESIGN_PLAN_V2.md`, phases 1–9) replaced the teal, saffron and celadon
+palette with river teal `#123C3F`, a laterite accent `#9A4A2C`, a palm-leaf background `#EEE8D9`, paper
+`#FBF9F3`, silt `#5E6B66` and lotus `#E9C9C0`. Type is Libre Caslon Condensed for display and Hanken
+Grotesk for text, with Kantumruy Pro as the Khmer fallback. Glass, blur, gradient washes and resting shadows were removed;
+the only shadow is `--shadow-float`, used on floating elements. Phase 9 removed every legacy alias
+(`--muted`, `--brass`, `--glass-*`, `--btn-*`, …). The final set is about 30 tokens in `frontend/src/style.css`.
+During phases 1–8 the dark theme set `--river` to cream so the aliases worked. In phase 9 it went back
+to a lifted teal (`#8CC3C4`), and body text moved to a separate `--ink` token, so `--river` means teal in
+both themes. Hard-coded Tailwind palette classes in staff screens (emerald, rose, amber, sky, slate, …)
+were mapped to `--status-*`, `--ink`, `--silt`, `--sunk` and `--rule`. The printable receipt is
+the exception: it keeps fixed colours because it is a paper document.
+

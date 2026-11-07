@@ -67,10 +67,10 @@ function actionLabel(alert: DecisionAlert): string {
     <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <div class="flex items-center gap-2">
-          <span class="inline-block w-2.5 h-2.5 rounded-full" :class="urgentCount > 0 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'" />
+          <span class="inline-block w-2.5 h-2.5 rounded-full" :class="urgentCount > 0 ? 'bg-[var(--status-out)] ' : 'bg-[var(--status-available)]'" />
           <h2 class="text-2xl font-serif">Attention Needed · Decision Support</h2>
         </div>
-        <p class="text-sm text-[var(--muted,#5e7470)] mt-1">
+        <p class="text-sm text-[var(--silt,#5e7470)] mt-1">
           Server-evaluated transparent business rules alerting management to operational risks and revenue opportunities.
         </p>
       </div>
@@ -80,7 +80,7 @@ function actionLabel(alert: DecisionAlert): string {
         <button
           type="button"
           class="px-3 py-1.5 rounded-full border transition"
-          :class="filter === 'ALL' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] border-transparent font-medium' : 'border-[var(--line,#e2e8e0)] text-[var(--muted,#5e7470)] hover:border-[#0c2b26]'"
+          :class="filter === 'ALL' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] border-transparent font-medium' : 'border-[var(--rule,#e2e8e0)] text-[var(--silt,#5e7470)] hover:border-[var(--river)]'"
           @click="filter = 'ALL'"
         >
           All ({{ alerts.length }})
@@ -88,25 +88,25 @@ function actionLabel(alert: DecisionAlert): string {
         <button
           type="button"
           class="px-3 py-1.5 rounded-full border transition flex items-center gap-1.5"
-          :class="filter === 'URGENT' ? 'bg-rose-600 text-white border-transparent font-medium' : 'border-rose-300/60 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20'"
+          :class="filter === 'URGENT' ? 'bg-[var(--status-out)] text-white border-transparent font-medium' : 'border-[var(--status-out)]/30 text-[var(--status-out)] hover:bg-[var(--status-out)]/10 '"
           @click="filter = 'URGENT'"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-rose-500" />
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--status-out)]" />
           Urgent ({{ urgentCount }})
         </button>
         <button
           type="button"
           class="px-3 py-1.5 rounded-full border transition flex items-center gap-1.5"
-          :class="filter === 'WARNING' ? 'bg-amber-600 text-white border-transparent font-medium' : 'border-amber-300/60 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/20'"
+          :class="filter === 'WARNING' ? 'bg-[var(--status-dirty)] text-white border-transparent font-medium' : 'border-[var(--status-dirty)]/30 text-[var(--status-dirty)] hover:bg-[var(--status-dirty)]/10 '"
           @click="filter = 'WARNING'"
         >
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <span class="w-1.5 h-1.5 rounded-full bg-[var(--status-dirty)]" />
           Warning ({{ warningCount }})
         </button>
         <button
           type="button"
           class="px-3 py-1.5 rounded-full border transition"
-          :class="filter === 'INFO' ? 'bg-sky-600 text-white border-transparent font-medium' : 'border-sky-300/60 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/20'"
+          :class="filter === 'INFO' ? 'bg-[var(--status-occupied)] text-white border-transparent font-medium' : 'border-[var(--status-occupied)]/30 text-[var(--status-occupied)] hover:bg-[var(--status-occupied)]/10 '"
           @click="filter = 'INFO'"
         >
           Info ({{ infoCount }})
@@ -115,8 +115,8 @@ function actionLabel(alert: DecisionAlert): string {
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredAlerts.length === 0" class="card p-8 text-center text-[var(--muted,#5e7470)]">
-      <p class="text-base font-medium text-[var(--brand-text,#0c2b26)] dark:text-emerald-400">✓ All systems operating within normal parameters.</p>
+    <div v-if="filteredAlerts.length === 0" class="card p-8 text-center text-[var(--silt,#5e7470)]">
+      <p class="text-base font-medium text-[var(--river,var(--river))] ">✓ All systems operating within normal parameters.</p>
       <p class="text-sm mt-1">No alerts matching the selected filter.</p>
     </div>
 
@@ -125,11 +125,11 @@ function actionLabel(alert: DecisionAlert): string {
       <article
         v-for="alert in filteredAlerts"
         :key="alert.id"
-        class="card p-6 border-l-4 transition hover:shadow-md"
+        class="card p-6 border-l-4 transition"
         :class="{
-          'border-l-rose-500 bg-gradient-to-r from-rose-50/40 to-transparent dark:from-rose-950/20': alert.severity === 'URGENT',
-          'border-l-amber-500 bg-gradient-to-r from-amber-50/40 to-transparent dark:from-amber-950/20': alert.severity === 'WARNING',
-          'border-l-sky-500 bg-gradient-to-r from-sky-50/40 to-transparent dark:from-sky-950/20': alert.severity === 'INFO'
+          'border-l-[var(--status-out)] ': alert.severity === 'URGENT',
+          'border-l-[var(--status-dirty)]  ': alert.severity === 'WARNING',
+          'border-l-[var(--status-occupied)]  ': alert.severity === 'INFO'
         }"
       >
         <!-- Header -->
@@ -138,20 +138,20 @@ function actionLabel(alert: DecisionAlert): string {
             <span
               class="px-2.5 py-0.5 rounded text-xs font-semibold "
               :class="{
-                'bg-rose-100 text-rose-800 dark:bg-rose-900/60 dark:text-rose-200': alert.severity === 'URGENT',
-                'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200': alert.severity === 'WARNING',
-                'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-200': alert.severity === 'INFO'
+                'bg-[var(--status-out)]/10 text-[var(--status-out)] ': alert.severity === 'URGENT',
+                'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)]  ': alert.severity === 'WARNING',
+                'bg-[var(--status-occupied)]/10 text-[var(--status-occupied)]  ': alert.severity === 'INFO'
               }"
             >
               {{ alert.severity }}
             </span>
-            <span class="text-xs text-[var(--muted,#5e7470)] font-medium">
+            <span class="text-xs text-[var(--silt,#5e7470)] font-medium">
               {{ alert.category.replace(/_/g, ' ') }}
             </span>
           </div>
           <button
             type="button"
-            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-[color:var(--laterite)] bg-[var(--laterite)]/10 hover:bg-[var(--laterite)]/20 border border-[color:var(--laterite)]/30 dark:text-[color:var(--laterite)] dark:bg-[var(--laterite)]/15 dark:hover:bg-[var(--laterite)]/25 dark:border-[color:var(--laterite)]/30 transition shadow-xs cursor-pointer"
+            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-[color:var(--laterite)] bg-[var(--laterite)]/10 hover:bg-[var(--laterite)]/20 border border-[color:var(--laterite)]/30 dark:text-[color:var(--laterite)] dark:bg-[var(--laterite)]/15 dark:hover:bg-[var(--laterite)]/25 dark:border-[color:var(--laterite)]/30 transition cursor-pointer"
             :title="`Open ${actionLabel(alert)} in operations workspace`"
             @click="emit('navigate', actionTarget(alert))"
           >
@@ -167,22 +167,22 @@ function actionLabel(alert: DecisionAlert): string {
 
         <!-- 4-Part Structure -->
         <div class="grid md:grid-cols-2 gap-4 mt-4 text-sm">
-          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+          <div class="p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
             <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">1. What happened</span>
             <p class="text-[color:var(--river)] dark:text-[color:var(--river)]">{{ alert.what_happened }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+          <div class="p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
             <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">2. Records involved</span>
             <p class="tabular-nums text-xs text-[color:var(--river)] dark:text-[color:var(--river)] break-words">{{ alert.records_involved }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
+          <div class="p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] space-y-1">
             <span class="label text-[10px] font-bold text-[color:var(--silt)] dark:text-[color:var(--silt)]">3. Why it matters</span>
             <p class="text-[color:var(--river)] dark:text-[color:var(--river)]">{{ alert.why_it_matters }}</p>
           </div>
 
-          <div class="p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--laterite)]/30 dark:bg-[var(--surface-muted)] dark:border-[color:var(--laterite)]/30 space-y-1">
+          <div class="p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--laterite)]/30 dark:bg-[var(--sunk)] dark:border-[color:var(--laterite)]/30 space-y-1">
             <span class="label text-[10px] font-bold text-[color:var(--laterite)] dark:text-[color:var(--laterite)]">4. Recommended action</span>
             <p class="text-[color:var(--river)] dark:text-[color:var(--river)] font-medium">{{ alert.recommended_action }}</p>
           </div>

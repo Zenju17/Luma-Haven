@@ -17,6 +17,6 @@ defineEmits<{ (e: 'select', id: string | number): void }>()
 .strip { display: flex; gap: .75rem; overflow-x: auto; scroll-snap-type: x mandatory; padding: 4px; }
 .strip__card { flex: 0 0 140px; scroll-snap-align: start; display: grid; gap: .3rem; text-align: left; padding: .5rem; border-radius: var(--radius-photo); border: 2px solid transparent; background: var(--paper); color: var(--river); font: 500 .875rem var(--font-text); }
 .strip__card--on { border-color: var(--river); }
-.strip__photo { display: block; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--surface-muted); }
+.strip__photo { display: block; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--sunk); }
 .strip__price { color: var(--laterite); font-weight: 600; font-variant-numeric: tabular-nums; }
 </style>

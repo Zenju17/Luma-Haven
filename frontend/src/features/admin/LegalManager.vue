@@ -50,7 +50,7 @@ const publish = () => run(async () => {
 <template>
   <section aria-label="Legal documents" class="space-y-6">
     <h2 class="text-2xl">Legal documents</h2>
-    <p class="text-sm text-[var(--muted)]">Published versions are permanent. To change a policy, create a draft, publish it as a new version, and guests will be asked to accept it again. The seeded texts are templates and need legal review.</p>
+    <p class="text-sm text-[var(--silt)]">Published versions are permanent. To change a policy, create a draft, publish it as a new version, and guests will be asked to accept it again. The seeded texts are templates and need legal review.</p>
     <Notice :message="message" :status="ok" />
     <div class="grid lg:grid-cols-2 gap-6">
       <div class="card overflow-auto">

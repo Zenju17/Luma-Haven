@@ -23,17 +23,17 @@ const html = computed(() => renderMarkdown(doc.data.value?.body_markdown ?? ''))
   <SiteLayout>
     <div class="py-8 sm:py-12 max-w-3xl mx-auto space-y-6">
       <div class="flex items-center justify-between gap-4">
-        <p class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">Legal</p>
-        <div class="inline-flex rounded-full border border-[var(--glass-border)] overflow-hidden text-xs" role="group" aria-label="Language">
-          <button type="button" class="px-3 py-1.5" :class="lang === 'en' ? 'bg-[var(--brass)] text-white' : ''" :aria-pressed="lang === 'en'" @click="lang = 'en'">English</button>
-          <button type="button" class="px-3 py-1.5" :class="lang === 'km' ? 'bg-[var(--brass)] text-white' : ''" :aria-pressed="lang === 'km'" @click="lang = 'km'">ខ្មែរ</button>
+        <p class="text-xs font-semibold uppercase tracking-wider text-[var(--laterite)]">Legal</p>
+        <div class="inline-flex rounded-full border border-[var(--rule)] overflow-hidden text-xs" role="group" aria-label="Language">
+          <button type="button" class="px-3 py-1.5" :class="lang === 'en' ? 'bg-[var(--laterite)] text-white' : ''" :aria-pressed="lang === 'en'" @click="lang = 'en'">English</button>
+          <button type="button" class="px-3 py-1.5" :class="lang === 'km' ? 'bg-[var(--laterite)] text-white' : ''" :aria-pressed="lang === 'km'" @click="lang = 'km'">ខ្មែរ</button>
         </div>
       </div>
       <div v-if="doc.isPending.value" class="skeleton h-64 w-full" role="status" />
       <Notice v-else-if="doc.error.value" :message="String(doc.error.value)" />
       <article v-else-if="doc.data.value" class="card p-6 sm:p-8">
         <div class="legal-body text-sm sm:text-base leading-relaxed" :lang="doc.data.value.language" v-html="html" />
-        <p class="mt-6 pt-4 border-t border-[var(--line)] text-xs text-[var(--muted)]">
+        <p class="mt-6 pt-4 border-t border-[var(--rule)] text-xs text-[var(--silt)]">
           Version {{ doc.data.value.version }}<template v-if="doc.data.value.effective_at"> · effective {{ doc.data.value.effective_at.slice(0, 10) }}</template>
         </p>
       </article>
@@ -42,9 +42,9 @@ const html = computed(() => renderMarkdown(doc.data.value?.body_markdown ?? ''))
 </template>
 
 <style scoped>
-.legal-body :deep(h2) { font-size: 1.6rem; margin-bottom: 1rem; font-family: var(--font-serif, serif); }
+.legal-body :deep(h2) { font-size: 1.6rem; margin-bottom: 1rem; font-family: var(--font-display); }
 .legal-body :deep(p) { margin: 0.75rem 0; }
 .legal-body :deep(ul), .legal-body :deep(ol) { margin: 0.75rem 0 0.75rem 1.25rem; list-style: revert; }
 .legal-body :deep(li) { margin: 0.35rem 0; }
-.legal-body :deep(blockquote) { border-left: 3px solid var(--brass); padding: 0.25rem 0.75rem; color: var(--muted); font-size: 0.85rem; }
+.legal-body :deep(blockquote) { border-left: 3px solid var(--laterite); padding: 0.25rem 0.75rem; color: var(--silt); font-size: 0.85rem; }
 </style>

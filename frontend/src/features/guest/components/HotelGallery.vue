@@ -236,7 +236,7 @@ onUnmounted(() => {
 .hg-head p { color: var(--silt); }
 .hg-ctrl { display: flex; align-items: center; gap: .5rem; }
 .hg-count { margin-right: auto; color: var(--silt); font-size: .875rem; font-variant-numeric: tabular-nums; }
-.hg-stage { position: relative; aspect-ratio: 16 / 10; border-radius: var(--radius-photo); overflow: hidden; background: var(--surface-muted); cursor: zoom-in; }
+.hg-stage { position: relative; aspect-ratio: 16 / 10; border-radius: var(--radius-photo); overflow: hidden; background: var(--sunk); cursor: zoom-in; }
 .hg-slide { position: absolute; inset: 0; }
 .hg-slide img { width: 100%; height: 100%; object-fit: cover; }
 .hg-chip { position: absolute; top: .75rem; right: .75rem; }

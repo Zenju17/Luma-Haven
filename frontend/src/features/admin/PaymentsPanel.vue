@@ -38,8 +38,8 @@ const csv = computed(() => `/api/v1/admin/reports/cash-reconciliation?start=${st
     <Notice :message="report.error.value ? String(report.error.value) : ''" />
     <template v-if="report.data.value">
       <div class="grid sm:grid-cols-3 gap-4">
-        <div class="card p-4"><p class="label">Gross cash</p><p class="text-2xl">{{ money(report.data.value.gross_cash_minor) }}</p><p class="text-xs text-[var(--muted)]">{{ report.data.value.payments_count }} payments</p></div>
-        <div class="card p-4"><p class="label">Refunded</p><p class="text-2xl">{{ money(report.data.value.refunded_cash_minor) }}</p><p class="text-xs text-[var(--muted)]">{{ report.data.value.refunds_count }} refunds</p></div>
+        <div class="card p-4"><p class="label">Gross cash</p><p class="text-2xl">{{ money(report.data.value.gross_cash_minor) }}</p><p class="text-xs text-[var(--silt)]">{{ report.data.value.payments_count }} payments</p></div>
+        <div class="card p-4"><p class="label">Refunded</p><p class="text-2xl">{{ money(report.data.value.refunded_cash_minor) }}</p><p class="text-xs text-[var(--silt)]">{{ report.data.value.refunds_count }} refunds</p></div>
         <div class="card p-4"><p class="label">Net cash</p><p class="text-2xl">{{ money(report.data.value.net_cash_minor) }}</p></div>
       </div>
       <div class="card overflow-auto">
@@ -62,7 +62,7 @@ const csv = computed(() => `/api/v1/admin/reports/cash-reconciliation?start=${st
           <thead><tr><th>Booking</th><th>Reason</th><th>Raised</th></tr></thead>
           <tbody>
             <tr v-for="e in report.data.value.payment_exceptions" :key="e.id"><td>{{ e.attempt__reservation__reference }}</td><td>{{ e.reason }}</td><td>{{ e.created_at.slice(0, 16).replace('T', ' ') }}</td></tr>
-            <tr v-if="report.data.value.payment_exceptions.length === 0"><td colspan="3" class="text-[var(--muted)]">None in this period.</td></tr>
+            <tr v-if="report.data.value.payment_exceptions.length === 0"><td colspan="3" class="text-[var(--silt)]">None in this period.</td></tr>
           </tbody>
         </table>
       </div>

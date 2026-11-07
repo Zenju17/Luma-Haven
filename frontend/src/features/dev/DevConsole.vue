@@ -64,7 +64,7 @@ const checkBakong = () => act(async () => { probe.value = await adminApi('/admin
 const setMode = (mode: 'demo' | 'bank') => act(async () => { await adminApi('/admin/dev/payment-mode', { mode }) },
   mode === 'bank' ? 'Bank payments (Bakong KHQR) are now used for new payments.' : 'Demo payments are now used for new payments.', 'provider')
 const revoke = (id: number, name: string) => act(async () => { await adminApi(`/admin/dev/security/revoke/${id}`, {}) }, `Signed out ${name} everywhere.`, 'security')
-const badge = (good: boolean) => (good ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500')
+const badge = (good: boolean) => (good ? 'text-[var(--status-available)] ' : 'text-[var(--status-out)]')
 const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
 </script>
 
@@ -82,14 +82,14 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     <div v-if="tab === 'health'" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <p v-if="health.isPending.value" role="status">Checking…</p>
       <template v-if="health.data.value">
-        <div class="card p-4"><p class="label">Database</p><p :class="badge(health.data.value.database.ok)" class="text-xl font-semibold">{{ health.data.value.database.ok ? 'Online' : 'Offline' }}</p><p class="text-xs text-[var(--muted)]">{{ health.data.value.database.latency_ms }} ms</p></div>
+        <div class="card p-4"><p class="label">Database</p><p :class="badge(health.data.value.database.ok)" class="text-xl font-semibold">{{ health.data.value.database.ok ? 'Online' : 'Offline' }}</p><p class="text-xs text-[var(--silt)]">{{ health.data.value.database.latency_ms }} ms</p></div>
         <div class="card p-4"><p class="label">Cache / Redis</p><p :class="badge(health.data.value.cache.ok)" class="text-xl font-semibold">{{ health.data.value.cache.ok ? 'Online' : 'Degraded' }}</p></div>
-        <div class="card p-4"><p class="label">Celery beat + worker</p><p :class="badge(health.data.value.celery.healthy)" class="text-xl font-semibold">{{ health.data.value.celery.healthy ? 'Running' : 'No recent run' }}</p><p class="text-xs text-[var(--muted)]">last task {{ health.data.value.celery.last_beat_task_seconds_ago ?? '—' }} s ago</p></div>
+        <div class="card p-4"><p class="label">Celery beat + worker</p><p :class="badge(health.data.value.celery.healthy)" class="text-xl font-semibold">{{ health.data.value.celery.healthy ? 'Running' : 'No recent run' }}</p><p class="text-xs text-[var(--silt)]">last task {{ health.data.value.celery.last_beat_task_seconds_ago ?? '—' }} s ago</p></div>
         <div class="card p-4"><p class="label">Pending migrations</p><p :class="badge(health.data.value.pending_migrations === 0)" class="text-xl font-semibold">{{ health.data.value.pending_migrations ?? 'unknown' }}</p></div>
         <div class="card p-4"><p class="label">Database backup</p>
           <p :class="badge(health.data.value.backup.ok)" class="text-xl font-semibold">{{ !health.data.value.backup.configured ? 'Not configured' : health.data.value.backup.ok ? 'Healthy' : 'Stale or failed' }}</p>
-          <p class="text-xs text-[var(--muted)]"><template v-if="health.data.value.backup.finished_at">last {{ stamp(health.data.value.backup.finished_at) }} · {{ Math.round((health.data.value.backup.size_bytes ?? 0) / 1024) }} KB</template><template v-else>no marker file found</template></p>
-          <p class="text-xs" :class="health.data.value.backup.last_restore_drill?.ok ? 'text-[var(--muted)]' : 'text-rose-500'">restore drill: {{ health.data.value.backup.last_restore_drill ? (health.data.value.backup.last_restore_drill.ok ? 'passed ' + stamp(health.data.value.backup.last_restore_drill.at) : 'FAILED') : 'never run' }}</p></div>
+          <p class="text-xs text-[var(--silt)]"><template v-if="health.data.value.backup.finished_at">last {{ stamp(health.data.value.backup.finished_at) }} · {{ Math.round((health.data.value.backup.size_bytes ?? 0) / 1024) }} KB</template><template v-else>no marker file found</template></p>
+          <p class="text-xs" :class="health.data.value.backup.last_restore_drill?.ok ? 'text-[var(--silt)]' : 'text-[var(--status-out)]'">restore drill: {{ health.data.value.backup.last_restore_drill ? (health.data.value.backup.last_restore_drill.ok ? 'passed ' + stamp(health.data.value.backup.last_restore_drill.at) : 'FAILED') : 'never run' }}</p></div>
         <div class="card p-4"><p class="label">Outbox pending</p><p class="text-xl font-semibold">{{ health.data.value.outbox_pending }}</p></div>
         <div class="card p-4"><p class="label">Errors (24 h)</p><p :class="badge(health.data.value.errors_24h === 0)" class="text-xl font-semibold">{{ health.data.value.errors_24h }}</p></div>
         <div class="card p-4 sm:col-span-2 lg:col-span-3 text-sm">
@@ -103,14 +103,14 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     <div v-else-if="tab === 'jobs'" class="space-y-4">
       <div class="card overflow-auto"><table class="data-table w-full text-left text-sm"><caption class="text-left p-3 font-semibold">Last 24 hours</caption>
         <thead><tr><th>Task</th><th>Runs</th><th>Failures</th></tr></thead>
-        <tbody><tr v-for="s in jobs.data.value?.summary" :key="s.task"><td>{{ s.task }}</td><td>{{ s.runs }}</td><td :class="s.failures ? 'text-rose-500 font-semibold' : ''">{{ s.failures }}</td></tr></tbody></table></div>
+        <tbody><tr v-for="s in jobs.data.value?.summary" :key="s.task"><td>{{ s.task }}</td><td>{{ s.runs }}</td><td :class="s.failures ? 'text-[var(--status-out)] font-semibold' : ''">{{ s.failures }}</td></tr></tbody></table></div>
       <div class="card overflow-auto"><table class="data-table w-full text-left text-sm"><caption class="text-left p-3 font-semibold">Recent runs</caption>
         <thead><tr><th>When</th><th>Task</th><th>Status</th><th>ms</th><th>Error</th></tr></thead>
-        <tbody><tr v-for="r in jobs.data.value?.recent" :key="r.id"><td>{{ stamp(r.started_at) }}</td><td>{{ r.task }}</td><td :class="r.status === 'FAILURE' ? 'text-rose-500' : ''">{{ r.status }}</td><td>{{ r.duration_ms }}</td><td>{{ r.error }}</td></tr></tbody></table></div>
+        <tbody><tr v-for="r in jobs.data.value?.recent" :key="r.id"><td>{{ stamp(r.started_at) }}</td><td>{{ r.task }}</td><td :class="r.status === 'FAILURE' ? 'text-[var(--status-out)]' : ''">{{ r.status }}</td><td>{{ r.duration_ms }}</td><td>{{ r.error }}</td></tr></tbody></table></div>
     </div>
 
     <div v-else-if="tab === 'outbox'" class="card p-4 space-y-3">
-      <p v-if="outbox.data.value" class="text-sm">{{ outbox.data.value.pending_count }} pending · {{ outbox.data.value.delivered_count }} delivered. <span class="text-[var(--muted)]">{{ outbox.data.value.note }}</span></p>
+      <p v-if="outbox.data.value" class="text-sm">{{ outbox.data.value.pending_count }} pending · {{ outbox.data.value.delivered_count }} delivered. <span class="text-[var(--silt)]">{{ outbox.data.value.note }}</span></p>
       <table v-if="outbox.data.value?.pending.length" class="data-table w-full text-left text-sm"><thead><tr><th>Created</th><th>Kind</th><th>Target</th></tr></thead>
         <tbody><tr v-for="o in outbox.data.value.pending" :key="o.id"><td>{{ stamp(o.created_at) }}</td><td>{{ o.kind }}</td><td>{{ o.target }}</td></tr></tbody></table>
     </div>
@@ -118,14 +118,14 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
     <div v-else-if="tab === 'provider'" class="space-y-4">
       <div v-if="provider.data.value" class="card p-4 space-y-3">
         <p class="label">Payment mode for new payments</p>
-        <div class="inline-flex rounded-full border border-[var(--glass-border)] overflow-hidden" role="group" aria-label="Payment mode">
-          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'development' ? 'bg-[var(--brass)] text-white' : ''"
+        <div class="inline-flex rounded-full border border-[var(--rule)] overflow-hidden" role="group" aria-label="Payment mode">
+          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'development' ? 'bg-[var(--laterite)] text-white' : ''"
             :aria-pressed="provider.data.value.provider === 'development'" :disabled="busy || !canWrite || !provider.data.value.can_use_demo" @click="setMode('demo')">Demo payment</button>
-          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'bakong' ? 'bg-[var(--brass)] text-white' : ''"
+          <button type="button" class="px-4 py-2 text-sm" :class="provider.data.value.provider === 'bakong' ? 'bg-[var(--laterite)] text-white' : ''"
             :aria-pressed="provider.data.value.provider === 'bakong'" :disabled="busy || !canWrite || !provider.data.value.bank_ready" @click="setMode('bank')">Bank payment (Bakong)</button>
         </div>
-        <p class="text-xs text-[var(--muted)]">Demo = simulated checkout, no money moves. Bank = real Bakong KHQR. Payments already started keep their original mode and bank payments are still confirmed after switching.
-          <span v-if="!provider.data.value.bank_ready" class="text-rose-500"> Bank mode needs the BAKONG_* values in the server environment.</span>
+        <p class="text-xs text-[var(--silt)]">Demo = simulated checkout, no money moves. Bank = real Bakong KHQR. Payments already started keep their original mode and bank payments are still confirmed after switching.
+          <span v-if="!provider.data.value.bank_ready" class="text-[var(--status-out)]"> Bank mode needs the BAKONG_* values in the server environment.</span>
           <span v-if="!canWrite"> Only developers can switch.</span></p>
       </div>
       <div v-if="provider.data.value" class="card p-4 space-y-3 text-sm">
@@ -137,14 +137,14 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
           <button class="btn" :disabled="busy" @click="checkBakong">Test Bakong connectivity</button>
           <p v-if="probe" class="mt-2" :class="badge(probe.ok)">{{ probe.ok ? `Reachable (${probe.status})` : probe.error }} · {{ probe.latency_ms }} ms</p>
         </div>
-        <p v-else-if="provider.data.value.provider !== 'bakong'" class="text-[var(--muted)]">The development emulator is active; no Bakong calls are made.</p>
+        <p v-else-if="provider.data.value.provider !== 'bakong'" class="text-[var(--silt)]">The development emulator is active; no Bakong calls are made.</p>
       </div>
     </div>
 
     <div v-else-if="tab === 'flags'" class="card p-4 space-y-3">
-      <ul class="divide-y divide-[var(--line)]">
+      <ul class="divide-y divide-[var(--rule)]">
         <li v-for="f in flagList.data.value" :key="f.key" class="py-3 flex items-center justify-between gap-3">
-          <div><p class="tabular-nums text-sm">{{ f.key }}</p><p class="text-xs text-[var(--muted)]">{{ f.description }} <span v-if="f.updated_by">· last by {{ f.updated_by }}</span></p></div>
+          <div><p class="tabular-nums text-sm">{{ f.key }}</p><p class="text-xs text-[var(--silt)]">{{ f.description }} <span v-if="f.updated_by">· last by {{ f.updated_by }}</span></p></div>
           <button class="btn-secondary" :disabled="busy || !canWrite" :aria-pressed="f.enabled" @click="toggle(f)">{{ f.enabled ? 'ON' : 'off' }}</button>
         </li>
       </ul>
@@ -160,7 +160,7 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
       <table class="data-table w-full text-left text-sm"><thead><tr><th>When</th><th>Request</th><th>Error</th><th>Request ID</th></tr></thead>
         <tbody>
           <tr v-for="e in errors.data.value" :key="e.id"><td>{{ stamp(e.created_at) }}</td><td>{{ e.method }} {{ e.path }}</td><td>{{ e.exc_type }}: {{ e.message }}</td><td class="tabular-nums text-xs">{{ e.request_id.slice(0, 8) }}</td></tr>
-          <tr v-if="errors.data.value?.length === 0"><td colspan="4" class="text-[var(--muted)]">No server errors recorded.</td></tr>
+          <tr v-if="errors.data.value?.length === 0"><td colspan="4" class="text-[var(--silt)]">No server errors recorded.</td></tr>
         </tbody></table>
     </div>
 
@@ -168,8 +168,8 @@ const stamp = (v: string) => v.slice(0, 19).replace('T', ' ')
       <div class="card overflow-auto"><table class="data-table w-full text-left text-sm"><caption class="text-left p-3 font-semibold">Failed sign-ins (24 h)</caption>
         <thead><tr><th>Username</th><th>Portal</th><th>Count</th></tr></thead>
         <tbody>
-          <tr v-for="f in security.data.value?.failed_logins_24h" :key="f.username + f.portal"><td>{{ f.username }}</td><td>{{ f.portal }}</td><td :class="f.count >= 5 ? 'text-rose-500 font-semibold' : ''">{{ f.count }}</td></tr>
-          <tr v-if="security.data.value?.failed_logins_24h.length === 0"><td colspan="3" class="text-[var(--muted)]">None.</td></tr>
+          <tr v-for="f in security.data.value?.failed_logins_24h" :key="f.username + f.portal"><td>{{ f.username }}</td><td>{{ f.portal }}</td><td :class="f.count >= 5 ? 'text-[var(--status-out)] font-semibold' : ''">{{ f.count }}</td></tr>
+          <tr v-if="security.data.value?.failed_logins_24h.length === 0"><td colspan="3" class="text-[var(--silt)]">None.</td></tr>
         </tbody></table></div>
       <div class="card overflow-auto"><table class="data-table w-full text-left text-sm"><caption class="text-left p-3 font-semibold">Active staff sessions</caption>
         <thead><tr><th>User</th><th>Role</th><th>Sessions</th><th /></tr></thead>

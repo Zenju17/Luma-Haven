@@ -26,7 +26,7 @@ defineEmits<{ (e: 'focusSearch'): void }>()
 .hero { padding-top: 2rem; }
 .hero-title { font-size: clamp(2.4375rem, 8vw, 3.8125rem); max-width: 16ch; color: var(--river); }
 .hero-copy { margin-top: .75rem; font-size: 1.25rem; line-height: 1.4; color: var(--silt); max-width: 52ch; }
-.hero-photo { margin-top: 1.75rem; aspect-ratio: 16 / 9; border-radius: var(--radius-photo); overflow: hidden; background: var(--surface-muted); }
+.hero-photo { margin-top: 1.75rem; aspect-ratio: 16 / 9; border-radius: var(--radius-photo); overflow: hidden; background: var(--sunk); }
 .hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @media (max-width: 639px) { .hero-photo { aspect-ratio: 4 / 3; } }
 

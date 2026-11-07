@@ -43,7 +43,7 @@ async function accept() {
 
 <template>
   <div v-if="pendingId && doc.data.value" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" role="dialog" aria-modal="true" aria-label="Staff agreement">
-    <div class="card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--surface-raised)]">
+    <div class="card p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[var(--paper)]">
       <div class="text-sm leading-relaxed space-y-2" v-html="renderMarkdown(doc.data.value.body_markdown)" />
       <label class="flex items-start gap-3 mt-5 text-sm">
         <input v-model="checked" type="checkbox" class="mt-1 h-4 w-4" />

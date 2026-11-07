@@ -30,7 +30,7 @@
           </g>
           <g font-family="Hanken Grotesk, sans-serif" font-size="13" font-weight="600">
             <g transform="translate(150 92)"><rect x="-6" y="-14" width="198" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Royal Palace &amp; Riverside</text></g>
-            <g transform="translate(300 210)"><rect x="-6" y="-14" width="186" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">National Museum of Cambodia</text></g>
+            <g transform="translate(250 210)"><rect x="-6" y="-14" width="216" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">National Museum of Cambodia</text></g>
             <g transform="translate(40 380)"><rect x="-6" y="-14" width="400" height="28" rx="14" fill="var(--paper)" stroke="var(--rule)" /><text x="8" y="5" fill="var(--river)">Phnom Penh International Airport, 35 min drive</text></g>
             <circle cx="250" cy="250" r="11" fill="var(--river)" />
             <circle cx="250" cy="250" r="18" fill="none" stroke="var(--river)" stroke-opacity=".35" />

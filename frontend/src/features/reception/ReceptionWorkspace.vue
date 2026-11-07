@@ -162,7 +162,7 @@ async function completeRequest(requestId: number) {
 <template>
   <div class="space-y-8">
     <Notice :message="error || (reservations.error.value ? String(reservations.error.value) : '')" />
-    <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+    <div v-if="successNotice" class="p-4 rounded-xl bg-[var(--status-available)]/10 border border-[var(--status-available)]/30 text-[var(--status-available)] text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
       <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
@@ -172,26 +172,26 @@ async function completeRequest(requestId: number) {
       <div class="card p-5">
         <span class="label text-[10px]">Today's Date</span>
         <p class="text-xl font-serif mt-1">{{ today }}</p>
-        <span class="text-xs text-[var(--muted)]">Hotel local time</span>
+        <span class="text-xs text-[var(--silt)]">Hotel local time</span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Expected Arrivals</span>
         <p class="text-xl font-serif mt-1">{{ arrivalsToday.length }}</p>
-        <span class="text-xs text-[var(--muted)]">
+        <span class="text-xs text-[var(--silt)]">
           {{ arrivalsToday.filter(r => r.status === 'CHECKED_IN').length }} checked in
         </span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Expected Departures</span>
         <p class="text-xl font-serif mt-1">{{ departuresToday.length }}</p>
-        <span class="text-xs text-[var(--muted)]">Active stays</span>
+        <span class="text-xs text-[var(--silt)]">Active stays</span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Awaiting Inspection</span>
-        <p class="text-xl font-serif mt-1" :class="pendingInspections.length ? 'text-amber-500 font-bold' : ''">
+        <p class="text-xl font-serif mt-1" :class="pendingInspections.length ? 'text-[var(--status-dirty)] font-bold' : ''">
           {{ pendingInspections.length }}
         </p>
-        <span class="text-xs text-[var(--muted)]">Cleaned, ready to inspect</span>
+        <span class="text-xs text-[var(--silt)]">Cleaned, ready to inspect</span>
       </div>
     </div>
 
@@ -200,19 +200,19 @@ async function completeRequest(requestId: number) {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-serif">Front Desk · Arrivals Today</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Review guest identity, room readiness, and balance before granting key access.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Review guest identity, room readiness, and balance before granting key access.</p>
         </div>
         <span class="badge text-xs">{{ arrivalsToday.length }} arrivals</span>
       </div>
 
-      <div v-if="arrivalsToday.length === 0" class="py-8 text-center text-sm text-[var(--muted)]">
+      <div v-if="arrivalsToday.length === 0" class="py-8 text-center text-sm text-[var(--silt)]">
         No arrivals scheduled for today.
       </div>
       <div v-else class="space-y-3">
         <div
           v-for="res in arrivalsToday"
           :key="res.id"
-          class="p-4 rounded-xl border border-[var(--line)] bg-[var(--card)]/60 flex flex-wrap items-center justify-between gap-4"
+          class="p-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)]/60 flex flex-wrap items-center justify-between gap-4"
         >
           <div class="space-y-1">
             <div class="flex items-center gap-3">
@@ -221,19 +221,19 @@ async function completeRequest(requestId: number) {
               <span
                 class="badge text-[10px] font-bold"
                 :class="{
-                  'bg-emerald-500/10 text-emerald-600 border-emerald-500/30': res.status === 'CHECKED_IN',
-                  'bg-amber-500/10 text-amber-600 border-amber-500/30': res.status === 'CONFIRMED'
+                  'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30': res.status === 'CHECKED_IN',
+ 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] border-[var(--status-dirty)]/30': res.status === 'CONFIRMED'
                 }"
               >
                 {{ res.status }}
               </span>
             </div>
-            <p class="text-xs text-[var(--muted)]">
+            <p class="text-xs text-[var(--silt)]">
               Room {{ res.room }} ({{ res.room_type }}) · Departs {{ res.departure }}
-              <span v-if="res.balance_minor > 0" class="text-rose-500 font-medium ml-2">
+              <span v-if="res.balance_minor > 0" class="text-[var(--status-out)] font-medium ml-2">
                 Due: {{ money(res.balance_minor) }}
               </span>
-              <span v-else class="text-emerald-500 ml-2">Folio Paid</span>
+              <span v-else class="text-[var(--status-available)] ml-2">Folio Paid</span>
             </p>
           </div>
 
@@ -246,7 +246,7 @@ async function completeRequest(requestId: number) {
             >
               Assist Check-in →
             </button>
-            <span v-else-if="res.status === 'CHECKED_IN'" class="text-xs font-semibold text-emerald-600">
+            <span v-else-if="res.status === 'CHECKED_IN'" class="text-xs font-semibold text-[var(--status-available)]">
               Key Issued ✓
             </span>
           </div>
@@ -255,13 +255,13 @@ async function completeRequest(requestId: number) {
     </section>
 
     <!-- Section 2: Room Turnaround Inspections -->
-    <section v-if="pendingInspections.length > 0" class="card p-6 border-amber-500/30 bg-amber-500/5">
+    <section v-if="pendingInspections.length > 0" class="card p-6 border-[var(--status-dirty)]/30 bg-[var(--status-dirty)]/5">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="text-xl font-serif text-amber-600 dark:text-amber-400">Housekeeping Inspections Required</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Reception/Management inspection required before rooms can be sold or occupied.</p>
+          <h2 class="text-xl font-serif text-[var(--status-dirty)] ">Housekeeping Inspections Required</h2>
+          <p class="text-xs text-[var(--silt)] mt-1">Reception/Management inspection required before rooms can be sold or occupied.</p>
         </div>
-        <span class="badge bg-amber-500/20 text-amber-700 dark:text-amber-300">{{ pendingInspections.length }} rooms waiting</span>
+        <span class="badge bg-[var(--status-dirty)]/20 text-[var(--status-dirty)] ">{{ pendingInspections.length }} rooms waiting</span>
       </div>
 
       <div class="grid md:grid-cols-2 gap-4">
@@ -272,8 +272,8 @@ async function completeRequest(requestId: number) {
         >
           <div>
             <span class="font-bold">Room {{ t.room__number }}</span>
-            <p v-if="t.notes" class="text-xs text-[var(--muted)] mt-1 italic">"{{ t.notes }}"</p>
-            <p v-if="t.assignee__username" class="text-[10px] text-[var(--muted)]">Cleaned by: {{ t.assignee__username }}</p>
+            <p v-if="t.notes" class="text-xs text-[var(--silt)] mt-1 italic">"{{ t.notes }}"</p>
+            <p v-if="t.assignee__username" class="text-[10px] text-[var(--silt)]">Cleaned by: {{ t.assignee__username }}</p>
           </div>
           <button
             class="btn-secondary text-xs"
@@ -291,12 +291,12 @@ async function completeRequest(requestId: number) {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-xl font-serif">Active Guest Requests</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Pending guest requests requiring front desk or concierge attention.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Pending guest requests requiring front desk or concierge attention.</p>
         </div>
         <span class="badge">{{ activeRequests.length }} active</span>
       </div>
 
-      <p v-if="activeRequests.length === 0" class="text-sm text-[var(--muted)] py-4">No active service requests.</p>
+      <p v-if="activeRequests.length === 0" class="text-sm text-[var(--silt)] py-4">No active service requests.</p>
       <div v-else class="space-y-3">
         <div
           v-for="req in activeRequests"
@@ -305,7 +305,7 @@ async function completeRequest(requestId: number) {
         >
           <div>
             <span class="font-semibold">{{ req.type }}</span>
-            <p class="text-xs text-[var(--muted)] mt-1">{{ req.description }}</p>
+            <p class="text-xs text-[var(--silt)] mt-1">{{ req.description }}</p>
             <span class="badge text-[10px] mt-2">{{ req.status }}</span>
           </div>
           <button
@@ -322,7 +322,7 @@ async function completeRequest(requestId: number) {
     <!-- Modal: Pre-Flight Check-in Diagnostics & Room Reassignment -->
     <div
       v-if="selectedReservation"
-      class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+      class="fixed inset-0 z-50 bg-[var(--scrim)] flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       @click.self="selectedReservation = null"
@@ -332,12 +332,12 @@ async function completeRequest(requestId: number) {
           <div>
             <span class="label text-[10px]">Pre-Flight Check-In</span>
             <h3 class="text-2xl font-serif">{{ selectedReservation.guest_name }}</h3>
-            <p class="text-xs text-[var(--muted)]">Booking {{ selectedReservation.reference }} · Room {{ selectedReservation.room }}</p>
+            <p class="text-xs text-[var(--silt)]">Booking {{ selectedReservation.reference }} · Room {{ selectedReservation.room }}</p>
           </div>
           <button class="text-xl p-1" @click="selectedReservation = null">✕</button>
         </div>
 
-        <div v-if="loadingDiagnostics" class="py-8 text-center text-sm text-[var(--muted)]">
+        <div v-if="loadingDiagnostics" class="py-8 text-center text-sm text-[var(--silt)]">
           Checking room and folio eligibility…
         </div>
         <div v-else-if="diagnostics" class="space-y-5">
@@ -345,8 +345,8 @@ async function completeRequest(requestId: number) {
           <div
             class="p-4 rounded-xl border flex items-center gap-3"
             :class="diagnostics.eligible_check_in
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
-              : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'"
+ ? 'bg-[var(--status-available)]/10 border-[var(--status-available)]/30 text-[var(--status-available)] '
+ : 'bg-[var(--status-dirty)]/10 border-[var(--status-dirty)]/30 text-[var(--status-dirty)] '"
           >
             <span class="text-xl">{{ diagnostics.eligible_check_in ? '✓' : '⚠' }}</span>
             <div>
@@ -366,9 +366,9 @@ async function completeRequest(requestId: number) {
               :key="item.code"
               class="p-3 rounded-lg border flex items-start gap-3 text-xs"
               :class="{
-                'bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300': item.severity === 'ERROR',
-                'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300': item.severity === 'WARNING',
-                'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300': item.severity === 'INFO'
+                'bg-[var(--status-out)]/10 border-[var(--status-out)]/30 text-[var(--status-out)] ': item.severity === 'ERROR',
+ 'bg-[var(--status-dirty)]/10 border-[var(--status-dirty)]/30 text-[var(--status-dirty)] ': item.severity === 'WARNING',
+                'bg-[var(--status-available)]/10 border-[var(--status-available)]/30 text-[var(--status-available)] ': item.severity === 'INFO'
               }"
             >
               <span class="font-bold text-[10px]">{{ item.severity }}</span>
@@ -377,9 +377,9 @@ async function completeRequest(requestId: number) {
           </div>
 
           <!-- Room Reassignment if Room is not READY -->
-          <div v-if="diagnostics.room_cleaning !== 'READY' || !diagnostics.eligible_check_in" class="p-4 rounded-xl border border-[var(--line)] bg-[var(--card)]/40 space-y-3">
+          <div v-if="diagnostics.room_cleaning !== 'READY' || !diagnostics.eligible_check_in" class="p-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)]/40 space-y-3">
             <span class="label text-[10px]">Room Reassignment</span>
-            <p class="text-xs text-[var(--muted)]">If current room {{ diagnostics.room_number }} is delayed in cleaning, reassign to another clean room:</p>
+            <p class="text-xs text-[var(--silt)]">If current room {{ diagnostics.room_number }} is delayed in cleaning, reassign to another clean room:</p>
             <div class="flex items-center gap-2">
               <select v-model="reassignRoomId" class="field text-xs flex-1">
                 <option value="">Select clean alternative room…</option>
@@ -402,7 +402,7 @@ async function completeRequest(requestId: number) {
           </div>
 
           <!-- Actions -->
-          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--line)]">
+          <div class="flex justify-end gap-3 pt-4 border-t border-[var(--rule)]">
             <button class="btn-secondary text-xs" @click="selectedReservation = null">Cancel</button>
             <button
               class="btn text-xs"

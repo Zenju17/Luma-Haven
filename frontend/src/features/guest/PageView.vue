@@ -37,8 +37,8 @@ const html = computed(() => renderMarkdown(page.data.value?.body_markdown ?? '')
 </template>
 
 <style scoped>
-.cms-body :deep(h2), .cms-body :deep(h3), .cms-body :deep(h4) { font-family: var(--font-serif, serif); margin: 1.25rem 0 0.5rem; }
+.cms-body :deep(h2), .cms-body :deep(h3), .cms-body :deep(h4) { font-family: var(--font-display); margin: 1.25rem 0 0.5rem; }
 .cms-body :deep(p) { margin: 0.75rem 0; }
 .cms-body :deep(ul), .cms-body :deep(ol) { margin: 0.75rem 0 0.75rem 1.25rem; list-style: revert; }
-.cms-body :deep(blockquote) { border-left: 3px solid var(--brass); padding: 0.25rem 0.75rem; color: var(--muted); }
+.cms-body :deep(blockquote) { border-left: 3px solid var(--laterite); padding: 0.25rem 0.75rem; color: var(--silt); }
 </style>

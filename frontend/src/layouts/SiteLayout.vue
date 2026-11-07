@@ -157,8 +157,8 @@ function handleCheckAvailability() {
 .guest-header-inner { min-height: 72px; }
 .header-icon-link { display: grid; place-items: center; width: 44px; height: 44px; color: var(--silt); }
 .header-icon-link:hover { color: var(--river); }
-.header-cta { min-height: 44px; padding: 0 1.25rem; border-radius: var(--radius-pill); background: var(--btn-primary-bg); color: var(--btn-primary-text); font: 600 .9375rem var(--font-text); }
-.header-cta:hover { background: var(--btn-primary-hover); }
+.header-cta { min-height: 44px; padding: 0 1.25rem; border-radius: var(--radius-pill); background: var(--river); color: var(--on-river); font: 600 .9375rem var(--font-text); }
+.header-cta:hover { background: var(--river-hover); }
 .menu-btn { min-height: 44px; padding: 0 1rem; border-radius: var(--radius-pill); border: 1.5px solid var(--rule); color: var(--river); font: 600 .9375rem var(--font-text); }
 .mobile-sheet { position: fixed; inset: 72px 0 0 0; z-index: 50; display: flex; flex-direction: column; gap: .25rem; padding: 1.5rem 1.25rem; background: var(--palm-leaf); overflow-y: auto; }
 .mobile-sheet a:not(.mobile-sheet__staff) { font: 400 2.4375rem/1.1 var(--font-display); color: var(--river); padding: .5rem 0; border-bottom: 1px solid var(--rule); }

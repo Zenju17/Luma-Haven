@@ -33,15 +33,15 @@ async function resolve(r: Req, decision: 'complete' | 'reject') {
 <template>
   <section aria-label="Privacy requests" class="space-y-4">
     <h2 class="text-2xl">Privacy requests</h2>
-    <p class="text-sm text-[var(--muted)]">Guests must be answered within 30 days. Deleting anonymises the guest profile and is blocked while they have an active or upcoming reservation.</p>
+    <p class="text-sm text-[var(--silt)]">Guests must be answered within 30 days. Deleting anonymises the guest profile and is blocked while they have an active or upcoming reservation.</p>
     <Notice :message="message" :status="ok" />
     <p v-if="requests.isPending.value" role="status">Loading requests…</p>
     <Notice :message="requests.error.value ? String(requests.error.value) : ''" />
-    <p v-if="requests.data.value?.length === 0" class="text-[var(--muted)]">No privacy requests.</p>
+    <p v-if="requests.data.value?.length === 0" class="text-[var(--silt)]">No privacy requests.</p>
     <div v-for="r in requests.data.value" :key="r.id" class="card p-4 space-y-2">
-      <p class="font-semibold">{{ r.type }} · {{ r.guest_name }} <span class="font-normal text-[var(--muted)]">{{ r.guest_email }}</span></p>
-      <p class="text-sm text-[var(--muted)]">Requested {{ r.requested_at.slice(0, 10) }} · due {{ r.due_at.slice(0, 10) }}
-        <span v-if="r.overdue" class="text-rose-500 font-semibold"> · OVERDUE</span> · {{ r.status }}<template v-if="r.handled_by"> by {{ r.handled_by }}</template></p>
+      <p class="font-semibold">{{ r.type }} · {{ r.guest_name }} <span class="font-normal text-[var(--silt)]">{{ r.guest_email }}</span></p>
+      <p class="text-sm text-[var(--silt)]">Requested {{ r.requested_at.slice(0, 10) }} · due {{ r.due_at.slice(0, 10) }}
+        <span v-if="r.overdue" class="text-[var(--status-out)] font-semibold"> · OVERDUE</span> · {{ r.status }}<template v-if="r.handled_by"> by {{ r.handled_by }}</template></p>
       <p v-if="r.note" class="text-sm">“{{ r.note }}”</p>
       <p v-if="r.resolution" class="text-sm">Resolution: {{ r.resolution }}</p>
       <div v-if="r.status === 'OPEN'" class="flex flex-wrap items-center gap-3">

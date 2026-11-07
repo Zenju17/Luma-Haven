@@ -83,7 +83,7 @@ async function settleRefund(refundId: number) {
 <template>
   <div class="space-y-8">
     <Notice :message="error || (reconciliation.error.value ? String(reconciliation.error.value) : '')" />
-    <div v-if="successNotice" class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-sm flex items-center justify-between">
+    <div v-if="successNotice" class="p-4 rounded-xl bg-[var(--status-available)]/10 border border-[var(--status-available)]/30 text-[var(--status-available)] text-sm flex items-center justify-between">
       <span>{{ successNotice }}</span>
       <button class="text-xs font-semibold hover:underline ml-4" @click="successNotice = ''">Dismiss</button>
     </div>
@@ -92,32 +92,32 @@ async function settleRefund(refundId: number) {
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="card p-5">
         <span class="label text-[10px]">Unbalanced Folios</span>
-        <p class="text-xl font-serif mt-1" :class="unbalancedFolios.length ? 'text-amber-500 font-bold' : ''">
+        <p class="text-xl font-serif mt-1" :class="unbalancedFolios.length ? 'text-[var(--status-dirty)] font-bold' : ''">
           {{ unbalancedFolios.length }}
         </p>
-        <span class="text-xs text-[var(--muted)]">Require ledger balance</span>
+        <span class="text-xs text-[var(--silt)]">Require ledger balance</span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Approved Refunds</span>
-        <p class="text-xl font-serif mt-1" :class="approvedRefunds.length ? 'text-blue-500 font-bold' : ''">
+        <p class="text-xl font-serif mt-1" :class="approvedRefunds.length ? 'text-[var(--status-occupied)] font-bold' : ''">
           {{ approvedRefunds.length }}
         </p>
-        <span class="text-xs text-[var(--muted)]">Ready for settlement</span>
+        <span class="text-xs text-[var(--silt)]">Ready for settlement</span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Segregation of Duties</span>
-        <p class="text-xs font-medium mt-2 text-emerald-600 dark:text-emerald-400">Enforced</p>
-        <span class="text-[10px] text-[var(--muted)]">No self-approval or manual charge invention</span>
+        <p class="text-xs font-medium mt-2 text-[var(--status-available)] ">Enforced</p>
+        <span class="text-[10px] text-[var(--silt)]">No self-approval or manual charge invention</span>
       </div>
       <div class="card p-5">
         <span class="label text-[10px]">Payment Audit Status</span>
-        <p class="text-xs font-medium mt-2 text-emerald-600 dark:text-emerald-400">Gateway Synchronized</p>
-        <span class="text-[10px] text-[var(--muted)]">Settlement matching active</span>
+        <p class="text-xs font-medium mt-2 text-[var(--status-available)] ">Gateway Synchronized</p>
+        <span class="text-[10px] text-[var(--silt)]">Settlement matching active</span>
       </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="flex items-center gap-2 border-b border-[var(--line)] pb-4">
+    <div class="flex items-center gap-2 border-b border-[var(--rule)] pb-4">
       <button
         class="px-4 py-2 text-xs font-semibold rounded-lg transition-colors"
         :class="activeTab === 'reconciliation' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'btn-secondary'"
@@ -146,14 +146,14 @@ async function settleRefund(refundId: number) {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-serif">Folio Reconciliation & Financial Audit</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Cross-check ledger entries, settled transactions, and calculate outstanding variance.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Cross-check ledger entries, settled transactions, and calculate outstanding variance.</p>
         </div>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-[var(--line)] text-[var(--muted)]">
+            <tr class="border-b border-[var(--rule)] text-[var(--silt)]">
               <th class="py-3 px-2">Reference</th>
               <th class="py-3 px-2">Guest</th>
               <th class="py-3 px-2">Stay Dates</th>
@@ -165,21 +165,21 @@ async function settleRefund(refundId: number) {
               <th class="py-3 px-2 text-right">Audit Action</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[var(--line)]">
-            <tr v-for="item in reconciliation.data.value || []" :key="item.reservation_id" class="hover:bg-[var(--card)]/80">
+          <tbody class="divide-y divide-[var(--rule)]">
+            <tr v-for="item in reconciliation.data.value || []" :key="item.reservation_id" class="hover:bg-[var(--paper)]/80">
               <td class="py-3 px-2 tabular-nums font-bold">{{ item.reference }}</td>
               <td class="py-3 px-2">{{ item.guest_name }}</td>
-              <td class="py-3 px-2 text-[var(--muted)]">{{ item.arrival }} → {{ item.departure }}</td>
+              <td class="py-3 px-2 text-[var(--silt)]">{{ item.arrival }} → {{ item.departure }}</td>
               <td class="py-3 px-2 text-right tabular-nums">{{ money(item.charges_minor) }}</td>
-              <td class="py-3 px-2 text-right tabular-nums text-emerald-600">{{ money(item.settled_minor) }}</td>
-              <td class="py-3 px-2 text-right tabular-nums text-rose-500">{{ money(item.refunds_minor) }}</td>
-              <td class="py-3 px-2 text-right tabular-nums font-bold" :class="item.balance_minor === 0 ? 'text-emerald-600' : 'text-rose-500'">
+              <td class="py-3 px-2 text-right tabular-nums text-[var(--status-available)]">{{ money(item.settled_minor) }}</td>
+              <td class="py-3 px-2 text-right tabular-nums text-[var(--status-out)]">{{ money(item.refunds_minor) }}</td>
+              <td class="py-3 px-2 text-right tabular-nums font-bold" :class="item.balance_minor === 0 ? 'text-[var(--status-available)]' : 'text-[var(--status-out)]'">
                 {{ money(item.balance_minor) }}
               </td>
               <td class="py-3 px-2 text-center">
                 <span
                   class="badge text-[10px]"
-                  :class="item.is_balanced ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' : 'bg-rose-500/10 text-rose-500 border-rose-500/30'"
+                  :class="item.is_balanced ? 'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30' : 'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30'"
                 >
                   {{ item.is_balanced ? 'Balanced' : 'Discrepancy' }}
                 </span>
@@ -192,7 +192,7 @@ async function settleRefund(refundId: number) {
                     :disabled="busy || !item.is_balanced"
                     @click="reconcileFolio(item.reservation_id, item.reference)"
                   >
-                    <svg class="w-3.5 h-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <svg class="w-3.5 h-3.5 shrink-0 text-[var(--status-available)] " fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <span>Audit Folio</span>
                   </button>
                 </div>
@@ -208,14 +208,14 @@ async function settleRefund(refundId: number) {
       <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
         <div>
           <h2 class="text-2xl font-serif">Payments Audit Ledger</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Immutable record of all processed, failed, and exception payment events.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Immutable record of all processed, failed, and exception payment events.</p>
         </div>
-        <div class="flex items-center gap-1 border border-[var(--line)] rounded-lg p-1 bg-[var(--card)]">
+        <div class="flex items-center gap-1 border border-[var(--rule)] rounded-lg p-1 bg-[var(--paper)]">
           <button
             v-for="st in ['ALL', 'SETTLED', 'PENDING', 'FAILED', 'EXCEPTION'] as const"
             :key="st"
             class="px-2.5 py-1 text-[11px] rounded transition-colors"
-            :class="paymentStatus === st ? 'bg-[var(--line)] font-bold' : 'text-[var(--muted)]'"
+            :class="paymentStatus === st ? 'bg-[var(--rule)] font-bold' : 'text-[var(--silt)]'"
             @click="paymentStatus = st"
           >
             {{ st }}
@@ -226,7 +226,7 @@ async function settleRefund(refundId: number) {
       <div class="overflow-x-auto">
         <table class="w-full text-left text-xs">
           <thead>
-            <tr class="border-b border-[var(--line)] text-[var(--muted)]">
+            <tr class="border-b border-[var(--rule)] text-[var(--silt)]">
               <th class="py-3 px-2">Payment ID</th>
               <th class="py-3 px-2">Booking Ref</th>
               <th class="py-3 px-2">Guest</th>
@@ -236,27 +236,27 @@ async function settleRefund(refundId: number) {
               <th class="py-3 px-2">Settled At</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-[var(--line)]">
-            <tr v-for="p in payments.data.value || []" :key="p.id" class="hover:bg-[var(--card)]/80">
+          <tbody class="divide-y divide-[var(--rule)]">
+            <tr v-for="p in payments.data.value || []" :key="p.id" class="hover:bg-[var(--paper)]/80">
               <td class="py-3 px-2 tabular-nums">#{{ p.id }}</td>
               <td class="py-3 px-2 tabular-nums font-bold">{{ p.reference }}</td>
               <td class="py-3 px-2">{{ p.guest_name }}</td>
-              <td class="py-3 px-2 tabular-nums text-[11px] text-[var(--muted)]">{{ p.gateway_reference || 'N/A' }}</td>
+              <td class="py-3 px-2 tabular-nums text-[11px] text-[var(--silt)]">{{ p.gateway_reference || 'N/A' }}</td>
               <td class="py-3 px-2 text-right tabular-nums font-bold">{{ money(p.amount_minor) }}</td>
               <td class="py-3 px-2 text-center">
                 <span
                   class="badge text-[10px]"
                   :class="{
-                    'bg-emerald-500/10 text-emerald-600': p.status === 'SETTLED',
-                    'bg-amber-500/10 text-amber-500': p.status === 'PENDING',
-                    'bg-rose-500/10 text-rose-500': p.status === 'FAILED',
-                    'bg-purple-500/10 text-purple-500': p.status === 'EXCEPTION'
+                    'bg-[var(--status-available)]/10 text-[var(--status-available)]': p.status === 'SETTLED',
+ 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)]': p.status === 'PENDING',
+                    'bg-[var(--status-out)]/10 text-[var(--status-out)]': p.status === 'FAILED',
+                    'bg-[var(--laterite)]/10 text-[var(--laterite)]': p.status === 'EXCEPTION'
                   }"
                 >
                   {{ p.status }}
                 </span>
               </td>
-              <td class="py-3 px-2 text-[var(--muted)] text-[11px]">
+              <td class="py-3 px-2 text-[var(--silt)] text-[11px]">
                 {{ p.settled_at ? new Date(p.settled_at).toLocaleString() : 'Pending' }}
               </td>
             </tr>
@@ -270,28 +270,28 @@ async function settleRefund(refundId: number) {
       <div class="flex items-center justify-between mb-4">
         <div>
           <h2 class="text-2xl font-serif">Manager-Approved Refunds Queue</h2>
-          <p class="text-xs text-[var(--muted)] mt-1">Disburse settled funds for refunds reviewed and authorized by Management.</p>
+          <p class="text-xs text-[var(--silt)] mt-1">Disburse settled funds for refunds reviewed and authorized by Management.</p>
         </div>
         <span class="badge">{{ approvedRefunds.length }} pending settlement</span>
       </div>
 
-      <div v-if="approvedRefunds.length === 0" class="py-12 text-center text-sm text-[var(--muted)]">
+      <div v-if="approvedRefunds.length === 0" class="py-12 text-center text-sm text-[var(--silt)]">
         No approved refunds waiting for settlement.
       </div>
       <div v-else class="space-y-3">
         <div
           v-for="rf in approvedRefunds"
           :key="rf.id"
-          class="p-4 rounded-xl border border-[var(--line)] bg-[var(--card)]/60 flex flex-wrap items-center justify-between gap-4"
+          class="p-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)]/60 flex flex-wrap items-center justify-between gap-4"
         >
           <div class="space-y-1">
             <div class="flex items-center gap-3">
               <span class="font-bold text-base">{{ money(rf.amount_minor) }}</span>
               <span class="badge text-[10px] tabular-nums">{{ rf.reservation_reference }}</span>
-              <span class="badge text-[10px] bg-blue-500/10 text-blue-600 border-blue-500/30">APPROVED</span>
+              <span class="badge text-[10px] bg-[var(--status-occupied)]/10 text-[var(--status-occupied)] border-[var(--status-occupied)]/30">APPROVED</span>
             </div>
-            <p class="text-xs text-[var(--muted)]">Guest: {{ rf.guest_name }} · Reason: "{{ rf.reason }}"</p>
-            <p class="text-[10px] text-[var(--muted)]">
+            <p class="text-xs text-[var(--silt)]">Guest: {{ rf.guest_name }} · Reason: "{{ rf.reason }}"</p>
+            <p class="text-[10px] text-[var(--silt)]">
               Requested by: {{ rf.requested_by || 'Staff' }} · Authorized by: {{ rf.reviewed_by || 'Manager' }}
             </p>
           </div>

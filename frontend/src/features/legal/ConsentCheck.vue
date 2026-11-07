@@ -28,13 +28,13 @@ const label: Record<string, string> = { TERMS: 'Terms and Conditions', PRIVACY: 
     We could not load the booking terms.
     <button type="button" class="underline font-semibold" @click="docs.refetch()">Try again</button>
   </p>
-  <p v-else-if="docs.isPending.value" class="mt-5 text-sm text-[var(--muted)]" role="status">Loading booking terms…</p>
-  <label v-else-if="!nothingToAccept" class="flex items-start gap-3 mt-5 text-sm text-[var(--muted)] normal-case tracking-normal font-normal">
+  <p v-else-if="docs.isPending.value" class="mt-5 text-sm text-[var(--silt)]" role="status">Loading booking terms…</p>
+  <label v-else-if="!nothingToAccept" class="flex items-start gap-3 mt-5 text-sm text-[var(--silt)] normal-case tracking-normal font-normal">
     <input v-model="accepted" type="checkbox" class="mt-1 h-4 w-4" :disabled="!required.length" />
     <span>
       I have read and accept the
       <template v-for="(doc, index) in required" :key="doc.id">
-        <a :href="`/legal/${doc.kind.toLowerCase()}`" target="_blank" rel="noopener" class="underline text-[var(--brass)]">{{ label[doc.kind] ?? doc.title }}</a><template v-if="index < required.length - 2">, </template><template v-else-if="index === required.length - 2"> and </template>
+        <a :href="`/legal/${doc.kind.toLowerCase()}`" target="_blank" rel="noopener" class="underline text-[var(--laterite)]">{{ label[doc.kind] ?? doc.title }}</a><template v-if="index < required.length - 2">, </template><template v-else-if="index === required.length - 2"> and </template>
       </template>.
       <span class="inline-flex gap-1 ml-1 text-xs">
         <button type="button" class="underline" @click.prevent="lang = 'en'">EN</button>/<button type="button" class="underline" @click.prevent="lang = 'km'">ខ្មែរ</button>

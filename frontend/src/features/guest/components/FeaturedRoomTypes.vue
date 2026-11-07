@@ -59,8 +59,8 @@ function choose(room: { name: string; capacity: number }) {
       <p>Prices are a starting guide per night. You'll see the exact total, with tax, before you pay anything.</p>
     </div>
 
-    <p v-if="inventory.isPending.value" class="text-[var(--muted)]">Loading rooms…</p>
-    <p v-else-if="inventory.error.value" class="text-[var(--muted)]">Rooms couldn't be loaded. Please refresh.</p>
+    <p v-if="inventory.isPending.value" class="text-[var(--silt)]">Loading rooms…</p>
+    <p v-else-if="inventory.error.value" class="text-[var(--silt)]">Rooms couldn't be loaded. Please refresh.</p>
     <div v-else class="rt-rows">
       <StayRow v-for="room in rooms" :key="room.id" :title="room.name">
         <template #photo>

@@ -111,11 +111,11 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
 
       <!-- Presets and Date Controls -->
       <div class="flex flex-wrap items-center gap-2">
-        <div class="inline-flex rounded-lg border border-[color:var(--rule)] dark:border-[color:var(--rule)] p-1 bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)] text-xs">
+        <div class="inline-flex rounded-lg border border-[color:var(--rule)] dark:border-[color:var(--rule)] p-1 bg-[var(--sunk)] dark:bg-[var(--sunk)] text-xs">
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === 'today' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
+            :class="activePreset === 'today' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('today')"
           >
             Today
@@ -123,7 +123,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === '7days' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
+            :class="activePreset === '7days' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('7days')"
           >
             Last 7 Days
@@ -131,7 +131,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <button
             type="button"
             class="px-3 py-1.5 rounded-md transition font-medium"
-            :class="activePreset === 'month' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)] shadow-sm' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
+            :class="activePreset === 'month' ? 'bg-[var(--river)] text-[color:var(--palm-leaf)]' : 'text-[color:var(--silt)] hover:text-[color:var(--river)] dark:text-[color:var(--silt)] dark:hover:text-[color:var(--river)]'"
             @click="selectPreset('month')"
           >
             This Month
@@ -169,8 +169,8 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
     <Notice :message="dashboardQuery.error.value ? String(dashboardQuery.error.value) : ''" />
 
     <!-- Role Restriction Notice -->
-    <div v-if="isHousekeeping" class="card p-6 border-l-4 border-amber-500">
-      <p class="font-medium text-amber-800 dark:text-amber-200">Role-Restricted View</p>
+    <div v-if="isHousekeeping" class="card p-6 border-l-4 border-[var(--status-dirty)]">
+      <p class="font-medium text-[var(--status-dirty)] ">Role-Restricted View</p>
       <p class="text-sm mt-1 text-[color:var(--silt)] dark:text-[color:var(--silt)]">
         Housekeeping accounts have access to room operations and turnover queues. Financial performance metrics and ledger reconciliations are restricted to management and accounting roles.
       </p>
@@ -252,7 +252,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Net Settled Cash</span>
               <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Net cash collected = Gross settled payments minus settled refunds in hotel timezone during this period.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2 text-emerald-700 dark:text-emerald-400">
+            <p class="text-3xl font-bold mt-2 text-[var(--status-available)] ">
               {{ money(kpis.settled_cash_minor) }}
             </p>
             <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
@@ -266,7 +266,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <span class="label text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">Outstanding Balances</span>
               <span class="cursor-help text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]" title="Unsettled balances across active confirmed and checked-in reservation folios. Accounts receivable asset.">ⓘ</span>
             </div>
-            <p class="text-3xl font-bold mt-2" :class="kpis.outstanding_balances_minor > 0 ? 'text-amber-800 dark:text-amber-400' : 'text-[color:var(--river)] dark:text-[color:var(--river)]'">
+            <p class="text-3xl font-bold mt-2" :class="kpis.outstanding_balances_minor > 0 ? 'text-[var(--status-dirty)] ' : 'text-[color:var(--river)] dark:text-[color:var(--river)]'">
               {{ money(kpis.outstanding_balances_minor) }}
             </p>
             <p class="text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)] mt-1">
@@ -311,23 +311,23 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-lg font-serif">Daily Room Demand & Capacity</h3>
-              <p class="text-xs text-[var(--muted)]">Sellable inventory vs booked room-nights per date.</p>
+              <p class="text-xs text-[var(--silt)]">Sellable inventory vs booked room-nights per date.</p>
             </div>
             <div class="flex items-center gap-3 text-xs text-[color:var(--silt)] dark:text-[color:var(--silt)]">
-              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] dark:border-transparent dark:bg-[var(--surface-muted)]" /> Capacity</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[var(--sunk)] border border-[color:var(--rule)] dark:border-transparent dark:bg-[var(--sunk)]" /> Capacity</span>
               <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-[var(--river)]" /> Sold</span>
             </div>
           </div>
 
-          <div v-if="trends.length === 0" class="h-48 flex items-center justify-center text-sm text-[var(--muted)]">
+          <div v-if="trends.length === 0" class="h-48 flex items-center justify-center text-sm text-[var(--silt)]">
             No daily trend points in selected range.
           </div>
           <div v-else class="relative h-48 w-full">
             <svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 100 60">
               <!-- Grid lines -->
-              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
-              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
-              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" class="text-[var(--line,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="15" x2="100" y2="15" stroke="currentColor" class="text-[var(--rule,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="30" x2="100" y2="30" stroke="currentColor" class="text-[var(--rule,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
+              <line x1="0" y1="45" x2="100" y2="45" stroke="currentColor" class="text-[var(--rule,#e2e8e0)] dark:text-[color:var(--river)]" stroke-dasharray="2,2" stroke-width="0.5" />
 
               <!-- Daily bars -->
               <g v-for="(point, idx) in trends" :key="point.date">
@@ -337,7 +337,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                   :y="50 - (point.sellable / maxOccupancyValue) * 45"
                   :width="(0.6 / trends.length) * 100"
                   :height="(point.sellable / maxOccupancyValue) * 45"
-                  class="fill-[var(--surface-muted)] rx-1"
+                  class="fill-[var(--sunk)] rx-1"
                 />
                 <rect
                   :x="((idx + 0.2) / trends.length) * 100"
@@ -352,7 +352,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
             </svg>
 
             <!-- Bottom dates -->
-            <div class="flex justify-between text-[10px] text-[var(--muted)] mt-2">
+            <div class="flex justify-between text-[10px] text-[var(--silt)] mt-2">
               <span>{{ trends[0]?.date }}</span>
               <span>{{ trends[trends.length - 1]?.date }}</span>
             </div>
@@ -360,7 +360,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
             <!-- Hover tooltip -->
             <div
               v-if="hoveredTrendIndex !== null && trends[hoveredTrendIndex]"
-              class="absolute top-2 right-2 p-2 rounded bg-[var(--river)] text-[color:var(--palm-leaf)] text-xs shadow-lg space-y-0.5"
+              class="absolute top-2 right-2 p-2 rounded bg-[var(--river)] text-[color:var(--palm-leaf)] text-xs shadow-[var(--shadow-float)] space-y-0.5"
             >
               <p class="font-bold">{{ trends[hoveredTrendIndex].date }}</p>
               <p>Sold: {{ trends[hoveredTrendIndex].sold }} / Sellable: {{ trends[hoveredTrendIndex].sellable }}</p>
@@ -374,14 +374,14 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
           <div class="flex items-center justify-between">
             <div>
               <h3 class="text-lg font-serif">Daily Room Revenue Trend</h3>
-              <p class="text-xs text-[var(--muted)]">Net room revenue recognized per stay service date.</p>
+              <p class="text-xs text-[var(--silt)]">Net room revenue recognized per stay service date.</p>
             </div>
             <span class="text-xs tabular-nums text-[color:var(--laterite)] dark:text-[color:var(--laterite)] font-semibold">
               Peak: {{ money(maxRevenueValue) }}
             </span>
           </div>
 
-          <div v-if="trends.length === 0" class="h-48 flex items-center justify-center text-sm text-[var(--muted)]">
+          <div v-if="trends.length === 0" class="h-48 flex items-center justify-center text-sm text-[var(--silt)]">
             No daily trend points in selected range.
           </div>
           <div v-else class="relative h-48 w-full">
@@ -390,7 +390,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <polyline
                 fill="none"
                 stroke="currentColor"
-                class="text-emerald-600 dark:text-[color:var(--laterite)]"
+                class="text-[var(--status-available)] dark:text-[color:var(--laterite)]"
                 stroke-width="2"
                 :points="trends.map((p, i) => `${((i + 0.5) / trends.length) * 100},${50 - (p.revenue_minor / maxRevenueValue) * 45}`).join(' ')"
               />
@@ -400,11 +400,11 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                 :cx="((i + 0.5) / trends.length) * 100"
                 :cy="50 - (p.revenue_minor / maxRevenueValue) * 45"
                 r="1.5"
-                class="fill-emerald-700 "
+                class="fill-[var(--status-available)] "
               />
             </svg>
 
-            <div class="flex justify-between text-[10px] text-[var(--muted)] mt-2">
+            <div class="flex justify-between text-[10px] text-[var(--silt)] mt-2">
               <span>{{ trends[0]?.date }}</span>
               <span>{{ trends[trends.length - 1]?.date }}</span>
             </div>
@@ -414,12 +414,12 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
 
       <!-- Section 4: Room-Type Performance Table -->
       <div class="card overflow-hidden">
-        <div class="p-6 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)] flex flex-wrap items-center justify-between gap-4">
+        <div class="p-6 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)] flex flex-wrap items-center justify-between gap-4">
           <div>
             <h3 class="text-xl font-serif">Room-Type Performance Breakdown</h3>
-            <p class="text-xs text-[var(--muted)] mt-0.5">Comparative yield, sellable nights, and ADR across room inventory categories.</p>
+            <p class="text-xs text-[var(--silt)] mt-0.5">Comparative yield, sellable nights, and ADR across room inventory categories.</p>
           </div>
-          <span class="text-xs text-[var(--muted)]">
+          <span class="text-xs text-[var(--silt)]">
             Total Inventory: {{ readiness?.total }} rooms
           </span>
         </div>
@@ -427,7 +427,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="overflow-x-auto">
           <table class="data-table w-full text-left text-sm">
             <thead>
-              <tr class="bg-[var(--surface-muted)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--surface-muted)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
+              <tr class="bg-[var(--sunk)] text-[color:var(--river)] border-b border-[color:var(--rule)] dark:bg-[var(--sunk)] dark:text-[color:var(--river)] dark:border-[color:var(--rule)]">
                 <th class="p-4">Room Type</th>
                 <th class="p-4">Total Rooms</th>
                 <th class="p-4">Base Rate</th>
@@ -442,7 +442,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
               <tr
                 v-for="rt in roomTypes"
                 :key="rt.id"
-                class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--surface-muted)]/60 dark:hover:bg-[var(--surface-muted)]/60 transition"
+                class="border-t border-[color:var(--rule)] dark:border-[color:var(--rule)] hover:bg-[var(--sunk)]/60 dark:hover:bg-[var(--sunk)]/60 transition"
               >
                 <td class="p-4 font-medium">{{ rt.name }}</td>
                 <td class="p-4">{{ rt.total_rooms }}</td>
@@ -452,7 +452,7 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
                 <td class="p-4">
                   <span
                     class="px-2 py-0.5 rounded text-xs font-medium"
-                    :class="(rt.occupancy_rate_percent || 0) >= 70 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'"
+                    :class="(rt.occupancy_rate_percent || 0) >= 70 ? 'bg-[var(--status-available)]/10 text-[var(--status-available)] ' : 'bg-[var(--sunk)] text-[var(--ink)] '"
                   >
                     {{ rt.occupancy_rate_percent !== null ? `${rt.occupancy_rate_percent}%` : 'N/A' }}
                   </span>
@@ -471,28 +471,28 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Today's Desk Movements</h3>
           <div class="space-y-3">
-            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span class="text-sm">Expected Arrivals</span>
               <span class="font-bold text-base">{{ operations.arrivals.total }}</span>
             </div>
             <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300">
+              <div class="p-2 rounded bg-[var(--status-available)]/10 text-[var(--status-available)] ">
                 Checked in: <strong>{{ operations.arrivals.checked_in }}</strong>
               </div>
-              <div class="p-2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300">
+              <div class="p-2 rounded bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] ">
                 Pending: <strong>{{ operations.arrivals.pending }}</strong>
               </div>
             </div>
 
-            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] mt-2">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)] mt-2">
               <span class="text-sm">Expected Departures</span>
               <span class="font-bold text-base">{{ operations.departures.total }}</span>
             </div>
             <div class="grid grid-cols-2 gap-2 text-xs">
-              <div class="p-2 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300">
+              <div class="p-2 rounded bg-[var(--sunk)] text-[var(--ink)] ">
                 Checked out: <strong>{{ operations.departures.checked_out }}</strong>
               </div>
-              <div class="p-2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300">
+              <div class="p-2 rounded bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] ">
                 In-house: <strong>{{ operations.departures.pending }}</strong>
               </div>
             </div>
@@ -503,30 +503,30 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div v-if="readiness" class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Room Readiness Status</h3>
           <div class="space-y-2 text-sm">
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
-              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Ready for Check-in</span>
+            <div class="flex justify-between items-center py-1 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
+              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[var(--status-available)]" /> Ready for Check-in</span>
               <span class="font-bold">{{ readiness.ready }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
-              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-sky-500" /> Cleaning in Progress</span>
+            <div class="flex justify-between items-center py-1 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
+              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[var(--status-occupied)]" /> Cleaning in Progress</span>
               <span class="font-bold">{{ readiness.cleaning }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
-              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500" /> Inspection Pending</span>
+            <div class="flex justify-between items-center py-1 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
+              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[var(--status-occupied)]" /> Inspection Pending</span>
               <span class="font-bold">{{ readiness.inspection }}</span>
             </div>
-            <div class="flex justify-between items-center py-1 border-b border-[var(--line,#e2e8e0)] dark:border-[color:var(--rule)]">
-              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500" /> Dirty (Awaiting Turnover)</span>
+            <div class="flex justify-between items-center py-1 border-b border-[var(--rule,#e2e8e0)] dark:border-[color:var(--rule)]">
+              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[var(--status-dirty)]" /> Dirty (Awaiting Turnover)</span>
               <span class="font-bold">{{ readiness.dirty }}</span>
             </div>
             <div class="flex justify-between items-center py-1">
-              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500" /> Out of Service (Maintenance)</span>
+              <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-[var(--status-out)]" /> Out of Service (Maintenance)</span>
               <span class="font-bold">{{ readiness.out_of_service }}</span>
             </div>
           </div>
 
           <!-- Unready Arrivals Alert if any -->
-          <div v-if="operations.unready_arrivals_today.length > 0" class="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-xs text-rose-800 dark:text-rose-200">
+          <div v-if="operations.unready_arrivals_today.length > 0" class="p-3 rounded-lg bg-[var(--status-out)]/10 border border-[var(--status-out)]/30  text-xs text-[var(--status-out)] ">
             <strong>Urgent Turnover Needed:</strong>
             {{ operations.unready_arrivals_today.length }} room(s) with arrival today not yet ready!
           </div>
@@ -536,27 +536,27 @@ const isHousekeeping = computed(() => props.user?.role === 'HOUSEKEEPING')
         <div class="card p-6 space-y-4">
           <h3 class="text-lg font-serif">Exceptions & Pending Queue</h3>
           <div class="space-y-2.5 text-xs">
-            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Active Maintenance Tickets</span>
-              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-[var(--sunk)] text-[var(--ink)] ">
                 {{ operations.open_maintenance.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Open Guest Service Requests</span>
-              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded bg-[var(--sunk)] text-[var(--ink)] ">
                 {{ operations.open_requests.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Pending Refunds for Review</span>
-              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.pending_refunds.length > 0 ? 'bg-amber-200 text-amber-900 dark:bg-amber-900 dark:text-amber-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.pending_refunds.length > 0 ? 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] font-bold' : 'bg-[var(--sunk)] text-[var(--ink)] '">
                 {{ operations.pending_refunds.length }}
               </span>
             </div>
-            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--surface-muted)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--surface-muted)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
+            <div class="flex justify-between items-center p-2.5 rounded bg-[var(--sunk)] border border-[color:var(--rule)] text-[color:var(--river)] dark:bg-[var(--sunk)] dark:border-[color:var(--rule)] dark:text-[color:var(--river)]">
               <span>Payment Exceptions</span>
-              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.payment_exceptions_count > 0 ? 'bg-rose-200 text-rose-900 dark:bg-rose-950 dark:text-rose-200 font-bold' : 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'">
+              <span class="font-bold tabular-nums px-2 py-0.5 rounded" :class="operations.payment_exceptions_count > 0 ? 'bg-[var(--status-out)]/10 text-[var(--status-out)] font-bold' : 'bg-[var(--sunk)] text-[var(--ink)] '">
                 {{ operations.payment_exceptions_count }}
               </span>
             </div>

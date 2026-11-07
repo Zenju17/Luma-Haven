@@ -36,6 +36,7 @@
   - Phase 7: Verification & testing: 15 unit tests in `test_mis_reports.py` (37/37 total backend tests passing), Playwright MIS executive journey (3/3 passing), and complete documentation in `docs/MIS_DEMONSTRATION.md`.
 
 - **Guest redesign (2 Nov 2026):** new 3-colour palette, photo-led hero, 10 room types each with its own photo (`frontend/src/data/roomCatalog.ts`, `public/images/luma-haven/rooms/<slug>/main.jpg`), bed-type filter chips, mobile room rail and bottom-sheet modals; `seed_demo` now creates 10 room types / 15 rooms. Verified: backend 110 passed, E2E 4 passed, typecheck + build green, no horizontal overflow at 390px.
+- **Site-wide redesign (7 Nov 2026, `docs/REDESIGN_PLAN_V2.md`, phases 1–9 done):** new tokens and type, primitives in `src/components/`, Rooms page with a filter rail, stay rows and a docked detail panel, a drawn location map, a Booking stay summary, gallery masonry, and a staff icon rail with flat tables. Phase 9 removed the legacy aliases and dead CSS (`style.css` went from 1,233 to about 370 lines) and tokenised hard-coded colours. Verified: typecheck + build green. **Not yet run: the Playwright e2e suite** (no local Postgres server in the phase 9 environment).
 
 ## Current work
 

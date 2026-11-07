@@ -505,7 +505,7 @@ async function reserve() {
 .filters-toggle { justify-self: start; min-height: 44px; padding: 0 1.25rem; border-radius: var(--radius-pill); background: var(--river); color: var(--palm-leaf); font: 600 .9375rem var(--font-text); }
 .rail { display: none; }
 .rail--open { display: grid; position: fixed; inset: auto 0 0 0; z-index: 45; max-height: 85vh; overflow-y: auto; gap: 1.25rem; padding: 1.25rem; background: var(--paper); border-radius: var(--radius-panel) var(--radius-panel) 0 0; box-shadow: var(--shadow-float); }
-.rail-scrim { position: fixed; inset: 0; z-index: 44; background: var(--surface-modal-backdrop); }
+.rail-scrim { position: fixed; inset: 0; z-index: 44; background: var(--scrim); }
 .rail__sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; color: var(--river); }
 .rail__done { min-height: 44px; padding: 0 1.1rem; border-radius: var(--radius-pill); background: var(--river); color: var(--palm-leaf); font-weight: 600; }
 .rail__group { display: grid; gap: .5rem; border: 0; padding: 0; margin: 0; }

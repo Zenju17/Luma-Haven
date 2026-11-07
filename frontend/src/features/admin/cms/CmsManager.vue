@@ -123,7 +123,7 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
         <button type="button" role="tab" :aria-selected="tab === 'blocks'" :class="tab === 'blocks' ? 'btn' : 'btn-secondary'" @click="tab = 'blocks'">Banners &amp; blocks</button>
       </div>
     </div>
-    <p class="text-sm text-[var(--muted)]">Editors save drafts; only an administrator publishes. Guests always see the last published version. Markdown is rendered safely — raw HTML is shown as text.</p>
+    <p class="text-sm text-[var(--silt)]">Editors save drafts; only an administrator publishes. Guests always see the last published version. Markdown is rendered safely — raw HTML is shown as text.</p>
     <Notice :message="message" :status="ok" />
 
     <template v-if="tab === 'pages'">
@@ -132,16 +132,16 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
           <button class="btn w-full" @click="startNew">New page</button>
           <p v-if="pages.isPending.value" role="status">Loading pages…</p>
           <Notice :message="pages.error.value ? String(pages.error.value) : ''" />
-          <ul class="divide-y divide-[var(--line)]">
+          <ul class="divide-y divide-[var(--rule)]">
             <li v-for="p in pages.data.value" :key="p.id">
               <button class="w-full text-left py-3" @click="open(p)">
                 <span class="font-semibold">{{ p.title }}</span>
-                <span class="block text-xs text-[var(--muted)]">/p/{{ p.slug }} · {{ p.language.toUpperCase() }} ·
+                <span class="block text-xs text-[var(--silt)]">/p/{{ p.slug }} · {{ p.language.toUpperCase() }} ·
                   {{ p.is_published ? (p.has_unpublished_changes ? 'published, draft differs' : 'published') : 'draft' }}</span>
               </button>
             </li>
           </ul>
-          <p v-if="pages.data.value?.length === 0" class="text-sm text-[var(--muted)]">No pages yet.</p>
+          <p v-if="pages.data.value?.length === 0" class="text-sm text-[var(--silt)]">No pages yet.</p>
         </div>
 
         <form v-if="isNew || editing" class="card p-5 space-y-4" @submit.prevent="save">
@@ -163,11 +163,11 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
               <button type="button" class="btn-secondary" :disabled="busy" @click="pageAction('publish')">Publish</button>
               <button v-if="editing.is_published" type="button" class="btn-secondary" :disabled="busy" @click="pageAction('unpublish')">Unpublish</button>
             </template>
-            <p v-else-if="editing" class="text-xs text-[var(--muted)] self-center">Ask an administrator to publish.</p>
+            <p v-else-if="editing" class="text-xs text-[var(--silt)] self-center">Ask an administrator to publish.</p>
           </div>
           <div v-if="editing?.revisions.length">
             <p class="label">History</p>
-            <ul class="text-sm divide-y divide-[var(--line)] mt-1">
+            <ul class="text-sm divide-y divide-[var(--rule)] mt-1">
               <li v-for="r in editing.revisions" :key="r.id" class="py-2 flex items-center justify-between gap-3">
                 <span>{{ r.action }} · {{ r.saved_by }} · {{ r.saved_at.slice(0, 16).replace('T', ' ') }}</span>
                 <button type="button" class="btn-secondary" :disabled="busy" @click="restore(r.id)">Restore to draft</button>
@@ -175,7 +175,7 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
             </ul>
           </div>
         </form>
-        <div v-else class="card p-8 text-[var(--muted)]">Select a page or create a new one.</div>
+        <div v-else class="card p-8 text-[var(--silt)]">Select a page or create a new one.</div>
       </div>
     </template>
 
@@ -184,7 +184,7 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
         <form class="card p-5 space-y-3" @submit.prevent="saveBlock">
           <h3 class="text-lg font-semibold">Banner / block</h3>
           <label class="label block">Key<input v-model="blockForm.key" class="field mt-1 w-full" required /></label>
-          <p class="text-xs text-[var(--muted)]">Use <code>site.announcement</code> for the banner shown at the top of every guest page.</p>
+          <p class="text-xs text-[var(--silt)]">Use <code>site.announcement</code> for the banner shown at the top of every guest page.</p>
           <label class="label block">Language
             <select v-model="blockForm.language" class="field mt-1 w-full"><option value="en">English</option><option value="km">ខ្មែរ</option></select>
           </label>
@@ -198,10 +198,10 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
         </form>
         <div class="card p-4">
           <p v-if="blocks.isPending.value" role="status">Loading blocks…</p>
-          <ul class="divide-y divide-[var(--line)]">
+          <ul class="divide-y divide-[var(--rule)]">
             <li v-for="b in blocks.data.value" :key="b.id" class="py-3 space-y-1">
               <p class="font-semibold">{{ b.key }} · {{ b.language.toUpperCase() }}
-                <span class="text-xs font-normal text-[var(--muted)]">{{ b.is_published ? (b.has_unpublished_changes ? 'published, draft differs' : 'published') : 'draft' }}</span></p>
+                <span class="text-xs font-normal text-[var(--silt)]">{{ b.is_published ? (b.has_unpublished_changes ? 'published, draft differs' : 'published') : 'draft' }}</span></p>
               <p class="text-sm">{{ b.content.text }}</p>
               <div class="flex gap-2">
                 <button class="btn-secondary" type="button" @click="editBlock(b)">Edit</button>
@@ -212,7 +212,7 @@ function blockAction(b: BlockRow, action: 'publish' | 'unpublish') {
               </div>
             </li>
           </ul>
-          <p v-if="blocks.data.value?.length === 0" class="text-sm text-[var(--muted)]">No blocks yet.</p>
+          <p v-if="blocks.data.value?.length === 0" class="text-sm text-[var(--silt)]">No blocks yet.</p>
         </div>
       </div>
     </template>

@@ -82,6 +82,7 @@ Luma Haven is a **working development/demo checkpoint**, not production software
 
 - P4 infrastructure (see INFRASTRUCTURE.md): files committed; **never deployed or run on Docker**. Celery broker now follows `REDIS_URL` (it was unset before).
 
+- Site-wide redesign 7 Nov 2026 (`docs/REDESIGN_PLAN_V2.md`, phases 1–9). Run `npm run test:e2e` against the disposable Postgres before demoing: it has not been run since phase 1. Staff icon rail: the admin rail shows all 12 items (no flyout), because e2e clicks "Audit history", "Settings" and "Reports" directly. Checkout stays a single column, because the payment session has no room data. The printable receipt keeps fixed print colours.
 - Guest UI redesigned 2 Nov 2026 (see DECISIONS). Room photos are representative stock supplied by the owner, not photos of the real property. Booking/checkout pages only picked up the new tokens and were not restructured; the "3-step progress" idea in `docs/REDESIGN_PLAN.md` is still open.
 
 ## Deliberately simulated or missing

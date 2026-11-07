@@ -291,11 +291,11 @@ async function deleteRoom(r: RoomData) {
 
 function cleaningBadgeClass(status: string) {
   switch (status) {
-    case 'READY': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border-emerald-300'
-    case 'CLEANING': return 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300 border-amber-300'
-    case 'INSPECTION': return 'bg-purple-100 text-purple-800 dark:bg-purple-950/70 dark:text-purple-300 border-purple-300'
-    case 'DIRTY': return 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border-rose-300'
-    default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300'
+    case 'READY': return 'bg-[var(--status-available)]/10 text-[var(--status-available)]   border-[var(--status-available)]/30'
+    case 'CLEANING': return 'bg-[var(--status-dirty)]/10 text-[var(--status-dirty)]   border-[var(--status-dirty)]/30'
+    case 'INSPECTION': return 'bg-[var(--laterite)]/10 text-[var(--laterite)]   border-[var(--laterite)]/30'
+    case 'DIRTY': return 'bg-[var(--status-out)]/10 text-[var(--status-out)]   border-[var(--status-out)]/30'
+    default: return 'bg-[var(--sunk)] text-[var(--ink)]  '
   }
 }
 </script>
@@ -306,17 +306,17 @@ function cleaningBadgeClass(status: string) {
     <div class="flex flex-wrap items-center justify-between gap-4 mt-6">
       <div>
         <h2 class="text-2xl font-serif">Rooms & Inventory Control</h2>
-        <p class="text-sm text-[var(--muted)] mt-1">
+        <p class="text-sm text-[var(--silt)] mt-1">
           Full management of room types, descriptions, capacities, amenities, and individual room service status.
         </p>
       </div>
 
       <div class="flex items-center gap-3">
-        <div class="inline-flex rounded-lg p-1 bg-[var(--surface-muted)] border border-[var(--line)]">
+        <div class="inline-flex rounded-lg p-1 bg-[var(--sunk)] border border-[var(--rule)]">
           <button
             type="button"
             class="px-3 py-1.5 text-xs font-semibold rounded-md transition"
-            :class="activeTab === 'types' ? 'bg-[var(--surface)] text-[var(--ink)] shadow-sm' : 'text-[var(--muted)] hover:text-[var(--ink)]'"
+            :class="activeTab === 'types' ? 'bg-[var(--paper)] text-[var(--ink)]' : 'text-[var(--silt)] hover:text-[var(--ink)]'"
             @click="activeTab = 'types'"
           >
             Room Types ({{ roomTypes.data.value?.length ?? 0 }})
@@ -324,7 +324,7 @@ function cleaningBadgeClass(status: string) {
           <button
             type="button"
             class="px-3 py-1.5 text-xs font-semibold rounded-md transition"
-            :class="activeTab === 'rooms' ? 'bg-[var(--surface)] text-[var(--ink)] shadow-sm' : 'text-[var(--muted)] hover:text-[var(--ink)]'"
+            :class="activeTab === 'rooms' ? 'bg-[var(--paper)] text-[var(--ink)]' : 'text-[var(--silt)] hover:text-[var(--ink)]'"
             @click="activeTab = 'rooms'"
           >
             All Rooms ({{ rooms.data.value?.length ?? 0 }})
@@ -363,7 +363,7 @@ function cleaningBadgeClass(status: string) {
         </div>
       </div>
 
-      <p v-else-if="roomTypes.data.value?.length === 0" class="card p-8 text-center text-[var(--muted)]">
+      <p v-else-if="roomTypes.data.value?.length === 0" class="card p-8 text-center text-[var(--silt)]">
         No room types configured. Click "+ Add Room Type" to create the first category.
       </p>
 
@@ -371,23 +371,23 @@ function cleaningBadgeClass(status: string) {
         <article
           v-for="rt in roomTypes.data.value"
           :key="rt.id"
-          class="card p-6 flex flex-col justify-between border border-[var(--line)] hover:border-[var(--brand)] transition group"
+          class="card p-6 flex flex-col justify-between border border-[var(--rule)] hover:border-[var(--river)] transition group"
         >
           <div>
             <div class="flex items-start justify-between gap-3 mb-2">
               <div>
-                <span class="text-xs font-bold text-[var(--brand)]">
+                <span class="text-xs font-bold text-[var(--river)]">
                   Capacity: {{ rt.capacity }} guest{{ rt.capacity > 1 ? 's' : '' }}
                 </span>
                 <h3 class="text-xl font-serif mt-1 text-[var(--ink)]">{{ rt.name }}</h3>
               </div>
-              <span class="text-lg tabular-nums font-bold text-[var(--brand-text)] whitespace-nowrap">
+              <span class="text-lg tabular-nums font-bold text-[var(--river)] whitespace-nowrap">
                 {{ money(rt.nightly_rate_minor) }}
-                <span class="text-xs font-normal text-[var(--muted)]">/ night</span>
+                <span class="text-xs font-normal text-[var(--silt)]">/ night</span>
               </span>
             </div>
 
-            <p class="text-xs text-[var(--muted)] line-clamp-3 mt-2 leading-relaxed">
+            <p class="text-xs text-[var(--silt)] line-clamp-3 mt-2 leading-relaxed">
               {{ rt.description || 'No description provided.' }}
             </p>
 
@@ -396,18 +396,18 @@ function cleaningBadgeClass(status: string) {
               <span
                 v-for="a in rt.amenities.slice(0, 5)"
                 :key="a"
-                class="px-2 py-0.5 rounded-full text-[11px] bg-[var(--surface-muted)] text-[var(--ink)] border border-[var(--line)]"
+                class="px-2 py-0.5 rounded-full text-[11px] bg-[var(--sunk)] text-[var(--ink)] border border-[var(--rule)]"
               >
                 {{ a }}
               </span>
-              <span v-if="rt.amenities.length > 5" class="text-[11px] text-[var(--muted)] self-center">
+              <span v-if="rt.amenities.length > 5" class="text-[11px] text-[var(--silt)] self-center">
                 +{{ rt.amenities.length - 5 }} more
               </span>
             </div>
           </div>
 
-          <div class="mt-6 pt-4 border-t border-[var(--line)] flex items-center justify-between text-xs">
-            <span class="text-[var(--muted)]">
+          <div class="mt-6 pt-4 border-t border-[var(--rule)] flex items-center justify-between text-xs">
+            <span class="text-[var(--silt)]">
               <strong>{{ rt.total_rooms }}</strong> room{{ rt.total_rooms === 1 ? '' : 's' }} assigned
             </span>
 
@@ -421,7 +421,7 @@ function cleaningBadgeClass(status: string) {
               </button>
               <button
                 type="button"
-                class="btn-secondary text-xs px-2.5 py-1 text-rose-600 hover:text-rose-700 dark:text-rose-400"
+                class="btn-secondary text-xs px-2.5 py-1 text-[var(--status-out)] hover:text-[var(--status-out)] "
                 :disabled="rt.total_rooms > 0"
                 :title="rt.total_rooms > 0 ? 'Cannot delete: rooms are assigned' : 'Delete room type'"
                 @click="deleteRoomType(rt)"
@@ -437,7 +437,7 @@ function cleaningBadgeClass(status: string) {
     <!-- ── TAB 2: PHYSICAL ROOMS ──────────────────────────────── -->
     <div v-else class="space-y-4">
       <!-- Search & Filters -->
-      <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--line)]">
+      <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-[var(--sunk)] border border-[var(--rule)]">
         <div class="flex flex-wrap items-center gap-3">
           <input
             v-model="roomSearch"
@@ -450,7 +450,7 @@ function cleaningBadgeClass(status: string) {
             <option v-for="t in roomTypes.data.value" :key="t.id" :value="t.id">{{ t.name }}</option>
           </select>
         </div>
-        <span class="text-xs text-[var(--muted)]">Showing {{ filteredRooms.length }} of {{ rooms.data.value?.length ?? 0 }} rooms</span>
+        <span class="text-xs text-[var(--silt)]">Showing {{ filteredRooms.length }} of {{ rooms.data.value?.length ?? 0 }} rooms</span>
       </div>
 
       <div v-if="rooms.isPending.value" role="status" class="card p-6">
@@ -460,7 +460,7 @@ function cleaningBadgeClass(status: string) {
       <div v-else class="card overflow-auto">
         <table class="data-table w-full text-left text-sm min-w-[700px]">
           <thead>
-            <tr class="bg-[var(--surface-muted)] border-b border-[var(--line)] text-xs text-[var(--muted)] font-semibold">
+            <tr class="bg-[var(--sunk)] border-b border-[var(--rule)] text-xs text-[var(--silt)] font-semibold">
               <th class="py-3 px-4">Room #</th>
               <th class="py-3 px-4">Type</th>
               <th class="py-3 px-4">Nightly Rate</th>
@@ -475,14 +475,14 @@ function cleaningBadgeClass(status: string) {
             <tr
               v-for="r in filteredRooms"
               :key="r.id"
-              class="border-t border-[var(--line)] hover:bg-[var(--surface-muted)]/50 transition"
+              class="border-t border-[var(--rule)] hover:bg-[var(--sunk)]/50 transition"
             >
               <td class="py-3 px-4 tabular-nums font-bold text-base text-[var(--ink)]">
                 {{ r.number }}
               </td>
               <td class="py-3 px-4 font-medium">{{ r.type_name }}</td>
               <td class="py-3 px-4 tabular-nums">{{ money(r.nightly_rate_minor) }}</td>
-              <td class="py-3 px-4 text-xs text-[var(--muted)]">{{ r.capacity }} guest(s)</td>
+              <td class="py-3 px-4 text-xs text-[var(--silt)]">{{ r.capacity }} guest(s)</td>
               <td class="py-3 px-4">
                 <span
                   class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold border"
@@ -494,24 +494,24 @@ function cleaningBadgeClass(status: string) {
               <td class="py-3 px-4">
                 <span
                   class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
-                  :class="r.in_service ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300'"
+                  :class="r.in_service ? 'bg-[var(--status-available)]/10 text-[var(--status-available)] border-[var(--status-available)]/30 ' : 'bg-[var(--status-out)]/10 text-[var(--status-out)] border-[var(--status-out)]/30 '"
                 >
-                  <span class="w-1.5 h-1.5 rounded-full" :class="r.in_service ? 'bg-emerald-500' : 'bg-rose-500'"></span>
+                  <span class="w-1.5 h-1.5 rounded-full" :class="r.in_service ? 'bg-[var(--status-available)]' : 'bg-[var(--status-out)]'"></span>
                   {{ r.in_service ? 'In Service' : 'Maintenance' }}
                 </span>
               </td>
               <td class="py-3 px-4">
-                <span v-if="r.active_stay" class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                <span v-if="r.active_stay" class="px-2 py-0.5 rounded text-[11px] font-bold bg-[var(--status-dirty)]/10 text-[var(--status-dirty)] ">
                   Occupied
                 </span>
-                <span v-else class="text-xs text-[var(--muted)]">Vacant</span>
+                <span v-else class="text-xs text-[var(--silt)]">Vacant</span>
               </td>
               <td class="py-3 px-4 text-right whitespace-nowrap">
                 <div class="inline-flex items-center gap-2">
                   <button type="button" class="btn-secondary text-xs px-2.5 py-1" @click="openEditRoom(r)">Edit</button>
                   <button
                     type="button"
-                    class="btn-secondary text-xs px-2.5 py-1 text-rose-600 hover:text-rose-700 dark:text-rose-400"
+                    class="btn-secondary text-xs px-2.5 py-1 text-[var(--status-out)] hover:text-[var(--status-out)] "
                     :disabled="r.active_stay"
                     :title="r.active_stay ? 'Cannot delete occupied room' : 'Delete room'"
                     @click="deleteRoom(r)"
@@ -537,7 +537,7 @@ function cleaningBadgeClass(status: string) {
         @click.self="closeTypeModal"
       >
         <form class="card p-8 w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-5" @submit.prevent="saveRoomType">
-          <button type="button" class="float-right text-lg text-[var(--muted)] hover:text-[var(--ink)]" aria-label="Close" @click="closeTypeModal">✕</button>
+          <button type="button" class="float-right text-lg text-[var(--silt)] hover:text-[var(--ink)]" aria-label="Close" @click="closeTypeModal">✕</button>
           <div>
             <p class="label mb-0">Room Inventory</p>
             <h3 class="text-2xl font-serif">{{ editingTypeId ? 'Edit Room Type' : 'Create Room Type' }}</h3>
@@ -570,7 +570,7 @@ function cleaningBadgeClass(status: string) {
 
             <div class="sm:col-span-2">
               <label class="label mb-1">Amenities</label>
-              <p class="text-xs text-[var(--muted)] mb-2">Click to toggle amenities or add custom ones below:</p>
+              <p class="text-xs text-[var(--silt)] mb-2">Click to toggle amenities or add custom ones below:</p>
               
               <div class="flex flex-wrap gap-1.5 mb-3">
                 <button
@@ -579,8 +579,8 @@ function cleaningBadgeClass(status: string) {
                   type="button"
                   class="px-2.5 py-1 rounded-full text-xs border transition"
                   :class="typeForm.amenities.includes(amenity)
-                    ? 'bg-[var(--brand)] text-[var(--brand-ink,white)] border-[var(--brand)] font-semibold'
-                    : 'bg-[var(--surface-muted)] text-[var(--muted)] border-[var(--line)] hover:text-[var(--ink)]'"
+ ? 'bg-[var(--river)] text-[var(--on-river)] border-[var(--river)] font-semibold'
+ : 'bg-[var(--sunk)] text-[var(--silt)] border-[var(--rule)] hover:text-[var(--ink)]'"
                   @click="toggleAmenity(amenity)"
                 >
                   {{ typeForm.amenities.includes(amenity) ? '✓ ' : '+ ' }}{{ amenity }}
@@ -603,7 +603,7 @@ function cleaningBadgeClass(status: string) {
 
           <Notice :message="error" />
 
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--line)]">
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--rule)]">
             <button type="button" class="btn-secondary" @click="closeTypeModal">Cancel</button>
             <button class="btn" :disabled="busy">{{ busy ? 'Saving…' : (editingTypeId ? 'Save Changes' : 'Create Room Type') }}</button>
           </div>
@@ -622,7 +622,7 @@ function cleaningBadgeClass(status: string) {
         @click.self="closeRoomModal"
       >
         <form class="card p-8 w-full max-w-md space-y-5" @submit.prevent="saveRoom">
-          <button type="button" class="float-right text-lg text-[var(--muted)] hover:text-[var(--ink)]" aria-label="Close" @click="closeRoomModal">✕</button>
+          <button type="button" class="float-right text-lg text-[var(--silt)] hover:text-[var(--ink)]" aria-label="Close" @click="closeRoomModal">✕</button>
           <div>
             <p class="label mb-0">Room Inventory</p>
             <h3 class="text-2xl font-serif">{{ editingRoomId ? 'Edit Room' : 'Add Physical Room' }}</h3>
@@ -653,20 +653,20 @@ function cleaningBadgeClass(status: string) {
             </select>
           </div>
 
-          <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--line)]">
+          <div class="flex items-center justify-between p-3 rounded-lg bg-[var(--sunk)] border border-[var(--rule)]">
             <div>
               <p class="text-sm font-semibold text-[var(--ink)]">Operational Service</p>
-              <p class="text-xs text-[var(--muted)]">Toggle off to place room in maintenance / out of order</p>
+              <p class="text-xs text-[var(--silt)]">Toggle off to place room in maintenance / out of order</p>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input v-model="roomForm.in_service" type="checkbox" class="sr-only peer" />
-              <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--brand)]"></div>
+              <div class="w-11 h-6 bg-[var(--rule-strong)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--rule)] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--river)]"></div>
             </label>
           </div>
 
           <Notice :message="error" />
 
-          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--line)]">
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-[var(--rule)]">
             <button type="button" class="btn-secondary" @click="closeRoomModal">Cancel</button>
             <button class="btn" :disabled="busy">{{ busy ? 'Saving…' : (editingRoomId ? 'Update Room' : 'Add Room') }}</button>
           </div>
