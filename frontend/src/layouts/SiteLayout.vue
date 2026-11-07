@@ -11,11 +11,11 @@ const route = useRoute()
 const router = useRouter()
 const mobileOpen = ref(false)
 
-const visualAssets = useQuery({
+// Kept so the shared ['visual-assets'] cache stays warm for other pages.
+useQuery({
   queryKey: ['visual-assets'],
   queryFn: () => api<PublicVisualAssetsResponse>('/visual-assets'),
 })
-const logoAsset = computed(() => visualAssets.data.value?.logo ?? null)
 
 const { lang } = useLanguage()
 interface CmsBlock { key: string; content: { text?: string; link?: string } }
@@ -50,270 +50,128 @@ function handleCheckAvailability() {
 </script>
 
 <template>
-  <div class="site-layout min-h-screen flex flex-col bg-[var(--mist)] text-[var(--ink)]">
-    <div v-if="announcement?.text" class="bg-[var(--brass)] text-white text-center text-sm px-4 py-2" role="status">
+  <div class="site-layout min-h-screen flex flex-col">
+    <div v-if="announcement?.text" class="site-announce" role="status">
       <component :is="announcementLink?.internal ? 'RouterLink' : 'a'" v-if="announcementLink" :to="announcementLink.internal" :href="announcementLink.external" class="underline">{{ announcement.text }}</component>
       <span v-else>{{ announcement.text }}</span>
     </div>
-    <!-- Section 1: Header -->
-    <header class="guest-header sticky top-0 z-40 backdrop-blur-md bg-[var(--surface-overlay)] border-b border-[var(--glass-border)] transition-colors">
-      <div class="guest-header-inner max-w-6xl mx-auto px-5 py-3.5 flex items-center justify-between gap-4">
-        <!-- Logo -->
-        <RouterLink to="/" class="brand-mark flex items-center gap-2.5 serif text-2xl font-semibold tracking-tight text-[var(--brand-text)] hover:opacity-90 transition-opacity" @click="closeMobile">
-          <img
-            :src="logoAsset ? logoAsset.image_url : '/images/logo.png'"
-            :alt="logoAsset ? logoAsset.alt_text : 'Luma Haven Hotel'"
-            class="h-8 w-auto object-contain"
-            width="32"
-            height="32"
-          />
-          <span>Luma Haven<span class="text-[var(--brass)]">.</span></span>
-        </RouterLink>
 
-        <!-- Desktop Navigation -->
-        <div class="hidden lg:flex items-center gap-7">
-          <nav aria-label="Main navigation" class="guest-nav flex items-center gap-6 text-sm font-medium text-[var(--brand-text)]">
-            <RouterLink to="/rooms" class="hover:text-[var(--brass)] transition-colors">Rooms</RouterLink>
-            <RouterLink to="/spaces" class="hover:text-[var(--brass)] transition-colors">Spaces</RouterLink>
-            <a href="/#about" class="hover:text-[var(--brass)] transition-colors">About</a>
-            <a href="/#experience" class="hover:text-[var(--brass)] transition-colors">Experience</a>
-            <RouterLink to="/gallery" class="hover:text-[var(--brass)] transition-colors">Gallery</RouterLink>
-            <a href="/#location" class="hover:text-[var(--brass)] transition-colors">Location</a>
-            <RouterLink to="/verify" class="hover:text-[var(--brass)] transition-colors">My Stay</RouterLink>
+    <header class="guest-header">
+      <div class="guest-header-inner max-w-6xl mx-auto px-5 flex items-center justify-between gap-4">
+        <RouterLink to="/" class="brand-mark" @click="closeMobile">Luma Haven</RouterLink>
+
+        <div class="hidden lg:flex items-center gap-8">
+          <nav aria-label="Main navigation" class="guest-nav flex items-center gap-7">
+            <RouterLink to="/rooms">Rooms</RouterLink>
+            <RouterLink to="/spaces">Spaces</RouterLink>
+            <RouterLink to="/gallery">Gallery</RouterLink>
+            <a href="/#location">Location</a>
+            <RouterLink to="/verify">My stay</RouterLink>
           </nav>
-
-          <div class="h-4 w-[1px] bg-[var(--line)]" aria-hidden="true" />
-
-          <div class="flex items-center gap-4">
+          <div class="flex items-center gap-3">
             <ThemeToggle />
-
-            <!-- Clear Check Availability Action -->
-            <button
-              type="button"
-              class="btn text-xs sm:text-sm font-semibold px-4 py-2 rounded-lg shadow-sm hover:shadow transition-all"
-              @click="handleCheckAvailability"
-            >
-              Check availability
-            </button>
-
-            <!-- Discreet Staff Sign-in -->
-            <RouterLink
-              to="/staff"
-              class="text-xs text-[var(--muted)] hover:text-[var(--brand-text)] transition-colors p-1"
-              title="Staff sign-in"
-              aria-label="Staff sign-in"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
+            <RouterLink to="/staff" class="header-icon-link" title="Staff sign-in" aria-label="Staff sign-in">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
             </RouterLink>
+            <button type="button" class="header-cta" @click="handleCheckAvailability">Book a room</button>
           </div>
         </div>
 
-        <!-- Medium/Mobile Controls -->
-        <div class="flex lg:hidden items-center gap-3">
+        <div class="flex lg:hidden items-center gap-2">
           <ThemeToggle />
-          <button
-            type="button"
-            class="btn text-xs px-3 py-1.5 font-semibold"
-            @click="handleCheckAvailability"
-          >
-            Check dates
-          </button>
-          <button
-            type="button"
-            class="p-2 rounded-lg border border-[var(--glass-border)] text-[var(--brand-text)] hover:border-[var(--brass)] transition-colors"
-            :aria-expanded="mobileOpen"
-            aria-label="Toggle navigation menu"
-            @click="toggleMobile"
-          >
-            <svg v-if="!mobileOpen" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+          <button type="button" class="menu-btn" :aria-expanded="mobileOpen" aria-label="Toggle navigation menu" @click="toggleMobile">{{ mobileOpen ? 'Close' : 'Menu' }}</button>
         </div>
       </div>
 
-      <!-- Mobile Navigation Drawer -->
-      <Transition name="slide-down">
-        <nav
-          v-if="mobileOpen"
-          aria-label="Mobile navigation"
-          class="lg:hidden mobile-nav-panel px-5 py-5 border-t border-[var(--glass-border)] bg-[var(--surface-raised)] space-y-3.5 shadow-xl"
-        >
-          <RouterLink
-            to="/rooms"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            Rooms &amp; Suites
-          </RouterLink>
-          <RouterLink
-            to="/spaces"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            Hotel Spaces &amp; Locations
-          </RouterLink>
-          <a
-            href="/#about"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            About Luma Haven
-          </a>
-          <a
-            href="/#experience"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            The Experience
-          </a>
-          <RouterLink
-            to="/gallery"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            Hotel Gallery &amp; Photos
-          </RouterLink>
-          <a
-            href="/#location"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            Location &amp; Policies
-          </a>
-          <RouterLink
-            to="/verify"
-            class="block py-2 text-base font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors"
-            @click="closeMobile"
-          >
-            My Stay (Guest Portal)
-          </RouterLink>
-
-          <div class="pt-3 border-t border-[var(--line)] flex items-center justify-between">
-            <button
-              type="button"
-              class="btn w-full py-2.5 text-sm font-semibold"
-              @click="handleCheckAvailability"
-            >
-              Check availability
-            </button>
-          </div>
-
-          <div class="pt-2 text-center">
-            <RouterLink
-              to="/staff"
-              class="text-xs text-[var(--muted)] hover:text-[var(--brass)] inline-flex items-center gap-1.5"
-              @click="closeMobile"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Staff Portal Access
-            </RouterLink>
-          </div>
+      <Transition name="fade">
+        <nav v-if="mobileOpen" aria-label="Mobile navigation" class="lg:hidden mobile-sheet">
+          <RouterLink to="/rooms" @click="closeMobile">Rooms</RouterLink>
+          <RouterLink to="/spaces" @click="closeMobile">Spaces</RouterLink>
+          <RouterLink to="/gallery" @click="closeMobile">Gallery</RouterLink>
+          <a href="/#location" @click="closeMobile">Location</a>
+          <RouterLink to="/verify" @click="closeMobile">My stay</RouterLink>
+          <button type="button" class="header-cta mobile-sheet__cta" @click="handleCheckAvailability">Book a room</button>
+          <RouterLink to="/staff" class="mobile-sheet__staff" @click="closeMobile">Staff sign-in</RouterLink>
         </nav>
       </Transition>
     </header>
 
-    <!-- Main Content Area -->
     <main class="max-w-6xl mx-auto px-5 w-full grow">
       <slot />
     </main>
 
-    <!-- Section 10: Footer -->
-    <footer class="guest-footer mt-20 border-t border-[var(--line)] bg-[var(--surface-raised)] text-[var(--ink)]">
+    <footer class="guest-footer mt-20">
       <div class="max-w-6xl mx-auto px-5 py-12 sm:py-16">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
-          <!-- Column 1: Brand & Philosophy (4 cols) -->
-          <div class="lg:col-span-4 space-y-4">
-            <RouterLink to="/" class="brand-mark flex items-center gap-2.5 serif text-2xl font-semibold tracking-tight text-[var(--brand-text)]">
-              <img
-                :src="logoAsset ? logoAsset.image_url : '/images/logo.png'"
-                :alt="logoAsset ? logoAsset.alt_text : 'Luma Haven Hotel'"
-                class="h-8 w-auto object-contain"
-                width="32"
-                height="32"
-              />
-              <span>Luma Haven<span class="text-[var(--brass)]">.</span></span>
-            </RouterLink>
-            <p class="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
-              A boutique hotel sanctuary in Phnom Penh, Cambodia. Thoughtful hospitality, mindful acoustics, and physical brass keys for the unhurried traveler.
-            </p>
-            <div class="pt-2 text-xs text-[var(--brass)] font-semibold flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[var(--brass)]" />
-              Solid brass room keys at reception
-            </div>
+        <div class="footer-grid">
+          <div class="footer-brand">
+            <RouterLink to="/" class="brand-mark">Luma Haven</RouterLink>
+            <p>A small hotel in Daun Penh, Phnom Penh. Quiet rooms, a short walk from the riverside.</p>
           </div>
-
-          <!-- Column 2: Navigation Links (2 cols) -->
-          <div class="lg:col-span-2 space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">
-              Explore
-            </p>
-            <ul class="space-y-2 text-xs sm:text-sm text-[var(--muted)]">
-              <li><RouterLink to="/rooms" class="hover:text-[var(--brand-text)] transition-colors">Rooms &amp; Suites</RouterLink></li>
-              <li><RouterLink to="/spaces" class="hover:text-[var(--brand-text)] transition-colors">Spaces &amp; Locations</RouterLink></li>
-              <li><RouterLink to="/gallery" class="hover:text-[var(--brand-text)] transition-colors">Hotel Gallery</RouterLink></li>
-              <li><a href="/#about" class="hover:text-[var(--brand-text)] transition-colors">About Luma Haven</a></li>
-              <li><a href="/#experience" class="hover:text-[var(--brand-text)] transition-colors">The Experience</a></li>
-              <li><a href="/#location" class="hover:text-[var(--brand-text)] transition-colors">Location &amp; Map</a></li>
+          <div>
+            <h2 class="footer-h">Explore</h2>
+            <ul>
+              <li><RouterLink to="/rooms">Rooms</RouterLink></li>
+              <li><RouterLink to="/spaces">Spaces</RouterLink></li>
+              <li><RouterLink to="/gallery">Gallery</RouterLink></li>
+              <li><a href="/#location">Location</a></li>
+              <li><RouterLink to="/verify">My stay</RouterLink></li>
             </ul>
           </div>
-
-          <!-- Column 3: Guest Stay & Policies (3 cols) -->
-          <div class="lg:col-span-3 space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">
-              Guest Care &amp; Stay
-            </p>
-            <ul class="space-y-2 text-xs sm:text-sm text-[var(--muted)]">
-              <li><RouterLink to="/verify" class="font-medium text-[var(--brand-text)] hover:text-[var(--brass)] transition-colors">My Stay Portal</RouterLink></li>
-              <li><span class="text-[var(--muted)]">Check-in: 14:00 (Asia/Phnom_Penh)</span></li>
-              <li><span class="text-[var(--muted)]">Check-out: 12:00 (Noon)</span></li>
-              <li><span class="text-[var(--muted)]">Quiet Hours: 22:00 – 07:00</span></li>
-              <li><span class="text-[var(--muted)]">100% Smoke-free property</span></li>
+          <div>
+            <h2 class="footer-h">House rules</h2>
+            <ul>
+              <li>Check-in from 14:00</li>
+              <li>Check-out by 12:00</li>
+              <li>Quiet hours 22:00 to 07:00</li>
+              <li>Smoke-free property</li>
             </ul>
           </div>
-
-          <!-- Column 4: Contact & Accessibility (3 cols) -->
-          <div class="lg:col-span-3 space-y-3">
-            <p class="text-xs font-semibold uppercase tracking-wider text-[var(--brass)]">
-              Contact &amp; Assistance
-            </p>
-            <div class="text-xs sm:text-sm text-[var(--muted)] space-y-2">
-              <p>Daun Penh, Phnom Penh, Cambodia</p>
-              <p><a href="mailto:hello@luma.local" class="hover:text-[var(--brand-text)]">hello@luma.local</a></p>
-              <p><a href="tel:+85500000000" class="hover:text-[var(--brand-text)] font-mono">+855 00 000 000</a></p>
-            </div>
-            <div class="pt-2 text-[11px] text-[var(--muted)] leading-normal border-t border-[var(--line)]">
-              <strong class="text-[var(--brand-text)] block font-semibold mb-0.5">Accessibility Statement:</strong>
-              Ground-floor step-free courtyard rooms, accessible tactile signage, and personal assistance available upon request.
-            </div>
+          <div>
+            <h2 class="footer-h">Contact</h2>
+            <ul>
+              <li>Daun Penh, Phnom Penh, Cambodia</li>
+              <li><a href="mailto:hello@luma.local">hello@luma.local</a></li>
+              <li><a href="tel:+85500000000">+855 00 000 000</a></li>
+            </ul>
+            <p class="footer-access">Ground-floor courtyard rooms are step-free. Ask reception for any other help you need.</p>
           </div>
         </div>
 
-        <!-- Bottom Bar -->
-        <div class="mt-12 pt-6 border-t border-[var(--line)] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--muted)]">
-          <p>© {{ new Date().getFullYear() }} Luma Haven Boutique Hotel. All rights reserved.</p>
-          <div class="flex items-center gap-6">
-            <RouterLink to="/verify" class="hover:text-[var(--brand-text)] transition-colors">Find My Stay</RouterLink>
-            <RouterLink to="/legal/terms" class="hover:text-[var(--brand-text)] transition-colors">Terms</RouterLink>
-            <RouterLink to="/legal/privacy" class="hover:text-[var(--brand-text)] transition-colors">Privacy</RouterLink>
-            <RouterLink to="/legal/cancellation" class="hover:text-[var(--brand-text)] transition-colors">Cancellation</RouterLink>
-            <RouterLink to="/legal/cookies" class="hover:text-[var(--brand-text)] transition-colors">Cookies</RouterLink>
-            <RouterLink to="/staff" class="text-[var(--muted)]/75 hover:text-[var(--brand-text)] transition-colors flex items-center gap-1">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              Staff Sign-in
-            </RouterLink>
+        <div class="footer-bottom">
+          <p>© {{ new Date().getFullYear() }} Luma Haven. All rights reserved.</p>
+          <div class="footer-legal">
+            <RouterLink to="/legal/terms">Terms</RouterLink>
+            <RouterLink to="/legal/privacy">Privacy</RouterLink>
+            <RouterLink to="/legal/cancellation">Cancellation</RouterLink>
+            <RouterLink to="/legal/cookies">Cookies</RouterLink>
+            <RouterLink to="/staff">Staff sign-in</RouterLink>
           </div>
         </div>
       </div>
     </footer>
   </div>
 </template>
+
+<style scoped>
+.site-announce { background: var(--river); color: var(--palm-leaf); text-align: center; font-size: .875rem; padding: .5rem 1rem; }
+.guest-header-inner { min-height: 72px; }
+.header-icon-link { display: grid; place-items: center; width: 44px; height: 44px; color: var(--silt); }
+.header-icon-link:hover { color: var(--river); }
+.header-cta { min-height: 44px; padding: 0 1.25rem; border-radius: var(--radius-pill); background: var(--btn-primary-bg); color: var(--btn-primary-text); font: 600 .9375rem var(--font-text); }
+.header-cta:hover { background: var(--btn-primary-hover); }
+.menu-btn { min-height: 44px; padding: 0 1rem; border-radius: var(--radius-pill); border: 1.5px solid var(--rule); color: var(--river); font: 600 .9375rem var(--font-text); }
+.mobile-sheet { position: fixed; inset: 72px 0 0 0; z-index: 50; display: flex; flex-direction: column; gap: .25rem; padding: 1.5rem 1.25rem; background: var(--palm-leaf); overflow-y: auto; }
+.mobile-sheet a:not(.mobile-sheet__staff) { font: 400 2.4375rem/1.1 var(--font-display); color: var(--river); padding: .5rem 0; border-bottom: 1px solid var(--rule); }
+.mobile-sheet__cta { margin-top: 1.5rem; }
+.mobile-sheet__staff { margin-top: 1rem; color: var(--silt); font-size: .875rem; min-height: 44px; display: inline-flex; align-items: center; }
+.footer-grid { display: grid; gap: 2rem; grid-template-columns: 1fr; }
+.footer-brand p { margin-top: .75rem; color: var(--silt); font-size: .9375rem; }
+.footer-h { font: 600 .9375rem var(--font-text) !important; color: var(--river); margin-bottom: .75rem; letter-spacing: 0; }
+.guest-footer ul { display: grid; gap: .5rem; color: var(--silt); font-size: .9375rem; }
+.guest-footer a:hover { color: var(--river); text-decoration: underline; }
+.footer-access { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--rule); color: var(--silt); font-size: .875rem; }
+.footer-bottom { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 1rem; color: var(--silt); font-size: .875rem; }
+.footer-legal { display: flex; flex-wrap: wrap; gap: .25rem 1.5rem; }
+.footer-legal a { min-height: 44px; display: inline-flex; align-items: center; }
+@media (min-width: 768px) { .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 3rem; } .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; } }
+</style>
