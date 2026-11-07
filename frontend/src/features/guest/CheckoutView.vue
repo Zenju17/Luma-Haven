@@ -107,122 +107,94 @@ async function newQr() {
 
 <template>
   <SiteLayout>
-    <div class="card payment-panel p-8 max-w-lg mx-auto">
-      <div class="flex items-center justify-between gap-2.5 mb-3">
-        <div class="flex items-center gap-2.5">
-          <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
-          <span v-if="checkout.data.value?.provider === 'bakong'" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300">
-            <span class="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></span>
-            Bakong KHQR
-          </span>
-          <span v-else class="badge">Simulated payment · development only</span>
-        </div>
-        <span v-if="checkout.data.value?.status === 'PENDING'" class="text-xs font-mono text-[var(--muted)]">
-          {{ countdown }}
-        </span>
+    <div class="co">
+      <div class="co-head">
+        <span v-if="checkout.data.value?.provider === 'bakong'" class="co-tag">Bakong KHQR</span>
+        <span v-else class="badge">Simulated payment · development only</span>
+        <span v-if="checkout.data.value?.status === 'PENDING'" class="co-time" aria-label="Time left">{{ countdown }}</span>
       </div>
 
-      <h1 class="text-3xl text-[var(--brand-text)]">{{ checkout.data.value?.provider === 'bakong' ? 'Scan to Pay' : 'Simulated checkout' }}</h1>
-      <p v-if="checkout.data.value?.provider === 'bakong'" class="text-xs text-[var(--muted)] mt-1">
+      <h1 class="co-title">{{ checkout.data.value?.provider === 'bakong' ? 'Scan to Pay' : 'Simulated checkout' }}</h1>
+      <p v-if="checkout.data.value?.provider === 'bakong'" class="co-muted">
         Pay in USD with any Cambodian banking app that supports the National Bank of Cambodia KHQR standard.
       </p>
 
-      <div v-if="checkout.isPending.value" class="mt-6 space-y-4" role="status">
+      <div v-if="checkout.isPending.value" class="mt-6" role="status">
         <p>Loading payment session…</p>
-        <div class="skeleton h-8 w-48 rounded-md"></div>
-        <div class="skeleton h-12 w-full rounded-md mt-4"></div>
+        <div class="skeleton h-12 w-full mt-4" />
       </div>
       <Notice v-else-if="checkout.error.value" :message="String(checkout.error.value)" />
       <template v-else-if="checkout.data.value">
-        <div class="mt-4 p-3 rounded-lg bg-[var(--surface-muted)] flex items-center justify-between">
-          <span class="text-sm text-[var(--muted)]">Total payable</span>
-          <span class="text-xl font-bold font-mono text-[var(--brand-text)]">
-            {{ money(checkout.data.value.amount_minor) }} {{ checkout.data.value.currency }}
-          </span>
+        <div class="co-amount">
+          <span>Total payable</span>
+          <strong>{{ money(checkout.data.value.amount_minor) }} {{ checkout.data.value.currency }}</strong>
         </div>
-        <p class="mt-2 text-xs text-[var(--muted)]">Status: <span class="font-semibold text-[var(--ink)]">{{ checkout.data.value.status }}</span></p>
+        <p class="co-muted">Status: <span class="co-status">{{ checkout.data.value.status }}</span></p>
         <Notice :message="error" />
 
         <template v-if="checkout.data.value.provider === 'bakong'">
-          <div v-if="checkout.data.value.status === 'PENDING' && checkout.data.value.qr" class="mt-6 flex flex-col items-center gap-3">
-            <!-- KHQR Display Card -->
-            <div class="relative bg-white p-5 rounded-2xl shadow-md border-2 border-rose-600/30 flex flex-col items-center">
-              <div class="w-full flex items-center justify-between border-b pb-2 mb-3">
-                <span class="text-[10px] font-bold text-rose-700 tracking-wider uppercase">KHQR Universal</span>
-                <div class="text-right">
-                  <span class="text-[10px] text-slate-500 font-mono block">Room total: {{ money(checkout.data.value.amount_minor) }} USD</span>
-                  <span class="text-[11px] font-bold text-emerald-600 font-mono block">Scan-to-Pay: $0.01 USD</span>
-                </div>
-              </div>
+          <div v-if="checkout.data.value.status === 'PENDING' && checkout.data.value.qr" class="co-pay">
+            <div class="co-qr">
               <QrcodeVue :value="checkout.data.value.qr" :size="230" level="M" render-as="svg" />
-              <div class="mt-3 text-[11px] text-slate-600 font-medium tracking-wide">LUMA HAVEN BOUTIQUE HOTEL</div>
+              <p class="co-qr-name">Luma Haven</p>
+              <p class="co-qr-note">Room total {{ money(checkout.data.value.amount_minor) }} USD. Scan-to-pay: $0.01 USD</p>
             </div>
 
-            <!-- Scan amount callout badge -->
-            <div class="w-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-3 text-center">
-              <p class="text-xs font-medium text-emerald-800 dark:text-emerald-300">
-                💡 <strong>Scan Test:</strong> Scan with ABA Mobile or Bakong to test paying <strong>$0.01 USD</strong>, or click below to simulate for free without real cash.
-              </p>
-            </div>
-
-            <!-- Supported Banks pill -->
-            <div class="w-full text-center mt-1">
-              <p class="text-[11px] text-[var(--muted)]">
-                Accepted by <strong>Bakong · ABA Mobile · ACLEDA · Wing · Canadia · Sathapana</strong> & 40+ members
-              </p>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="w-full flex flex-col gap-2.5 mt-2">
-              <button
-                type="button"
-                class="btn w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-700 text-white font-semibold shadow hover:opacity-95"
-                :disabled="pending"
-                @click="simulate('SUCCESS')"
-              >
-                <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                <span>{{ pending ? 'Confirming booking…' : '⚡ Simulate Payment (Confirm Free)' }}</span>
-              </button>
-
-              <button
-                type="button"
-                class="btn-secondary w-full flex items-center justify-center gap-2"
-                :disabled="checking"
-                @click="checkPaymentNow"
-              >
-                <svg v-if="checking" class="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-                <span>{{ checking ? 'Checking status…' : "I've paid $0.01 in my bank app" }}</span>
-              </button>
-
-              <button
-                type="button"
-                class="btn-secondary w-full text-xs flex items-center justify-center gap-1.5 opacity-80"
-                @click="copyQrString"
-              >
-                <span>{{ copied ? 'KHQR payload copied! ✓' : 'Copy KHQR payload' }}</span>
-              </button>
-            </div>
-
-            <p class="text-[11px] text-[var(--muted)] mt-1" role="status">
-              Auto-checking for payment confirmation every 4 seconds…
+            <p class="co-note">
+              <strong>Scan test:</strong> scan with ABA Mobile or Bakong to pay <strong>$0.01 USD</strong>, or use the button below to simulate without real cash.
             </p>
+            <p class="co-muted">Accepted by Bakong, ABA Mobile, ACLEDA, Wing, Canadia, Sathapana and 40+ members.</p>
+
+            <div class="co-actions">
+              <button type="button" class="btn" :disabled="pending" @click="simulate('SUCCESS')">
+                {{ pending ? 'Confirming booking…' : '⚡ Simulate Payment (Confirm Free)' }}
+              </button>
+              <button type="button" class="btn-secondary" :disabled="checking" @click="checkPaymentNow">
+                {{ checking ? 'Checking status…' : "I've paid $0.01 in my bank app" }}
+              </button>
+              <button type="button" class="btn-secondary" @click="copyQrString">
+                {{ copied ? 'KHQR payload copied! ✓' : 'Copy KHQR payload' }}
+              </button>
+            </div>
+
+            <p class="co-live" role="status">Waiting for payment… We check every 4 seconds.</p>
           </div>
           <div v-else-if="checkout.data.value.status === 'EXPIRED' || checkout.data.value.status === 'FAILED'" class="mt-6">
-            <p class="text-sm">This QR code has expired. If you have already paid, the hotel front desk will confirm your stay automatically.</p>
+            <p>This QR code has expired. If you have already paid, the hotel front desk will confirm your stay automatically.</p>
             <button class="btn mt-4 w-full" :disabled="pending" @click="newQr">Generate new KHQR</button>
           </div>
-          <p v-else-if="checkout.data.value.status === 'EXCEPTION'" class="mt-6 text-sm">We received your payment and our reception team is reviewing it. Your booking is safe.</p>
+          <p v-else-if="checkout.data.value.status === 'EXCEPTION'" class="mt-6">We received your payment and our reception team is reviewing it. Your booking is safe.</p>
         </template>
 
-        <div v-else class="flex flex-wrap gap-3 mt-8">
+        <div v-else class="co-actions co-actions--row">
           <button class="btn" :disabled="pending" @click="simulate('SUCCESS')">Simulate success</button>
           <button class="btn-secondary" :disabled="pending" @click="simulate('FAILED')">Simulate failure</button>
           <button class="btn-secondary" :disabled="pending" @click="simulate('PENDING')">Simulate pending</button>
         </div>
-        <RouterLink to="/verify" class="block mt-6 text-sm text-[var(--muted)] hover:text-[var(--ink)] underline text-center">Verify booking or enter OTP</RouterLink>
+        <RouterLink to="/verify" class="co-verify">Verify booking or enter OTP</RouterLink>
       </template>
     </div>
   </SiteLayout>
 </template>
+
+<style scoped>
+.co { max-width: 560px; margin: 1.5rem auto 2rem; padding: 1.5rem; background: var(--paper); border: 1px solid var(--rule); border-radius: var(--radius-panel); }
+.co-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 28px; }
+.co-tag { font-weight: 600; color: var(--status-out); }
+.co-time { font-variant-numeric: tabular-nums; color: var(--silt); }
+.co-title { font-size: 2.4375rem; color: var(--river); margin-top: .5rem; }
+.co-muted { color: var(--silt); font-size: .875rem; margin-top: .35rem; }
+.co-status { color: var(--river); font-weight: 600; }
+.co-amount { margin-top: 1.25rem; padding: 1rem 0; border-block: 1px solid var(--rule); display: grid; gap: .15rem; color: var(--silt); }
+.co-amount strong { font: 400 3.0625rem/1 var(--font-display); color: var(--laterite); font-variant-numeric: tabular-nums; }
+.co-pay { display: grid; gap: 1rem; margin-top: 1.25rem; justify-items: center; text-align: center; }
+.co-qr { background: #fff; color: #1a1a1a; padding: 1.25rem; border-radius: var(--radius-photo); display: grid; justify-items: center; gap: .35rem; }
+.co-qr-name { font-weight: 600; }
+.co-qr-note { font-size: .8125rem; color: #555; }
+.co-note { font-size: .9375rem; color: var(--river); text-align: left; }
+.co-actions { display: grid; gap: .6rem; width: 100%; }
+.co-actions--row { margin-top: 1.5rem; grid-auto-flow: row; }
+.co-live { color: var(--silt); font-size: .875rem; }
+.co-verify { display: flex; justify-content: center; align-items: center; min-height: 44px; margin-top: 1rem; color: var(--silt); text-decoration: underline; font-size: .875rem; }
+@media (min-width: 640px) { .co-actions--row { grid-auto-flow: column; } }
+</style>

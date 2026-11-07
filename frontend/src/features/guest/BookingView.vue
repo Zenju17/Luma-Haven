@@ -7,6 +7,7 @@ import Notice from '../../components/Notice.vue'
 import MyDataPanel from './components/MyDataPanel.vue'
 import PrintableReceipt from './components/PrintableReceipt.vue'
 import { api } from '../../services/api'
+import { roomPhotoFor } from '../../data/roomCatalog'
 import { money, type Booking } from '../../types'
 
 const route = useRoute()
@@ -20,6 +21,12 @@ const requestType = ref('Towels')
 const description = ref('')
 const requestError = ref('')
 const printReceipt = () => window.print()
+const nights = computed(() => {
+  const data = booking.data.value
+  if (!data) return 0
+  return Math.max(0, Math.round((Date.parse(data.departure) - Date.parse(data.arrival)) / 86_400_000))
+})
+const roomPhoto = computed(() => roomPhotoFor(booking.data.value?.room_type ?? ''))
 const eligibleToday = computed(() => {
   const data = booking.data.value
   return Boolean(data?.verified && data.hotel_today >= data.arrival && data.hotel_today < data.departure)
@@ -71,99 +78,113 @@ async function sendRequest() {
 
 <template>
   <SiteLayout>
-    <!-- Screen View (Hidden when printing) -->
     <div class="screen-only print:hidden">
-      <div v-if="booking.isPending.value" role="status" class="max-w-3xl mx-auto space-y-4">
+      <div v-if="booking.isPending.value" role="status" class="bk-wrap">
         <p>Loading your stay…</p>
-        <div class="skeleton h-10 w-72 rounded-xl"></div>
-        <div class="skeleton h-5 w-48 rounded-lg mt-2"></div>
-        <div class="grid md:grid-cols-2 gap-5 mt-8">
-          <div class="card h-48 skeleton opacity-60"></div>
-          <div class="card h-48 skeleton opacity-60"></div>
-        </div>
+        <div class="skeleton h-10 w-72 mt-4" />
+        <div class="skeleton h-48 w-full mt-6" />
       </div>
       <Notice v-else-if="booking.error.value" :message="String(booking.error.value)" />
-      <div v-else-if="booking.data.value" class="max-w-3xl mx-auto">
-        <div class="flex items-center gap-2.5 mb-2">
-          <img src="/images/luma-haven/branding/logo.png" alt="Luma Haven Logo" class="w-7 h-7 object-contain" />
-          <p class="label mb-0">Your reservation</p>
-        </div>
-        <h1 class="text-4xl text-[var(--brand-text)]">Welcome, {{ booking.data.value.guest_name }}.</h1>
-        <p class="mt-3 text-[var(--muted)]">Booking {{ booking.data.value.reference }} · <span class="badge">{{ booking.data.value.status.replaceAll('_', ' ') }}</span></p>
-        <div class="grid md:grid-cols-2 gap-5 mt-8">
-          <div class="card stay-room p-6">
-            <span class="label">Your room</span>
-            <h2 class="text-2xl text-[var(--brand-text)]">{{ booking.data.value.room_type }} · {{ booking.data.value.room }}</h2>
-            <p class="mt-3">{{ booking.data.value.arrival }} → {{ booking.data.value.departure }}</p>
-            <p class="mt-3 text-sm text-[var(--muted)]">Please collect your physical key at reception. QR entry is for booking verification only.</p>
-          </div>
-          <div class="card folio-sheet p-6">
-            <div class="flex items-center justify-between">
-              <span class="label mb-0">Folio · {{ booking.data.value.currency }}</span>
-              <button
-                type="button"
-                class="text-xs text-[var(--muted)] hover:text-[var(--brand-text)] underline cursor-pointer flex items-center gap-1"
-                @click="printReceipt"
-              >
-                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                <span>Print receipt</span>
-              </button>
+      <div v-else-if="booking.data.value" class="bk-wrap bk-grid">
+        <div class="bk-main">
+          <h1 class="bk-title">Welcome, {{ booking.data.value.guest_name }}.</h1>
+          <p class="bk-ref">Booking {{ booking.data.value.reference }} <span class="badge">{{ booking.data.value.status.replaceAll('_', ' ') }}</span></p>
+
+          <section class="bk-panel" aria-label="Folio">
+            <div class="bk-panel-head">
+              <h2>Folio in {{ booking.data.value.currency }}</h2>
+              <button type="button" class="bk-link" @click="printReceipt"><span>Print receipt</span></button>
             </div>
-            <h2 class="text-2xl mt-2">Balance {{ money(booking.data.value.balance_minor) }}</h2>
-            <p v-for="(entry, index) in booking.data.value.entries" :key="index" class="flex justify-between mt-2 text-sm">
-              <span>{{ entry.description }} · {{ entry.service_date }}</span><span>{{ money(entry.amount_minor) }}</span>
+            <p class="bk-balance">Balance {{ money(booking.data.value.balance_minor) }}</p>
+            <p v-for="(entry, index) in booking.data.value.entries" :key="index" class="bk-entry">
+              <span>{{ entry.description }}, {{ entry.service_date }}</span><span>{{ money(entry.amount_minor) }}</span>
             </p>
             <button v-if="booking.data.value.balance_minor > 0" class="btn mt-5" :disabled="busy" @click="pay">{{ booking.data.value.payment_provider === 'bakong' ? 'Pay with Bakong' : 'Pay balance (simulation)' }}</button>
-          </div>
+          </section>
+
+          <section v-if="booking.data.value.status === 'CONFIRMED'" class="bk-panel">
+            <h2>Ready to arrive?</h2>
+            <p class="bk-muted">{{ booking.data.value.presentation_demo ? 'University demo: simulate verification for the booking created in this browser.' : 'Verify by email or in person at reception before check-in.' }}</p>
+            <div class="bk-actions">
+              <button v-if="booking.data.value.presentation_demo && !booking.data.value.verified" class="btn" :disabled="busy" @click="act(() => api(`/reservations/${id}/demo-verify`, {}))">Verify demo booking</button>
+              <RouterLink v-else-if="!booking.data.value.presentation_demo" class="btn inline-flex" to="/verify">Verify booking</RouterLink>
+              <button v-if="eligibleToday" class="btn-secondary" :disabled="busy" @click="act(() => api(`/reservations/${id}/check-in`, {}))">Check in</button>
+            </div>
+            <p v-if="!eligibleToday && booking.data.value.verified && booking.data.value.hotel_today < booking.data.value.arrival" class="bk-muted mt-4">Check-in opens on {{ booking.data.value.arrival }} ({{ booking.data.value.hotel_timezone }}).</p>
+            <p v-else-if="!eligibleToday && booking.data.value.verified && booking.data.value.hotel_today >= booking.data.value.departure" class="bk-muted mt-4">Your arrival window has passed. Please contact reception.</p>
+          </section>
+
+          <section v-if="booking.data.value.status === 'CHECKED_IN'" class="bk-panel">
+            <h2>Enjoy your stay</h2>
+            <p class="bk-muted">Need anything? Let us know.</p>
+            <form class="flex flex-col gap-3 mt-4" @submit.prevent="sendRequest">
+              <select v-model="requestType" class="field" aria-label="Service type">
+                <option>Towels</option><option>Cleaning</option><option>Maintenance</option><option>Reception</option>
+              </select>
+              <input v-model="description" class="field" placeholder="How can we help?" aria-label="How can we help?" required />
+              <button class="btn-secondary">Send request</button>
+              <Notice :message="requestError" />
+            </form>
+            <p v-for="request in booking.data.value.requests" :key="request.id" class="bk-entry bk-request">
+              <span>{{ request.type }}: {{ request.description }}</span> <span class="badge">{{ request.status }}</span>
+            </p>
+            <button class="btn mt-6" :disabled="busy || booking.data.value.balance_minor > 0" @click="act(() => api(`/reservations/${id}/check-out`, { folio_version: booking.data.value?.folio_version }))">Check out</button>
+            <p v-if="booking.data.value.balance_minor > 0" class="bk-muted mt-2">Settle your balance before checkout.</p>
+          </section>
+
+          <section v-if="booking.data.value.status === 'CHECKED_OUT'" class="bk-panel">
+            <h2>Thank you for staying with us.</h2>
+            <p class="bk-muted">Your stay is complete and all folio records are settled. Print or save your official guest folio receipt below.</p>
+            <button class="btn mt-5" @click="printReceipt">Print official receipt</button>
+          </section>
+
+          <MyDataPanel :booking-id="id" :verified="booking.data.value.verified" />
+          <Notice :message="message" :status="!failed" />
         </div>
 
-        <div v-if="booking.data.value.status === 'CONFIRMED'" class="card stay-action p-6 mt-5">
-          <h2 class="text-2xl">Ready to arrive?</h2>
-          <p class="text-sm text-[var(--muted)] mt-2">{{ booking.data.value.presentation_demo ? 'University demo: simulate verification for the booking created in this browser.' : 'Verify by email or in person at reception before check-in.' }}</p>
-          <button v-if="booking.data.value.presentation_demo && !booking.data.value.verified" class="btn mt-4" :disabled="busy" @click="act(() => api(`/reservations/${id}/demo-verify`, {}))">Verify demo booking</button>
-          <RouterLink v-else-if="!booking.data.value.presentation_demo" class="btn inline-flex mt-4" to="/verify">Verify booking</RouterLink>
-          <button v-if="eligibleToday" class="btn-secondary ml-3" :disabled="busy" @click="act(() => api(`/reservations/${id}/check-in`, {}))">Check in</button>
-          <p v-else-if="booking.data.value.verified && booking.data.value.hotel_today < booking.data.value.arrival" class="text-sm mt-4 text-[var(--muted)]">Check-in opens on {{ booking.data.value.arrival }} ({{ booking.data.value.hotel_timezone }}).</p>
-          <p v-else-if="booking.data.value.verified && booking.data.value.hotel_today >= booking.data.value.departure" class="text-sm mt-4 text-[var(--muted)]">Your arrival window has passed. Please contact reception.</p>
-        </div>
-
-        <div v-if="booking.data.value.status === 'CHECKED_IN'" class="card stay-action p-6 mt-5">
-          <h2 class="text-2xl">Enjoy your stay</h2>
-          <p class="mt-2 text-[var(--muted)]">Need anything? Let us know.</p>
-          <form class="flex flex-col gap-3 mt-4" @submit.prevent="sendRequest">
-            <select v-model="requestType" class="field" aria-label="Service type">
-              <option>Towels</option><option>Cleaning</option><option>Maintenance</option><option>Reception</option>
-            </select>
-            <input v-model="description" class="field" placeholder="How can we help?" aria-label="How can we help?" required />
-            <button class="btn-secondary">Send request</button>
-            <Notice :message="requestError" />
-          </form>
-          <p v-for="request in booking.data.value.requests" :key="request.id" class="border-t border-[var(--line)] mt-3 pt-3 flex items-center justify-between">
-            <span>{{ request.type }}: {{ request.description }}</span> <span class="badge">{{ request.status }}</span>
-          </p>
-          <button class="btn mt-6" :disabled="busy || booking.data.value.balance_minor > 0" @click="act(() => api(`/reservations/${id}/check-out`, { folio_version: booking.data.value?.folio_version }))">Check out</button>
-          <p v-if="booking.data.value.balance_minor > 0" class="text-sm mt-2 text-[var(--muted)]">Settle your balance before checkout.</p>
-        </div>
-
-        <div v-if="booking.data.value.status === 'CHECKED_OUT'" class="card receipt-panel p-8 mt-5">
-          <h2 class="text-2xl">Thank you for staying with us.</h2>
-          <p class="mt-2 text-[var(--muted)]">Your stay is complete and all folio records are settled. Click below to print or save your official guest folio receipt.</p>
-          <button class="btn mt-5 flex items-center gap-2 cursor-pointer" @click="printReceipt">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            <span>Print official receipt</span>
-          </button>
-        </div>
-        <MyDataPanel :booking-id="id" :verified="booking.data.value.verified" />
-        <Notice :message="message" :status="!failed" />
+        <aside class="bk-summary" aria-label="Your stay">
+          <img :src="roomPhoto.src" :alt="roomPhoto.alt" width="400" height="300" class="bk-thumb" />
+          <h2 class="bk-room">{{ booking.data.value.room_type }}</h2>
+          <p class="bk-muted">Room {{ booking.data.value.room }}</p>
+          <dl class="bk-facts">
+            <div><dt>Arrive</dt><dd>{{ booking.data.value.arrival }}</dd></div>
+            <div><dt>Depart</dt><dd>{{ booking.data.value.departure }}</dd></div>
+            <div><dt>Nights</dt><dd>{{ nights }}</dd></div>
+            <div><dt>Balance</dt><dd class="bk-total">{{ money(booking.data.value.balance_minor) }}</dd></div>
+          </dl>
+          <p class="bk-muted">Collect your room key at reception. The QR code is for booking verification only.</p>
+        </aside>
       </div>
     </div>
 
-    <!-- Official Printable Guest Folio Receipt (Shown ONLY when printing) -->
     <PrintableReceipt v-if="booking.data.value" :booking="booking.data.value" />
   </SiteLayout>
 </template>
 
+<style scoped>
+.bk-wrap { max-width: 64rem; margin: 0 auto; padding: 1.5rem 0 2rem; }
+.bk-grid { display: grid; gap: 2rem; }
+.bk-main { display: grid; gap: 1.25rem; align-content: start; max-width: 560px; }
+.bk-title { font-size: 3.0625rem; color: var(--river); }
+.bk-ref { color: var(--silt); }
+.bk-panel { padding: 1.5rem; background: var(--paper); border-radius: var(--radius-panel); border: 1px solid var(--rule); }
+.bk-panel h2 { font-size: 1.9375rem; color: var(--river); }
+.bk-panel-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+.bk-link { min-height: 44px; display: inline-flex; align-items: center; color: var(--silt); text-decoration: underline; font-size: .875rem; }
+.bk-balance { margin: .5rem 0; font: 400 1.9375rem/1.2 var(--font-display); color: var(--laterite); font-variant-numeric: tabular-nums; }
+.bk-entry { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem 0; border-top: 1px solid var(--rule); font-size: .9375rem; font-variant-numeric: tabular-nums; }
+.bk-request { align-items: center; }
+.bk-muted { color: var(--silt); font-size: .9375rem; margin-top: .5rem; }
+.bk-actions { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1rem; }
+.bk-summary { align-self: start; padding: 1rem; background: var(--paper); border-radius: var(--radius-panel); border: 1px solid var(--rule); display: grid; gap: .5rem; }
+.bk-thumb { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-photo); }
+.bk-room { font-size: 1.9375rem; color: var(--river); margin-top: .5rem; }
+.bk-facts { display: grid; gap: .25rem; margin: .5rem 0; }
+.bk-facts > div { display: flex; justify-content: space-between; padding: .5rem 0; border-top: 1px solid var(--rule); font-size: .9375rem; }
+.bk-facts dt { color: var(--silt); }
+.bk-total { color: var(--laterite); font-weight: 600; font-size: 1.25rem; font-variant-numeric: tabular-nums; }
+@media (min-width: 900px) {
+  .bk-grid { grid-template-columns: minmax(0, 560px) 340px; justify-content: space-between; }
+  .bk-summary { position: sticky; top: 96px; }
+}
+</style>
